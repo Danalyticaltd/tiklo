@@ -1,0 +1,56 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+
+// Public pages
+import Home from './pages/Home'
+import EventPage from './pages/EventPage'
+import Checkout from './pages/Checkout'
+import TicketConfirm from './pages/TicketConfirm'
+import Login from './pages/Login'
+import Register from './pages/Register'
+
+// Organizer dashboard
+import Dashboard from './pages/dashboard/Dashboard'
+import CreateEvent from './pages/dashboard/CreateEvent'
+import EventDetail from './pages/dashboard/EventDetail'
+import CheckIn from './pages/dashboard/CheckIn'
+
+// Admin
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminOrganizers from './pages/admin/AdminOrganizers'
+
+function ProtectedRoute({ children, requiredRole }) {
+  const { user, profile, loading } = useAuth()
+  if (loading) return <div className="min-h-screen bg-bg flex items-center justify-center text-muted">Loading…</div>
+  if (!user) return <Navigate to="/login" replace />
+  if (requiredRole && profile?.role !== requiredRole) return <Navigate to="/dashboard" replace />
+  return children
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/events/:slug" element={<EventPage />} />
+          <Route path="/checkout/:orderId" element={<Checkout />} />
+          <Route path="/ticket/:ticketId" element={<TicketConfirm />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Organizer */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/dashboard/events/new" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+          <Route path="/dashboard/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
+          <Route path="/checkin/:eventId" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+
+          {/* Admin */}
+          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/organizers" element={<ProtectedRoute requiredRole="admin"><AdminOrganizers /></ProtectedRoute>} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
+}
