@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import QRCode from 'qrcode'
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const supabase = createClient(
@@ -88,28 +89,86 @@ export default async function handler(req, res) {
   res.status(200).json({ received: true })
 }
 
+async function generateTicketPdf(order, tickets) {
+  const event = order.events
+  const ticketType = order.ticket_types
+  const eventDate = new Date(event.event_date).toLocaleString('en-CA', { dateStyle: 'full', timeStyle: 'short' })
+
+  const pdfDoc = await PDFDocument.create()
+  const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica)
+
+  for (const ticket of tickets) {
+    const page = pdfDoc.addPage([420, 600])
+    const { width, height } = page.getSize()
+
+    // Purple header bar
+    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: rgb(0.486, 0.227, 0.929) })
+    page.drawText('Tiklo', { x: 24, y: height - 52, size: 28, font, color: rgb(1, 1, 1) })
+
+    // Event title
+    page.drawText(event.title, { x: 24, y: height - 110, size: 16, font, color: rgb(0.1, 0.1, 0.1), maxWidth: width - 48 })
+    page.drawText(eventDate, { x: 24, y: height - 135, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) })
+    if (event.location) {
+      page.drawText(event.location, { x: 24, y: height - 152, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) })
+    }
+
+    // Divider
+    page.drawLine({ start: { x: 24, y: height - 170 }, end: { x: width - 24, y: height - 170 }, thickness: 1, color: rgb(0.9, 0.9, 0.9) })
+
+    // Ticket holder info
+    page.drawText('Ticket Holder', { x: 24, y: height - 195, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
+    page.drawText(order.buyer_name, { x: 24, y: height - 213, size: 14, font, color: rgb(0.1, 0.1, 0.1) })
+    page.drawText('Ticket Type', { x: 24, y: height - 238, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
+    page.drawText(ticketType.name, { x: 24, y: height - 256, size: 14, font, color: rgb(0.1, 0.1, 0.1) })
+    page.drawText('Ticket ID', { x: 24, y: height - 281, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
+    page.drawText(ticket.id.slice(0, 8).toUpperCase(), { x: 24, y: height - 299, size: 13, font, color: rgb(0.486, 0.227, 0.929) })
+
+    // QR code
+    const qrBuffer = await QRCode.toBuffer(ticket.qr_code, { width: 180, margin: 1 })
+    const qrImage = await pdfDoc.embedPng(qrBuffer)
+    const qrSize = 180
+    page.drawImage(qrImage, { x: (width - qrSize) / 2, y: height - 500, width: qrSize, height: qrSize })
+    page.drawText('Scan at the door — single use', { x: 24, y: height - 520, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
+
+    // Footer
+    page.drawRectangle({ x: 0, y: 0, width, height: 36, color: rgb(0.97, 0.97, 0.97) })
+    page.drawText('tiklo.ca', { x: 24, y: 12, size: 10, font: fontReg, color: rgb(0.6, 0.6, 0.6) })
+  }
+
+  return Buffer.from(await pdfDoc.save())
+}
+
 async function sendTicketEmail(order, tickets) {
   const event = order.events
   const ticketType = order.ticket_types
 
-  // Generate QR code data URLs for each ticket
+  // Generate QR codes as PNG buffers for inline CID attachments
+  const attachments = []
   const ticketRows = await Promise.all(
-    tickets.map(async (t) => {
-      const qrDataUrl = await QRCode.toDataURL(t.qr_code, { width: 200, margin: 1 })
+    tickets.map(async (t, i) => {
+      const qrBuffer = await QRCode.toBuffer(t.qr_code, { width: 200, margin: 1 })
+      const cid = `qr_${i}`
+      attachments.push({ filename: `ticket-${i + 1}.png`, content: qrBuffer.toString('base64'), content_id: cid })
       return `
         <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;">
           <p style="margin:0 0 8px;font-weight:600;color:#1f2937;">${ticketType.name}</p>
-          <img src="${qrDataUrl}" alt="QR Code" width="160" height="160" />
+          <img src="cid:${cid}" alt="QR Code" width="160" height="160" />
           <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Ticket ID: ${t.id.slice(0, 8).toUpperCase()}</p>
         </div>
       `
     })
   )
 
+  // Generate PDF and attach
+  const pdfBuffer = await generateTicketPdf(order, tickets)
+  attachments.push({ filename: 'tiklo-ticket.pdf', content: pdfBuffer.toString('base64') })
+
   await resend.emails.send({
     from: 'Tiklo <tickets@tiklo.ca>',
     to: order.buyer_email,
     subject: `Your tickets for ${event.title}`,
+    attachments,
     html: `
       <!DOCTYPE html>
       <html>
@@ -129,7 +188,8 @@ async function sendTicketEmail(order, tickets) {
         ${ticketRows.join('')}
 
         <p style="color:#6b7280;font-size:12px;margin-top:24px;">
-          Show this QR code at the door. Each code is single-use.<br/>
+          A printable PDF ticket is attached to this email.<br/>
+          Show the QR code at the door. Each code is single-use.<br/>
           Questions? Reply to this email.
         </p>
       </body>
@@ -148,7 +208,7 @@ async function sendOrganizerNotification(order) {
   const fee = Number(order.platform_fee ?? 0)
   const net = subtotal - fee
   const totalCapacity = ticketType?.quantity ?? 0
-  const sold = ticketType?.quantity_sold ?? 0
+  const sold = (ticketType?.quantity_sold ?? 0) + order.quantity
   const remaining = Math.max(0, totalCapacity - sold)
 
   await resend.emails.send({
