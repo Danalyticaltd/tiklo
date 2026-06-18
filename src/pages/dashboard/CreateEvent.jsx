@@ -22,6 +22,7 @@ export default function CreateEvent() {
   const [error, setError] = useState(null)
 
   const { register, handleSubmit, control, formState: { errors } } = useForm({
+    mode: 'onTouched',
     defaultValues: {
       title: '',
       description: '',
