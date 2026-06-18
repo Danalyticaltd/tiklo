@@ -36,11 +36,20 @@ export default function Home() {
       <Navbar />
 
       {/* Hero */}
-      <div className="max-w-6xl mx-auto px-4 pt-12 pb-8">
-        <h1 className="font-heading text-4xl md:text-5xl font-bold text-slate-100 leading-tight">
-          Events for your <span className="text-primary">community</span>
-        </h1>
-        <p className="text-muted mt-3 text-lg">Discover multicultural events across Canada.</p>
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-1/4 w-72 h-72 bg-accent/15 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-10">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold text-slate-100 leading-tight">
+            Events for your{' '}
+            <span className="bg-gradient-to-r from-primary via-violet-400 to-accent bg-clip-text text-transparent">
+              community
+            </span>
+          </h1>
+          <p className="text-muted mt-4 text-lg max-w-xl">Discover and buy tickets for multicultural events across Canada — African, Caribbean, South Asian, Latin and more.</p>
+        </div>
       </div>
 
       {/* Filters */}

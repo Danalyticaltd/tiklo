@@ -15,37 +15,40 @@ export default function EventCard({ event }) {
     : `From $${minPrice.toFixed(2)}`
 
   return (
-    <Link to={`/events/${id}`} className="block bg-surface rounded-2xl overflow-hidden hover:ring-1 hover:ring-primary transition group">
-      <div className="relative h-44 bg-slate-800">
+    <Link to={`/events/${id}`} className="block bg-surface rounded-2xl overflow-hidden hover:ring-1 hover:ring-primary/60 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group">
+      <div className="relative h-48 bg-slate-800">
         {banner_url
-          ? <img src={banner_url} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+          ? <img src={banner_url} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
           : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-              <span className="text-4xl">🎟</span>
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/30 via-surface to-accent/20">
+              <span className="text-5xl">🎟</span>
             </div>
           )
         }
+        {/* Gradient overlay at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
         {status && status !== 'published' && (
           <div className="absolute top-3 left-3"><Badge status={status} /></div>
         )}
         {community_tag && (
-          <div className="absolute top-3 right-3 bg-black/60 text-xs text-slate-300 px-2 py-0.5 rounded-full">{community_tag}</div>
+          <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-xs text-slate-200 px-2.5 py-1 rounded-full border border-white/10">{community_tag}</div>
         )}
         {priceLabel && (
-          <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+          <div className="absolute bottom-3 left-3 bg-gradient-to-r from-primary to-accent text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             {priceLabel}
           </div>
         )}
       </div>
       <div className="p-4">
-        <h3 className="font-heading font-bold text-slate-100 text-lg leading-tight line-clamp-2 mb-2">{title}</h3>
-        <div className="flex items-center gap-1.5 text-muted text-xs mb-1">
-          <Calendar size={12} />
+        <h3 className="font-heading font-bold text-slate-100 text-lg leading-tight line-clamp-2 mb-2.5">{title}</h3>
+        <div className="flex items-center gap-1.5 text-muted text-xs mb-1.5">
+          <Calendar size={12} className="text-primary shrink-0" />
           <span>{format(new Date(event_date), 'EEE, MMM d · h:mm a')}</span>
         </div>
         {(location || city) && (
           <div className="flex items-center gap-1.5 text-muted text-xs truncate">
-            <MapPin size={12} className="shrink-0" />
+            <MapPin size={12} className="text-accent shrink-0" />
             <span className="truncate">{[location, city].filter(Boolean).join(' · ')}</span>
           </div>
         )}

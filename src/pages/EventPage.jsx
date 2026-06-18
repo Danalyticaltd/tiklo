@@ -165,12 +165,12 @@ export default function EventPage() {
                   <span className="w-8 text-center text-slate-100 font-medium">{qty}</span>
                   <button onClick={() => setQty(q => Math.min(available, q + 1))} className="w-8 h-8 rounded-full border border-slate-700 text-slate-100 hover:border-primary transition flex items-center justify-center text-lg">+</button>
                 </div>
-                <Button
-                  className="flex-1"
+                <button
+                  className="flex-1 bg-gradient-to-r from-accent to-orange-400 hover:opacity-90 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-accent/20 text-sm"
                   onClick={() => navigate(`/checkout/${eventId}?tt=${selected}&qty=${qty}`)}
                 >
                   {selectedType.price === 0 ? 'Register free' : `Buy · $${(selectedType.price * qty).toFixed(2)}`}
-                </Button>
+                </button>
               </div>
             )}
           </div>
