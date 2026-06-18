@@ -29,6 +29,7 @@ export default function Register() {
   if (success) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-4">
+        <Link to="/" className="fixed top-5 left-5 font-heading text-xl font-bold text-primary hover:opacity-80 transition">Tiklo</Link>
         <div className="w-full max-w-sm bg-surface rounded-2xl p-8 text-center">
           <h2 className="font-heading text-2xl font-bold text-slate-100 mb-2">Check your email</h2>
           <p className="text-muted text-sm">We sent a confirmation link to <span className="text-slate-100">{email}</span>. Once confirmed, an admin will approve your account.</p>
@@ -39,6 +40,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
+      <Link to="/" className="fixed top-5 left-5 font-heading text-xl font-bold text-primary hover:opacity-80 transition">Tiklo</Link>
       <div className="w-full max-w-sm bg-surface rounded-2xl p-8 shadow-xl">
         <h1 className="font-heading text-3xl font-bold text-slate-100 mb-1">Create account</h1>
         <p className="text-muted text-sm mb-6">Start selling tickets on Tiklo</p>
