@@ -17,7 +17,7 @@ export default function Dashboard() {
   async function fetchEvents() {
     const { data } = await supabase
       .from('events')
-      .select('*, ticket_types(quantity, quantity_sold)')
+      .select('*, ticket_types(quantity, quantity_sold), tickets(checked_in)')
       .eq('organizer_id', user.id)
       .order('created_at', { ascending: false })
     setEvents(data ?? [])
@@ -35,6 +35,10 @@ export default function Dashboard() {
 
   function totalSold(event) {
     return (event.ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
+  }
+
+  function totalCheckedIn(event) {
+    return (event.tickets ?? []).filter(t => t.checked_in).length
   }
 
   async function toggleStatus(event) {
@@ -98,8 +102,9 @@ export default function Dashboard() {
                 </div>
 
                 {/* Stats */}
-                <div className="text-sm text-muted w-24 shrink-0">
-                  <span className="text-slate-100 font-semibold">{totalSold(event)}</span> sold
+                <div className="text-sm text-muted shrink-0 text-right">
+                  <p><span className="text-slate-100 font-semibold">{totalSold(event)}</span> sold</p>
+                  <p><span className="text-green-400 font-semibold">{totalCheckedIn(event)}</span> checked in</p>
                 </div>
 
                 {/* Actions */}
