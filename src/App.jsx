@@ -14,6 +14,7 @@ import Dashboard from './pages/dashboard/Dashboard'
 import CreateEvent from './pages/dashboard/CreateEvent'
 import EventDetail from './pages/dashboard/EventDetail'
 import CheckIn from './pages/dashboard/CheckIn'
+import Connect from './pages/dashboard/Connect'
 
 // Admin
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/events/:slug" element={<EventPage />} />
           <Route path="/checkout/:orderId" element={<Checkout />} />
           <Route path="/ticket/:ticketId" element={<TicketConfirm />} />
+          <Route path="/ticket/confirmed" element={<TicketConfirm />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -44,6 +46,7 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/dashboard/events/new" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
           <Route path="/dashboard/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
+          <Route path="/dashboard/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
           <Route path="/checkin/:eventId" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
 
           {/* Admin */}
