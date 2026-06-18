@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         .from('orders')
         .update({ status: 'paid' })
         .eq('id', orderId)
-        .select('*, ticket_types(name, price), events(title, event_date, location)')
+        .select('*, ticket_types(name, price), events(title, event_date, location, organizer_id, profiles(email, full_name))')
         .single()
 
       if (!order) return res.status(200).end()
@@ -73,8 +73,11 @@ export default async function handler(req, res) {
         p_quantity: order.quantity,
       })
 
-      // Send ticket email
-      await sendTicketEmail(order, createdTickets)
+      // Send buyer ticket email + organizer sale notification
+      await Promise.all([
+        sendTicketEmail(order, createdTickets),
+        sendOrganizerNotification(order),
+      ])
 
     } catch (err) {
       console.error('Webhook processing error:', err)
@@ -104,7 +107,7 @@ async function sendTicketEmail(order, tickets) {
   )
 
   await resend.emails.send({
-    from: 'Tiklo <tickets@tiklo.ca>',
+    from: 'Tiklo <onboarding@resend.dev>',
     to: order.buyer_email,
     subject: `Your tickets for ${event.title}`,
     html: `
@@ -129,6 +132,48 @@ async function sendTicketEmail(order, tickets) {
           Show this QR code at the door. Each code is single-use.<br/>
           Questions? Reply to this email.
         </p>
+      </body>
+      </html>
+    `,
+  })
+}
+
+async function sendOrganizerNotification(order) {
+  const event = order.events
+  const organizer = event?.profiles
+  if (!organizer?.email) return
+
+  const subtotal = Number(order.subtotal ?? 0)
+  const fee = Number(order.platform_fee ?? 0)
+  const net = subtotal - fee
+
+  await resend.emails.send({
+    from: 'Tiklo <onboarding@resend.dev>',
+    to: organizer.email,
+    subject: `🎟 New sale: ${order.quantity} ticket${order.quantity > 1 ? 's' : ''} for ${event.title}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <body style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f2937;">
+        <h1 style="font-size:24px;font-weight:800;color:#7C3AED;margin-bottom:4px;">Tiklo</h1>
+        <p style="color:#6b7280;margin-bottom:24px;">You just made a sale!</p>
+
+        <div style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:20px;">
+          <h2 style="margin:0 0 12px;font-size:18px;">${event.title}</h2>
+          <table style="width:100%;font-size:14px;border-collapse:collapse;">
+            <tr><td style="color:#6b7280;padding:4px 0;">Buyer</td><td style="text-align:right;font-weight:600;">${order.buyer_name}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Email</td><td style="text-align:right;">${order.buyer_email}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Tickets</td><td style="text-align:right;font-weight:600;">${order.quantity} × ${order.ticket_types?.name}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Subtotal</td><td style="text-align:right;">$${subtotal.toFixed(2)} CAD</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Platform fee</td><td style="text-align:right;">−$${fee.toFixed(2)}</td></tr>
+            <tr style="border-top:1px solid #e5e7eb;">
+              <td style="padding:8px 0 4px;font-weight:700;">Your earnings</td>
+              <td style="text-align:right;font-weight:700;color:#7C3AED;">$${net.toFixed(2)} CAD</td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="color:#6b7280;font-size:12px;">Payout will be deposited to your connected Stripe account within 2 business days.</p>
       </body>
       </html>
     `,
