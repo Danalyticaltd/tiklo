@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         .from('orders')
         .update({ status: 'paid' })
         .eq('id', orderId)
-        .select('*, ticket_types(name, price), events(title, event_date, location, organizer_id, profiles!organizer_id(email, full_name))')
+        .select('*, ticket_types(name, price, quantity, quantity_sold), events(title, event_date, location, organizer_id, profiles!organizer_id(email, full_name))')
         .single()
 
       if (!order) return res.status(200).end()
