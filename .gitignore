@@ -4,3 +4,5 @@ dist
 .env
 Tiko_Notes.txt
 CLAUDE.pdf
+
+.vercel

@@ -23,6 +23,7 @@ export default function CreateEvent() {
 
   const { register, handleSubmit, control, formState: { errors } } = useForm({
     mode: 'onTouched',
+    shouldFocusError: true,
     defaultValues: {
       title: '',
       description: '',
@@ -210,18 +211,23 @@ export default function CreateEvent() {
           </div>
 
           {/* Actions */}
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm">
+              Please fix the errors above before continuing.
+            </div>
+          )}
           <div className="flex gap-3 justify-end">
             <Button
               type="button" variant="secondary"
               disabled={saving}
-              onClick={handleSubmit(data => onSubmit(data, false))}
+              onClick={handleSubmit(data => onSubmit(data, false), () => {})}
             >
               Save as draft
             </Button>
             <Button
               type="button"
               disabled={saving}
-              onClick={handleSubmit(data => onSubmit(data, true))}
+              onClick={handleSubmit(data => onSubmit(data, true), () => {})}
             >
               {saving ? 'Publishing…' : 'Publish event'}
             </Button>
