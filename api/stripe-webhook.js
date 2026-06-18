@@ -52,6 +52,20 @@ export default async function handler(req, res) {
 
       if (!order) return res.status(200).end()
 
+      // Guard against oversell: verify capacity hasn't been exceeded since checkout was created
+      const { data: freshTT } = await supabase
+        .from('ticket_types')
+        .select('quantity, quantity_sold')
+        .eq('id', order.ticket_type_id)
+        .single()
+
+      if (freshTT && (freshTT.quantity_sold + order.quantity) > freshTT.quantity) {
+        console.warn(`Oversell prevented for order ${orderId}: would exceed capacity`)
+        await stripe.refunds.create({ payment_intent: intent.id })
+        await supabase.from('orders').update({ status: 'refunded' }).eq('id', orderId)
+        return res.status(200).end()
+      }
+
       // Generate individual tickets
       const tickets = Array.from({ length: order.quantity }, () => ({
         order_id: orderId,
