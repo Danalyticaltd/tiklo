@@ -26,8 +26,8 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <Link to="/" className="fixed top-5 left-5 font-heading text-xl font-bold text-primary hover:opacity-80 transition">
-        Tiklo
+      <Link to="/" className="fixed top-5 left-5 flex items-center gap-1.5 text-sm text-muted hover:text-slate-100 transition">
+        ← Back to events
       </Link>
       <div className="w-full max-w-sm bg-surface rounded-2xl p-8 shadow-xl">
         <h1 className="font-heading text-3xl font-bold text-slate-100 mb-1">Sign in</h1>
