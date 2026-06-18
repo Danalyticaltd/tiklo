@@ -143,26 +143,21 @@ async function sendTicketEmail(order, tickets) {
   const event = order.events
   const ticketType = order.ticket_types
 
-  // Generate QR codes as PNG buffers for inline CID attachments
-  const attachments = []
-  const ticketRows = await Promise.all(
-    tickets.map(async (t, i) => {
-      const qrBuffer = await QRCode.toBuffer(t.qr_code, { width: 200, margin: 1 })
-      const cid = `qr_${i}`
-      attachments.push({ filename: `ticket-${i + 1}.png`, content: qrBuffer.toString('base64'), content_id: cid })
-      return `
-        <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;">
-          <p style="margin:0 0 8px;font-weight:600;color:#1f2937;">${ticketType.name}</p>
-          <img src="cid:${cid}" alt="QR Code" width="160" height="160" />
-          <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Ticket ID: ${t.id.slice(0, 8).toUpperCase()}</p>
-        </div>
-      `
-    })
-  )
+  // QR code via public URL (works in all email clients including Gmail)
+  const ticketRows = tickets.map((t, i) => {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(t.qr_code)}&margin=1`
+    return `
+      <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;">
+        <p style="margin:0 0 8px;font-weight:600;color:#1f2937;">${ticketType.name}</p>
+        <img src="${qrUrl}" alt="QR Code" width="180" height="180" style="display:block;margin:0 auto;" />
+        <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Ticket ID: ${t.id.slice(0, 8).toUpperCase()}</p>
+      </div>
+    `
+  })
 
   // Generate PDF and attach
   const pdfBuffer = await generateTicketPdf(order, tickets)
-  attachments.push({ filename: 'tiklo-ticket.pdf', content: pdfBuffer.toString('base64') })
+  const attachments = [{ filename: 'tiklo-ticket.pdf', content: pdfBuffer.toString('base64') }]
 
   await resend.emails.send({
     from: 'Tiklo <tickets@tiklo.ca>',
