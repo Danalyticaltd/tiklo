@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Plus, QrCode, BarChart2 } from 'lucide-react'
+import { Plus, QrCode, BarChart2, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/Navbar'
@@ -12,19 +12,26 @@ export default function Dashboard() {
   const { user, profile } = useAuth()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+
+  async function fetchEvents() {
+    const { data } = await supabase
+      .from('events')
+      .select('*, ticket_types(quantity, quantity_sold)')
+      .eq('organizer_id', user.id)
+      .order('created_at', { ascending: false })
+    setEvents(data ?? [])
+  }
 
   useEffect(() => {
-    async function fetchEvents() {
-      const { data } = await supabase
-        .from('events')
-        .select('*, ticket_types(quantity, quantity_sold)')
-        .eq('organizer_id', user.id)
-        .order('created_at', { ascending: false })
-      setEvents(data ?? [])
-      setLoading(false)
-    }
-    if (user) fetchEvents()
+    if (user) fetchEvents().then(() => setLoading(false))
   }, [user])
+
+  async function handleRefresh() {
+    setRefreshing(true)
+    await fetchEvents()
+    setRefreshing(false)
+  }
 
   function totalSold(event) {
     return (event.ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
@@ -46,9 +53,14 @@ export default function Dashboard() {
             <h1 className="font-heading text-3xl font-bold text-slate-100">My Events</h1>
             <p className="text-muted text-sm mt-1">Welcome back, {profile?.full_name ?? 'Organizer'}</p>
           </div>
-          <Link to="/dashboard/events/new">
-            <Button><Plus size={16} className="inline mr-1.5" />New event</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <button onClick={handleRefresh} title="Refresh stats" className="p-2 rounded-lg text-muted hover:text-slate-100 hover:bg-surface transition">
+              <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+            </button>
+            <Link to="/dashboard/events/new">
+              <Button><Plus size={16} className="inline mr-1.5" />New event</Button>
+            </Link>
+          </div>
         </div>
 
         {/* Approval warning */}
