@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { format } from 'date-fns'
 import { MapPin, Calendar, Tag } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -10,6 +11,7 @@ import Badge from '../components/ui/Badge'
 export default function EventPage() {
   const { slug: eventId } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [event, setEvent] = useState(null)
   const [ticketTypes, setTicketTypes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -83,7 +85,7 @@ export default function EventPage() {
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            {event.community_tag && <Badge status="published" />}
+            {user && <Badge status={event.status} />}
             <span className="text-xs text-muted bg-slate-800 px-2 py-0.5 rounded-full">{event.community_tag}</span>
           </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold text-slate-100">{event.title}</h1>
