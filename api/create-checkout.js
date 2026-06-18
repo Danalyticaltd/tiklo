@@ -20,10 +20,10 @@ export default async function handler(req, res) {
   const { event_id, ticket_type_id, quantity, buyer_name, buyer_email } = req.body
 
   try {
-    // Fetch event + ticket type + organizer
+    // Fetch ticket type + event
     const { data: ticketType } = await supabase
       .from('ticket_types')
-      .select('*, events(organizer_id, title, profiles(stripe_account_id, stripe_onboarded))')
+      .select('*, events(organizer_id, title)')
       .eq('id', ticket_type_id)
       .single()
 
@@ -32,7 +32,6 @@ export default async function handler(req, res) {
     const available = ticketType.quantity - ticketType.quantity_sold
     if (available < quantity) return res.status(400).json({ error: 'Not enough tickets available' })
 
-    const organizer = ticketType.events?.profiles
     const unitAmount = Math.round(ticketType.price * 100) // cents
 
     // Create order record (pending)
@@ -55,20 +54,12 @@ export default async function handler(req, res) {
       return res.json({ free: true, order_id: order.id })
     }
 
-    // Build PaymentIntent options
-    const intentOptions = {
+    // All payments go to Tiklo's Stripe account
+    const paymentIntent = await stripe.paymentIntents.create({
       amount: unitAmount * quantity,
       currency: 'cad',
       metadata: { order_id: order.id, buyer_name, buyer_email },
-    }
-
-    // Only add application_fee if organizer has a connected Stripe account
-    if (organizer?.stripe_account_id && organizer?.stripe_onboarded) {
-      intentOptions.application_fee_amount = platformFeeCents
-      intentOptions.transfer_data = { destination: organizer.stripe_account_id }
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create(intentOptions)
+    })
 
     // Save payment intent ID to order
     await supabase.from('orders').update({

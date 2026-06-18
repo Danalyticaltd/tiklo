@@ -58,13 +58,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Stripe Connect nudge */}
-        {profile && !profile.stripe_onboarded && (
-          <div className="bg-primary/10 border border-primary/30 text-purple-300 rounded-xl px-4 py-3 text-sm mb-6 flex items-center justify-between gap-4">
-            <span>Connect your Stripe account to accept paid tickets.</span>
-            <Link to="/dashboard/connect" className="text-primary font-semibold whitespace-nowrap hover:underline">Connect Stripe →</Link>
-          </div>
-        )}
 
         {/* Events table */}
         {loading ? (

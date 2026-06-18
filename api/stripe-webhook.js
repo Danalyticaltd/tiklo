@@ -107,7 +107,7 @@ async function sendTicketEmail(order, tickets) {
   )
 
   await resend.emails.send({
-    from: 'Tiklo <onboarding@resend.dev>',
+    from: 'Tiklo <tickets@tiklo.ca>',
     to: order.buyer_email,
     subject: `Your tickets for ${event.title}`,
     html: `
@@ -148,7 +148,7 @@ async function sendOrganizerNotification(order) {
   const net = subtotal - fee
 
   await resend.emails.send({
-    from: 'Tiklo <onboarding@resend.dev>',
+    from: 'Tiklo <tickets@tiklo.ca>',
     to: organizer.email,
     subject: `🎟 New sale: ${order.quantity} ticket${order.quantity > 1 ? 's' : ''} for ${event.title}`,
     html: `
@@ -173,7 +173,7 @@ async function sendOrganizerNotification(order) {
           </table>
         </div>
 
-        <p style="color:#6b7280;font-size:12px;">Payout will be deposited to your connected Stripe account within 2 business days.</p>
+        <p style="color:#6b7280;font-size:12px;">Your earnings will be transferred to your bank account by Danalytica Ltd within 2–5 business days.</p>
       </body>
       </html>
     `,
