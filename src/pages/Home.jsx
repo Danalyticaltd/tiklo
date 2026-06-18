@@ -17,7 +17,7 @@ export default function Home() {
       setLoading(true)
       let query = supabase
         .from('events')
-        .select('*')
+        .select('*, ticket_types(price)')
         .eq('status', 'published')
         .order('event_date', { ascending: true })
 
@@ -44,26 +44,28 @@ export default function Home() {
       </div>
 
       {/* Filters */}
-      <div className="max-w-6xl mx-auto px-4 pb-6 flex flex-wrap gap-2">
-        {CITIES.map(c => (
-          <button
-            key={c}
-            onClick={() => setCity(c)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition border ${city === c ? 'bg-primary border-primary text-white' : 'border-slate-700 text-muted hover:border-slate-500'}`}
-          >
-            {c}
-          </button>
-        ))}
-        <div className="w-px bg-slate-700 mx-1 self-stretch" />
-        {TAGS.map(t => (
-          <button
-            key={t}
-            onClick={() => setTag(t)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition border ${tag === t ? 'bg-accent/20 border-accent text-amber-400' : 'border-slate-700 text-muted hover:border-slate-500'}`}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="max-w-6xl mx-auto px-4 pb-2 overflow-x-auto scrollbar-none">
+        <div className="flex gap-2 pb-4 min-w-max">
+          {CITIES.map(c => (
+            <button
+              key={c}
+              onClick={() => setCity(c)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition border whitespace-nowrap ${city === c ? 'bg-primary border-primary text-white' : 'border-slate-700 text-muted hover:border-slate-500'}`}
+            >
+              {c}
+            </button>
+          ))}
+          <div className="w-px bg-slate-700 mx-1 self-stretch" />
+          {TAGS.map(t => (
+            <button
+              key={t}
+              onClick={() => setTag(t)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition border whitespace-nowrap ${tag === t ? 'bg-accent/20 border-accent text-amber-400' : 'border-slate-700 text-muted hover:border-slate-500'}`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Event grid */}

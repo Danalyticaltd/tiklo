@@ -22,13 +22,37 @@ export default function EventPage() {
       if (!ev) { navigate('/'); return }
       setEvent(ev)
 
+      // Dynamic SEO meta tags
+      document.title = `${ev.title} — Tiklo`
+      setMeta('description', ev.description ?? `${ev.title} — Buy tickets on Tiklo`)
+      setMeta('og:title', ev.title)
+      setMeta('og:description', ev.description ?? `${ev.title} — Buy tickets on Tiklo`)
+      setMeta('og:url', `https://tiklo.ca/events/${eventId}`)
+      setMeta('og:type', 'event')
+      if (ev.banner_url) setMeta('og:image', ev.banner_url)
+      setMeta('twitter:title', ev.title)
+      setMeta('twitter:description', ev.description ?? ev.title)
+      if (ev.banner_url) setMeta('twitter:image', ev.banner_url)
+
       const { data: tt } = await supabase.from('ticket_types').select('*').eq('event_id', eventId)
       setTicketTypes(tt ?? [])
       if (tt?.length) setSelected(tt[0].id)
       setLoading(false)
     }
     load()
+    return () => {
+      document.title = 'Tiklo — Event Ticketing'
+      setMeta('og:title', 'Tiklo — Event Ticketing')
+    }
   }, [eventId, navigate])
+
+  function setMeta(property, content) {
+    const isOg = property.startsWith('og:') || property.startsWith('twitter:')
+    const attr = isOg ? 'property' : 'name'
+    let el = document.querySelector(`meta[${attr}="${property}"]`)
+    if (!el) { el = document.createElement('meta'); el.setAttribute(attr, property); document.head.appendChild(el) }
+    el.setAttribute('content', content)
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-bg">
