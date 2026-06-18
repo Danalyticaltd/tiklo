@@ -101,6 +101,13 @@ export default function EventPage() {
               {ticketTypes.map(tt => {
                 const avail = tt.quantity - tt.quantity_sold
                 const soldOut = avail <= 0
+                function availLabel() {
+                  if (soldOut) return null
+                  if (avail <= tt.quantity / 4) return { text: 'Almost sold out!', color: '#ef4444' }
+                  if (avail <= tt.quantity / 2) return { text: 'Selling fast — grab yours', color: '#f59e0b' }
+                  return { text: 'Tickets available', color: '#94a3b8' }
+                }
+                const label = availLabel()
                 return (
                   <button
                     key={tt.id}
@@ -111,7 +118,10 @@ export default function EventPage() {
                   >
                     <div>
                       <p className="text-slate-100 font-medium text-sm">{tt.name}</p>
-                      <p className="text-muted text-xs">{soldOut ? 'Sold out' : `${avail} remaining`}</p>
+                      {soldOut
+                        ? <p className="text-red-400 text-xs font-medium">Sold out</p>
+                        : <p className="text-xs font-medium" style={{ color: label.color }}>{label.text}</p>
+                      }
                     </div>
                     <p className="font-heading font-bold text-slate-100">
                       {tt.price === 0 ? 'Free' : `$${Number(tt.price).toFixed(2)}`}
