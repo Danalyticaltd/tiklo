@@ -143,14 +143,18 @@ async function sendOrganizerNotification(order) {
   const organizer = event?.profiles
   if (!organizer?.email) return
 
+  const ticketType = order.ticket_types
   const subtotal = Number(order.subtotal ?? 0)
   const fee = Number(order.platform_fee ?? 0)
   const net = subtotal - fee
+  const totalCapacity = ticketType?.quantity ?? 0
+  const sold = ticketType?.quantity_sold ?? 0
+  const remaining = Math.max(0, totalCapacity - sold)
 
   await resend.emails.send({
     from: 'Tiklo <tickets@tiklo.ca>',
     to: organizer.email,
-    subject: `🎟 New sale: ${order.quantity} ticket${order.quantity > 1 ? 's' : ''} for ${event.title}`,
+    subject: `New sale: ${order.quantity} ticket${order.quantity > 1 ? 's' : ''} for ${event.title}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -162,8 +166,10 @@ async function sendOrganizerNotification(order) {
           <h2 style="margin:0 0 12px;font-size:18px;">${event.title}</h2>
           <table style="width:100%;font-size:14px;border-collapse:collapse;">
             <tr><td style="color:#6b7280;padding:4px 0;">Buyer</td><td style="text-align:right;font-weight:600;">${order.buyer_name}</td></tr>
-            <tr><td style="color:#6b7280;padding:4px 0;">Email</td><td style="text-align:right;">${order.buyer_email}</td></tr>
-            <tr><td style="color:#6b7280;padding:4px 0;">Tickets</td><td style="text-align:right;font-weight:600;">${order.quantity} × ${order.ticket_types?.name}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Buyer email</td><td style="text-align:right;">${order.buyer_email}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Ticket type</td><td style="text-align:right;">${ticketType?.name}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Quantity sold</td><td style="text-align:right;font-weight:600;">${order.quantity}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0;">Tickets remaining</td><td style="text-align:right;font-weight:600;color:${remaining < 10 ? '#ef4444' : '#16a34a'};">${remaining} / ${totalCapacity}</td></tr>
             <tr><td style="color:#6b7280;padding:4px 0;">Subtotal</td><td style="text-align:right;">$${subtotal.toFixed(2)} CAD</td></tr>
             <tr><td style="color:#6b7280;padding:4px 0;">Platform fee</td><td style="text-align:right;">−$${fee.toFixed(2)}</td></tr>
             <tr style="border-top:1px solid #e5e7eb;">
