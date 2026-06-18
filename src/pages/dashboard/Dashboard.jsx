@@ -54,11 +54,11 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-slate-100">My Events</h1>
+            <h1 className="font-heading text-3xl font-bold text-gray-900">My Events</h1>
             <p className="text-muted text-sm mt-1">Welcome back, {profile?.full_name ?? 'Organizer'}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={handleRefresh} title="Refresh stats" className="p-2 rounded-lg text-muted hover:text-slate-100 hover:bg-surface transition">
+            <button onClick={handleRefresh} title="Refresh stats" className="p-2 rounded-lg text-muted hover:text-gray-900 hover:bg-gray-100 transition">
               <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
             </button>
             <Link to="/dashboard/events/new">
@@ -69,19 +69,18 @@ export default function Dashboard() {
 
         {/* Approval warning */}
         {profile && !profile.approved && (
-          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl px-4 py-3 text-sm mb-6">
+          <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-3 text-sm mb-6">
             Your account is pending admin approval. You can create events but won't be able to publish until approved.
           </div>
         )}
 
-
         {/* Events table */}
         {loading ? (
           <div className="space-y-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />)}
+            {[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-white rounded-xl animate-pulse border border-gray-100" />)}
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center py-24 border border-dashed border-slate-700 rounded-2xl">
+          <div className="text-center py-24 border border-dashed border-gray-200 rounded-2xl">
             <p className="text-muted text-lg">No events yet.</p>
             <Link to="/dashboard/events/new" className="inline-block mt-4">
               <Button><Plus size={16} className="inline mr-1.5" />Create your first event</Button>
@@ -90,21 +89,21 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-3">
             {events.map(event => (
-              <div key={event.id} className="bg-surface rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div key={event.id} className="bg-white rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 border border-gray-100 shadow-sm">
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <Badge status={event.status} />
                     {event.community_tag && <span className="text-xs text-muted">{event.community_tag}</span>}
                   </div>
-                  <p className="font-semibold text-slate-100 truncate">{event.title}</p>
+                  <p className="font-semibold text-gray-900 truncate">{event.title}</p>
                   <p className="text-muted text-xs mt-0.5">{format(new Date(event.event_date), 'EEE, MMM d, yyyy')} · {event.city}</p>
                 </div>
 
                 {/* Stats */}
                 <div className="text-sm text-muted shrink-0 text-right">
-                  <p><span className="text-slate-100 font-semibold">{totalSold(event)}</span> sold</p>
-                  <p><span className="text-green-400 font-semibold">{totalCheckedIn(event)}</span> checked in</p>
+                  <p><span className="text-gray-900 font-semibold">{totalSold(event)}</span> sold</p>
+                  <p><span className="text-green-600 font-semibold">{totalCheckedIn(event)}</span> checked in</p>
                 </div>
 
                 {/* Actions */}
@@ -115,8 +114,8 @@ export default function Dashboard() {
                     title={event.status === 'published' ? 'Unpublish' : 'Publish'}
                     className={`text-xs px-3 py-1.5 rounded-lg border transition font-medium
                       ${event.status === 'published'
-                        ? 'border-slate-600 text-muted hover:border-red-500 hover:text-red-400'
-                        : 'border-primary text-primary hover:bg-primary/10 disabled:opacity-40 disabled:cursor-not-allowed'}`}
+                        ? 'border-gray-200 text-muted hover:border-red-400 hover:text-red-500'
+                        : 'border-primary text-primary hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed'}`}
                   >
                     {event.status === 'published' ? 'Unpublish' : 'Publish'}
                   </button>

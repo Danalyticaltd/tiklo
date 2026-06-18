@@ -39,12 +39,12 @@ export default function AdminDashboard() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-slate-100">Admin</h1>
+            <h1 className="font-heading text-3xl font-bold text-gray-900">Admin</h1>
             <p className="text-muted text-sm mt-1">Platform overview — Danalytica Ltd</p>
           </div>
           <Link
             to="/admin/organizers"
-            className="relative inline-flex items-center gap-2 bg-primary hover:bg-purple-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+            className="relative inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-lg shadow-primary/20"
           >
             <Users size={15} /> Manage organizers
             {stats?.pendingCount > 0 && (
@@ -57,46 +57,46 @@ export default function AdminDashboard() {
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-surface rounded-xl animate-pulse" />)}
+            {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-white rounded-xl animate-pulse border border-gray-100" />)}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div className="bg-surface rounded-xl p-4">
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
               <DollarSign size={18} className="text-primary mb-2" />
               <p className="text-muted text-xs uppercase tracking-wider mb-1">Platform revenue</p>
               <p className="text-2xl font-bold text-primary">${stats.revenue.toFixed(2)}</p>
             </div>
-            <div className="bg-surface rounded-xl p-4">
-              <TicketIcon size={18} className="text-slate-400 mb-2" />
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <TicketIcon size={18} className="text-muted mb-2" />
               <p className="text-muted text-xs uppercase tracking-wider mb-1">Tickets sold</p>
-              <p className="text-2xl font-bold text-slate-100">{stats.tickets}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.tickets}</p>
             </div>
-            <div className="bg-surface rounded-xl p-4">
-              <Users size={18} className="text-slate-400 mb-2" />
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <Users size={18} className="text-muted mb-2" />
               <p className="text-muted text-xs uppercase tracking-wider mb-1">Active organizers</p>
-              <p className="text-2xl font-bold text-slate-100">{stats.organizerCount}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.organizerCount}</p>
             </div>
-            <div className="bg-surface rounded-xl p-4">
-              <CalendarDays size={18} className="text-slate-400 mb-2" />
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <CalendarDays size={18} className="text-muted mb-2" />
               <p className="text-muted text-xs uppercase tracking-wider mb-1">Live events</p>
-              <p className="text-2xl font-bold text-slate-100">{stats.eventCount}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.eventCount}</p>
             </div>
           </div>
         )}
 
         {/* Recent orders */}
-        <div className="bg-surface rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-800">
-            <h2 className="font-semibold text-slate-100">Recent orders</h2>
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h2 className="font-semibold text-gray-900">Recent orders</h2>
           </div>
           {recentOrders.length === 0 ? (
             <p className="text-center text-muted py-12">No orders yet.</p>
           ) : (
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-gray-100">
               {recentOrders.map(o => (
                 <div key={o.id} className="px-5 py-3 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-slate-100 font-medium truncate">{o.buyer_name}</p>
+                    <p className="text-gray-900 font-medium truncate">{o.buyer_name}</p>
                     <p className="text-muted text-xs truncate">{o.events?.title} · {o.ticket_types?.name} × {o.quantity}</p>
                   </div>
                   <div className="text-right shrink-0">

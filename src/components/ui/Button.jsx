@@ -1,8 +1,8 @@
 const variants = {
-  primary: 'bg-gradient-to-r from-primary to-violet-500 hover:opacity-90 text-white shadow-lg shadow-primary/20',
-  secondary: 'bg-surface hover:bg-white/5 text-slate-100 border border-white/10',
+  primary: 'bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white shadow-lg shadow-primary/20',
+  secondary: 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200',
   danger: 'bg-red-600 hover:bg-red-700 text-white',
-  ghost: 'text-muted hover:text-slate-100',
+  ghost: 'text-muted hover:text-gray-900',
 }
 
 const sizes = {

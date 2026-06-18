@@ -4,11 +4,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#9333EA',
-        accent: '#F97316',
-        bg: '#08071A',
-        surface: '#13112B',
-        muted: '#8B9CC8',
+        primary: '#DC5E3D',
+        accent: '#136F7A',
+        bg: '#FAF8F5',
+        surface: '#FFFFFF',
+        muted: '#6B6355',
       },
       fontFamily: {
         heading: ['Syne', 'sans-serif'],

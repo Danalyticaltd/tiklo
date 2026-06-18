@@ -34,7 +34,7 @@ function CheckoutForm({ orderId, onSuccess }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement />
-      {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>}
       <Button type="submit" disabled={!stripe || processing} size="lg" className="w-full">
         {processing ? 'Processing…' : 'Pay now'}
       </Button>
@@ -109,8 +109,8 @@ export default function Checkout() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-10 space-y-4">
-        <div className="h-8 bg-surface rounded w-2/3 animate-pulse" />
-        <div className="h-4 bg-surface rounded w-1/2 animate-pulse" />
+        <div className="h-8 bg-gray-100 rounded w-2/3 animate-pulse" />
+        <div className="h-4 bg-gray-100 rounded w-1/2 animate-pulse" />
       </div>
     </div>
   )
@@ -122,12 +122,12 @@ export default function Checkout() {
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* Order summary */}
-        <div className="bg-surface rounded-2xl p-5 mb-6">
+        <div className="bg-white rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm">
           <p className="text-muted text-xs uppercase tracking-wider mb-1">Order summary</p>
-          <h2 className="font-heading font-bold text-slate-100 text-lg">{event.title}</h2>
+          <h2 className="font-heading font-bold text-gray-900 text-lg">{event.title}</h2>
           <div className="flex justify-between items-center mt-3 text-sm">
             <span className="text-muted">{ticketType.name} × {qty}</span>
-            <span className="text-slate-100 font-semibold">{total === 0 ? 'Free' : `$${total.toFixed(2)} CAD`}</span>
+            <span className="text-gray-900 font-semibold">{total === 0 ? 'Free' : `$${total.toFixed(2)} CAD`}</span>
           </div>
           {total > 0 && (
             <div className="flex justify-between items-center mt-1 text-xs text-muted">
@@ -138,22 +138,22 @@ export default function Checkout() {
         </div>
 
         {step === 'info' ? (
-          <div className="bg-surface rounded-2xl p-6">
-            <h2 className="font-heading font-bold text-slate-100 mb-4">Your details</h2>
-            {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2 mb-4">{error}</p>}
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <h2 className="font-heading font-bold text-gray-900 mb-4">Your details</h2>
+            {error && <p className="text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
             <form onSubmit={handleInfoSubmit} className="space-y-4">
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-muted">Full name</label>
                 <input
                   required value={buyerName} onChange={e => setBuyerName(e.target.value)}
-                  className="bg-bg border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-primary transition"
+                  className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition"
                 />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-muted">Email — tickets will be sent here</label>
                 <input
                   type="email" required value={buyerEmail} onChange={e => setBuyerEmail(e.target.value)}
-                  className="bg-bg border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-primary transition"
+                  className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition"
                 />
               </div>
               <Button type="submit" disabled={loading} size="lg" className="w-full">
@@ -162,11 +162,11 @@ export default function Checkout() {
             </form>
           </div>
         ) : clientSecret ? (
-          <div className="bg-surface rounded-2xl p-6">
-            <h2 className="font-heading font-bold text-slate-100 mb-4">Payment</h2>
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <h2 className="font-heading font-bold text-gray-900 mb-4">Payment</h2>
             <Elements
               stripe={stripePromise}
-              options={{ clientSecret, appearance: { theme: 'night', variables: { colorPrimary: '#7C3AED' } } }}
+              options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#DC5E3D' } } }}
             >
               <CheckoutForm orderId={orderId} />
             </Elements>

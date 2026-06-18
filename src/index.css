@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-bg text-slate-100 font-body;
+    @apply bg-bg text-gray-900 font-body;
   }
   h1, h2, h3, h4 {
     @apply font-heading;

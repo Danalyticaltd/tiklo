@@ -38,13 +38,13 @@ export default function Home() {
       {/* Hero */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute top-0 right-1/4 w-72 h-72 bg-accent/15 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-10">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold text-slate-100 leading-tight">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
             Events for your{' '}
-            <span className="bg-gradient-to-r from-primary via-violet-400 to-accent bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               community
             </span>
           </h1>
@@ -59,17 +59,17 @@ export default function Home() {
             <button
               key={c}
               onClick={() => setCity(c)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition border whitespace-nowrap ${city === c ? 'bg-primary border-primary text-white' : 'border-slate-700 text-muted hover:border-slate-500'}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition border whitespace-nowrap ${city === c ? 'bg-primary border-primary text-white' : 'border-gray-200 text-muted hover:border-gray-400'}`}
             >
               {c}
             </button>
           ))}
-          <div className="w-px bg-slate-700 mx-1 self-stretch" />
+          <div className="w-px bg-gray-200 mx-1 self-stretch" />
           {TAGS.map(t => (
             <button
               key={t}
               onClick={() => setTag(t)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition border whitespace-nowrap ${tag === t ? 'bg-accent/20 border-accent text-amber-400' : 'border-slate-700 text-muted hover:border-slate-500'}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition border whitespace-nowrap ${tag === t ? 'bg-accent/10 border-accent text-accent' : 'border-gray-200 text-muted hover:border-gray-400'}`}
             >
               {t}
             </button>
@@ -82,13 +82,13 @@ export default function Home() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-surface rounded-2xl h-64 animate-pulse" />
+              <div key={i} className="bg-white rounded-2xl h-64 animate-pulse border border-gray-100" />
             ))}
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-24">
             <p className="text-muted text-lg">No events found.</p>
-            <p className="text-slate-600 text-sm mt-1">Try a different city or category.</p>
+            <p className="text-gray-400 text-sm mt-1">Try a different city or category.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

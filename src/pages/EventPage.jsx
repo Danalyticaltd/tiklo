@@ -60,9 +60,9 @@ export default function EventPage() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-3xl mx-auto px-4 pt-10 space-y-4">
-        <div className="h-72 bg-surface rounded-2xl animate-pulse" />
-        <div className="h-8 bg-surface rounded-lg w-2/3 animate-pulse" />
-        <div className="h-4 bg-surface rounded w-1/3 animate-pulse" />
+        <div className="h-72 bg-gray-100 rounded-2xl animate-pulse" />
+        <div className="h-8 bg-gray-100 rounded-lg w-2/3 animate-pulse" />
+        <div className="h-4 bg-gray-100 rounded w-1/3 animate-pulse" />
       </div>
     </div>
   )
@@ -86,9 +86,9 @@ export default function EventPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             {user && <Badge status={event.status} />}
-            <span className="text-xs text-muted bg-slate-800 px-2 py-0.5 rounded-full">{event.community_tag}</span>
+            <span className="text-xs text-muted bg-gray-100 px-2 py-0.5 rounded-full">{event.community_tag}</span>
           </div>
-          <h1 className="font-heading text-3xl md:text-4xl font-bold text-slate-100">{event.title}</h1>
+          <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">{event.title}</h1>
 
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-muted text-sm">
@@ -113,15 +113,15 @@ export default function EventPage() {
         {/* Description */}
         {event.description && (
           <div>
-            <h2 className="font-heading font-bold text-slate-100 mb-2">About</h2>
+            <h2 className="font-heading font-bold text-gray-900 mb-2">About</h2>
             <p className="text-muted leading-relaxed whitespace-pre-line">{event.description}</p>
           </div>
         )}
 
         {/* Ticket selector */}
         {ticketTypes.length > 0 && (
-          <div className="bg-surface rounded-2xl p-6 space-y-4">
-            <h2 className="font-heading font-bold text-slate-100">Get tickets</h2>
+          <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
+            <h2 className="font-heading font-bold text-gray-900">Get tickets</h2>
 
             <div className="space-y-2">
               {ticketTypes.map(tt => {
@@ -130,8 +130,8 @@ export default function EventPage() {
                 function availLabel() {
                   if (soldOut) return null
                   if (avail <= tt.quantity / 4) return { text: 'Almost sold out!', color: '#ef4444' }
-                  if (avail <= tt.quantity / 2) return { text: 'Selling fast — grab yours', color: '#f59e0b' }
-                  return { text: 'Tickets available', color: '#94a3b8' }
+                  if (avail <= tt.quantity / 2) return { text: 'Selling fast — grab yours', color: '#d97706' }
+                  return { text: 'Tickets available', color: '#6B6355' }
                 }
                 const label = availLabel()
                 return (
@@ -140,16 +140,16 @@ export default function EventPage() {
                     disabled={soldOut}
                     onClick={() => { setSelected(tt.id); setQty(1) }}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition text-left
-                      ${soldOut ? 'border-slate-800 opacity-40 cursor-not-allowed' : selected === tt.id ? 'border-primary bg-primary/10' : 'border-slate-700 hover:border-slate-500'}`}
+                      ${soldOut ? 'border-gray-100 opacity-40 cursor-not-allowed' : selected === tt.id ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-400'}`}
                   >
                     <div>
-                      <p className="text-slate-100 font-medium text-sm">{tt.name}</p>
+                      <p className="text-gray-900 font-medium text-sm">{tt.name}</p>
                       {soldOut
-                        ? <p className="text-red-400 text-xs font-medium">Sold out</p>
+                        ? <p className="text-red-500 text-xs font-medium">Sold out</p>
                         : <p className="text-xs font-medium" style={{ color: label.color }}>{label.text}</p>
                       }
                     </div>
-                    <p className="font-heading font-bold text-slate-100">
+                    <p className="font-heading font-bold text-gray-900">
                       {tt.price === 0 ? 'Free' : `$${Number(tt.price).toFixed(2)}`}
                     </p>
                   </button>
@@ -161,12 +161,12 @@ export default function EventPage() {
             {selectedType && available > 0 && (
               <div className="flex items-center gap-4 pt-2">
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-full border border-slate-700 text-slate-100 hover:border-primary transition flex items-center justify-center text-lg">−</button>
-                  <span className="w-8 text-center text-slate-100 font-medium">{qty}</span>
-                  <button onClick={() => setQty(q => Math.min(available, q + 1))} className="w-8 h-8 rounded-full border border-slate-700 text-slate-100 hover:border-primary transition flex items-center justify-center text-lg">+</button>
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">−</button>
+                  <span className="w-8 text-center text-gray-900 font-medium">{qty}</span>
+                  <button onClick={() => setQty(q => Math.min(available, q + 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">+</button>
                 </div>
                 <button
-                  className="flex-1 bg-gradient-to-r from-accent to-orange-400 hover:opacity-90 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-accent/20 text-sm"
+                  className="flex-1 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-primary/20 text-sm"
                   onClick={() => navigate(`/checkout/${eventId}?tt=${selected}&qty=${qty}`)}
                 >
                   {selectedType.price === 0 ? 'Register free' : `Buy · $${(selectedType.price * qty).toFixed(2)}`}

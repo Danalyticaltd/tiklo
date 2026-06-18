@@ -70,29 +70,29 @@ export default function CheckIn() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-8">
-        <Link to="/dashboard" className="flex items-center gap-1.5 text-sm text-muted hover:text-slate-100 mb-6">
+        <Link to="/dashboard" className="flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 mb-6">
           <ArrowLeft size={14} /> Back to dashboard
         </Link>
 
-        <h1 className="font-heading text-2xl font-bold text-slate-100 mb-1">Check-In Scanner</h1>
+        <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">Check-In Scanner</h1>
         {event && <p className="text-muted text-sm mb-6">{event.title}</p>}
 
         {/* Scanner */}
-        <div className="bg-surface rounded-2xl overflow-hidden mb-6">
+        <div className="bg-white rounded-2xl overflow-hidden mb-6 border border-gray-100 shadow-sm">
           <div id="qr-reader" className="w-full" />
         </div>
 
         {/* Result */}
         {result && (
-          <div className={`rounded-2xl p-5 flex items-start gap-4 ${result.ok ? 'bg-green-500/10 border border-green-500/30' : 'bg-red-500/10 border border-red-500/30'}`}>
+          <div className={`rounded-2xl p-5 flex items-start gap-4 ${result.ok ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
             {result.ok
-              ? <CheckCircle size={28} className="text-green-400 shrink-0 mt-0.5" />
-              : <XCircle size={28} className="text-red-400 shrink-0 mt-0.5" />}
+              ? <CheckCircle size={28} className="text-green-500 shrink-0 mt-0.5" />
+              : <XCircle size={28} className="text-red-500 shrink-0 mt-0.5" />}
             <div>
-              <p className={`font-semibold text-lg ${result.ok ? 'text-green-300' : 'text-red-300'}`}>{result.message}</p>
+              <p className={`font-semibold text-lg ${result.ok ? 'text-green-700' : 'text-red-700'}`}>{result.message}</p>
               {result.ticket && (
                 <div className="mt-2 text-sm text-muted space-y-0.5">
-                  <p><span className="text-slate-300">{result.ticket.buyer_name}</span></p>
+                  <p><span className="text-gray-700">{result.ticket.buyer_name}</span></p>
                   <p>{result.ticket.ticket_types?.name}</p>
                   <p className="font-mono text-xs">{result.ticket.id.slice(0, 8).toUpperCase()}</p>
                 </div>

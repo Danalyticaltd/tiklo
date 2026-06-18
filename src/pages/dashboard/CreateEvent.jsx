@@ -99,18 +99,18 @@ export default function CreateEvent() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-muted hover:text-slate-100 text-sm mb-6 transition">
+        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-6 transition">
           <ArrowLeft size={14} /> Back to dashboard
         </Link>
 
-        <h1 className="font-heading text-3xl font-bold text-slate-100 mb-8">Create event</h1>
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-8">Create event</h1>
 
-        {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm mb-6">{error}</div>}
+        {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-6">{error}</div>}
 
         <form className="space-y-6">
           {/* Basic info */}
-          <div className="bg-surface rounded-2xl p-6 space-y-4">
-            <h2 className="font-heading font-bold text-slate-100">Event details</h2>
+          <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
+            <h2 className="font-heading font-bold text-gray-900">Event details</h2>
 
             <Input
               label="Event title *"
@@ -125,7 +125,7 @@ export default function CreateEvent() {
                 rows={4}
                 placeholder="Tell people what to expect..."
                 {...register('description')}
-                className="bg-bg border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-primary transition resize-none"
+                className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition resize-none"
               />
             </div>
 
@@ -135,9 +135,9 @@ export default function CreateEvent() {
                 <input
                   type="datetime-local"
                   {...register('event_date', { required: 'Date is required' })}
-                  className="bg-bg border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-primary transition [color-scheme:dark]"
+                  className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]"
                 />
-                {errors.event_date && <p className="text-red-400 text-xs">{errors.event_date.message}</p>}
+                {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
               </div>
 
               <Select label="City *" {...register('city', { required: true })}>
@@ -158,8 +158,8 @@ export default function CreateEvent() {
           </div>
 
           {/* Banner upload */}
-          <div className="bg-surface rounded-2xl p-6 space-y-4">
-            <h2 className="font-heading font-bold text-slate-100">Banner image</h2>
+          <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
+            <h2 className="font-heading font-bold text-gray-900">Banner image</h2>
             <label className="block cursor-pointer">
               {bannerPreview ? (
                 <div className="relative rounded-xl overflow-hidden h-48">
@@ -169,10 +169,10 @@ export default function CreateEvent() {
                   </div>
                 </div>
               ) : (
-                <div className="h-48 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary transition text-muted">
+                <div className="h-48 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary transition text-muted">
                   <Upload size={24} />
                   <span className="text-sm">Click to upload banner</span>
-                  <span className="text-xs text-slate-600">PNG, JPG up to 5 MB · 16:9 recommended</span>
+                  <span className="text-xs text-gray-400">PNG, JPG up to 5 MB · 16:9 recommended</span>
                 </div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={handleBannerChange} />
@@ -180,9 +180,9 @@ export default function CreateEvent() {
           </div>
 
           {/* Ticket types */}
-          <div className="bg-surface rounded-2xl p-6 space-y-4">
+          <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading font-bold text-slate-100">Ticket types</h2>
+              <h2 className="font-heading font-bold text-gray-900">Ticket types</h2>
               <button
                 type="button"
                 onClick={() => append({ name: '', price: 0, quantity: 100 })}
@@ -212,7 +212,7 @@ export default function CreateEvent() {
 
           {/* Actions */}
           {Object.keys(errors).length > 0 && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
               Please fix the errors above before continuing.
             </div>
           )}

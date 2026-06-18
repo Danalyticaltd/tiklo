@@ -46,8 +46,8 @@ export default function TicketConfirm() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 bg-surface rounded-full animate-pulse mx-auto mb-4" />
-        <div className="h-6 bg-surface rounded w-1/2 mx-auto animate-pulse" />
+        <div className="w-16 h-16 bg-gray-100 rounded-full animate-pulse mx-auto mb-4" />
+        <div className="h-6 bg-gray-100 rounded w-1/2 mx-auto animate-pulse" />
       </div>
     </div>
   )
@@ -61,15 +61,15 @@ export default function TicketConfirm() {
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* Success banner */}
         <div className="text-center mb-8">
-          <CheckCircle size={52} className="text-green-400 mx-auto mb-3" />
-          <h1 className="font-heading text-3xl font-bold text-slate-100">You're in!</h1>
-          <p className="text-muted mt-1">Your tickets have been sent to <span className="text-slate-100">{order?.buyer_email}</span></p>
+          <CheckCircle size={52} className="text-green-500 mx-auto mb-3" />
+          <h1 className="font-heading text-3xl font-bold text-gray-900">You're in!</h1>
+          <p className="text-muted mt-1">Your tickets have been sent to <span className="text-gray-900">{order?.buyer_email}</span></p>
         </div>
 
         {/* Event info */}
         {event && (
-          <div className="bg-surface rounded-2xl p-5 mb-6">
-            <h2 className="font-heading font-bold text-slate-100 text-lg">{event.title}</h2>
+          <div className="bg-white rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm">
+            <h2 className="font-heading font-bold text-gray-900 text-lg">{event.title}</h2>
             <p className="text-muted text-sm mt-1">{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy · h:mm a')}</p>
             {event.location && <p className="text-muted text-sm">{event.location}</p>}
           </div>
@@ -78,19 +78,19 @@ export default function TicketConfirm() {
         {/* QR tickets */}
         <div className="space-y-4">
           {tickets.map((ticket, i) => (
-            <div key={ticket.id} className="bg-surface rounded-2xl p-6 text-center">
+            <div key={ticket.id} className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
               <p className="text-muted text-xs uppercase tracking-wider mb-1">
                 {ticketTypeName} — Ticket {tickets.length > 1 ? `${i + 1} of ${tickets.length}` : ''}
               </p>
-              <p className="font-semibold text-slate-100 mb-4">{order?.buyer_name}</p>
+              <p className="font-semibold text-gray-900 mb-4">{order?.buyer_name}</p>
               {qrCodes[ticket.id] && (
-                <div className="bg-white rounded-xl p-3 inline-block mb-4">
+                <div className="bg-white rounded-xl p-3 inline-block mb-4 border border-gray-100">
                   <img src={qrCodes[ticket.id]} alt="QR Code" width={200} height={200} />
                 </div>
               )}
               <p className="text-muted text-xs font-mono">{ticket.id.slice(0, 8).toUpperCase()}</p>
               {ticket.checked_in && (
-                <p className="text-green-400 text-xs mt-2 font-medium">✓ Checked in</p>
+                <p className="text-green-600 text-xs mt-2 font-medium">✓ Checked in</p>
               )}
             </div>
           ))}
