@@ -118,15 +118,11 @@ export default async function handler(req, res) {
 
     if (!ticketType) return res.status(404).json({ error: 'Ticket type not found' })
 
-    const available = ticketType.quantity - ticketType.quantity_sold
-    if (available < quantity) {
-      return res.status(400).json({ error: available === 0 ? 'Sold out' : `Only ${available} ticket${available > 1 ? 's' : ''} remaining` })
-    }
-
     const unitAmount = Math.round(ticketType.price * 100) // cents
     const subtotal = ticketType.price * quantity
     const platformFeeCents = calcFee(ticketType.price, quantity)
 
+    // Create the order first (pending), then atomically reserve tickets.
     const { data: order, error: orderErr } = await supabase.from('orders').insert({
       event_id,
       ticket_type_id,
@@ -139,6 +135,20 @@ export default async function handler(req, res) {
     }).select().single()
 
     if (orderErr) throw orderErr
+
+    // ── Atomic reservation — single UPDATE, no race window ──
+    const { data: reserved, error: reserveErr } = await supabase.rpc('try_reserve_tickets', {
+      p_ticket_type_id: ticket_type_id,
+      p_quantity: quantity,
+    })
+
+    if (reserveErr || !reserved) {
+      // Clean up the pending order we just created
+      await supabase.from('orders').delete().eq('id', order.id)
+      const { data: tt } = await supabase.from('ticket_types').select('quantity, quantity_sold').eq('id', ticket_type_id).single()
+      const left = tt ? tt.quantity - tt.quantity_sold : 0
+      return res.status(409).json({ error: left === 0 ? 'Sold out' : `Only ${left} ticket${left > 1 ? 's' : ''} remaining` })
+    }
 
     // ── Free tickets: fulfil immediately (no Stripe) ──
     if (unitAmount === 0) {
@@ -158,14 +168,8 @@ export default async function handler(req, res) {
 
       if (ticketErr) throw ticketErr
 
-      // Mark order paid and increment sold count
-      await Promise.all([
-        supabase.from('orders').update({ status: 'paid' }).eq('id', order.id),
-        supabase.rpc('increment_quantity_sold', {
-          p_ticket_type_id: ticket_type_id,
-          p_quantity: quantity,
-        }),
-      ])
+      // Mark order paid (quantity_sold already incremented by try_reserve_tickets)
+      await supabase.from('orders').update({ status: 'paid' }).eq('id', order.id)
 
       // Send confirmation email (non-blocking — don't fail the request if email fails)
       const fullOrder = {
