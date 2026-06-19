@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+﻿import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Plus, QrCode, BarChart2, RefreshCw } from 'lucide-react'
+import { Plus, QrCode, BarChart2, RefreshCw, Pencil, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/Navbar'
@@ -10,9 +10,12 @@ import Button from '../../components/ui/Button'
 
 export default function Dashboard() {
   const { user, profile } = useAuth()
+  const navigate = useNavigate()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(null) // event to confirm delete
+  const [deleting, setDeleting] = useState(false)
 
   async function fetchEvents() {
     const { data } = await supabase
@@ -47,6 +50,23 @@ export default function Dashboard() {
     setEvents(prev => prev.map(e => e.id === event.id ? { ...e, status: next } : e))
   }
 
+  async function handleDelete(event) {
+    setDeleting(true)
+    try {
+      // Cascade: tickets -> orders -> ticket_types -> events
+      await supabase.from('tickets').delete().eq('event_id', event.id)
+      await supabase.from('orders').delete().eq('event_id', event.id)
+      await supabase.from('ticket_types').delete().eq('event_id', event.id)
+      await supabase.from('events').delete().eq('id', event.id)
+      setEvents(prev => prev.filter(e => e.id !== event.id))
+      setConfirmDelete(null)
+    } catch (err) {
+      alert('Delete failed: ' + err.message)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
@@ -71,6 +91,33 @@ export default function Dashboard() {
         {profile && !profile.approved && (
           <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-3 text-sm mb-6">
             Your account is pending admin approval. You can create events but won't be able to publish until approved.
+          </div>
+        )}
+
+        {/* Delete confirmation modal */}
+        {confirmDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+              <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Delete event?</h3>
+              <p className="text-muted text-sm mb-2">
+                <span className="font-semibold text-gray-800">{confirmDelete.title}</span> will be permanently deleted.
+              </p>
+              {totalSold(confirmDelete) > 0 && (
+                <p className="text-amber-700 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+                  Warning: {totalSold(confirmDelete)} ticket{totalSold(confirmDelete) !== 1 ? 's' : ''} have already been sold. Deleting will not automatically refund buyers.
+                </p>
+              )}
+              <div className="flex gap-3 justify-end mt-4">
+                <Button variant="secondary" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+                <button
+                  onClick={() => handleDelete(confirmDelete)}
+                  disabled={deleting}
+                  className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition disabled:opacity-60"
+                >
+                  {deleting ? 'Deleting…' : 'Delete'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -119,12 +166,22 @@ export default function Dashboard() {
                   >
                     {event.status === 'published' ? 'Unpublish' : 'Publish'}
                   </button>
+                  <Link to={`/dashboard/events/${event.id}/edit`} title="Edit event">
+                    <Button variant="secondary" size="sm"><Pencil size={14} /></Button>
+                  </Link>
                   <Link to={`/checkin/${event.id}`} title="Check-in scanner">
                     <Button variant="secondary" size="sm"><QrCode size={14} /></Button>
                   </Link>
                   <Link to={`/dashboard/events/${event.id}`} title="View stats">
                     <Button variant="secondary" size="sm"><BarChart2 size={14} /></Button>
                   </Link>
+                  <button
+                    onClick={() => setConfirmDelete(event)}
+                    title="Delete event"
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             ))}

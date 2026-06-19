@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+﻿import { useEffect, useState } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download, Pencil, Trash2 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/Navbar'
@@ -9,10 +9,13 @@ import Button from '../../components/ui/Button'
 
 export default function EventDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [event, setEvent] = useState(null)
   const [ticketTypes, setTicketTypes] = useState([])
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -51,8 +54,23 @@ export default function EventDetail() {
     URL.revokeObjectURL(url)
   }
 
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await supabase.from('tickets').delete().eq('event_id', id)
+      await supabase.from('orders').delete().eq('event_id', id)
+      await supabase.from('ticket_types').delete().eq('event_id', id)
+      await supabase.from('events').delete().eq('id', id)
+      navigate('/dashboard')
+    } catch (err) {
+      alert('Delete failed: ' + err.message)
+      setDeleting(false)
+    }
+  }
+
   const totalRevenue = orders.reduce((s, o) => s + Number(o.subtotal ?? 0), 0)
   const totalSold = orders.reduce((s, o) => s + (o.quantity ?? 0), 0)
+  const totalSoldCount = ticketTypes.reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
 
   const chartData = ticketTypes.map(tt => ({
     name: tt.name,
@@ -72,6 +90,34 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Delete event?</h3>
+            <p className="text-muted text-sm mb-2">
+              <span className="font-semibold text-gray-800">{event?.title}</span> will be permanently deleted.
+            </p>
+            {totalSoldCount > 0 && (
+              <p className="text-amber-700 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+                Warning: {totalSoldCount} ticket{totalSoldCount !== 1 ? 's' : ''} have already been sold. Deleting will not automatically refund buyers.
+              </p>
+            )}
+            <div className="flex gap-3 justify-end mt-4">
+              <Button variant="secondary" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition disabled:opacity-60"
+              >
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link to="/dashboard" className="flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 mb-6">
           <ArrowLeft size={14} /> Back to dashboard
@@ -82,7 +128,18 @@ export default function EventDetail() {
             <h1 className="font-heading text-2xl font-bold text-gray-900">{event?.title}</h1>
             <p className="text-muted text-sm mt-1">{event?.event_date && format(new Date(event.event_date), 'EEE, MMM d, yyyy · h:mm a')} · {event?.city}</p>
           </div>
-          <Button variant="secondary" onClick={exportCsv}><Download size={14} className="mr-1.5" />Export CSV</Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to={`/dashboard/events/${id}/edit`}>
+              <Button variant="secondary"><Pencil size={14} className="mr-1.5" />Edit</Button>
+            </Link>
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:border-red-400 hover:text-red-500 transition font-medium"
+            >
+              <Trash2 size={14} />Delete
+            </button>
+            <Button variant="secondary" onClick={exportCsv}><Download size={14} className="mr-1.5" />Export CSV</Button>
+          </div>
         </div>
 
         {/* Stats cards */}

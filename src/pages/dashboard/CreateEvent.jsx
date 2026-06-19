@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { Plus, ArrowLeft, Upload } from 'lucide-react'
@@ -13,6 +13,8 @@ import TicketTypeRow from '../../components/TicketTypeRow'
 const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver', 'Edmonton', 'Winnipeg', 'Halifax']
 const TAGS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 
+const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+
 export default function CreateEvent() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -21,8 +23,10 @@ export default function CreateEvent() {
   const [bannerPreview, setBannerPreview] = useState(null)
   const [error, setError] = useState(null)
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
-    mode: 'onTouched',
+  const locationInputRef = useRef(null)
+
+  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm({
+    mode: 'onChange',
     shouldFocusError: true,
     defaultValues: {
       title: '',
@@ -36,6 +40,37 @@ export default function CreateEvent() {
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'ticket_types' })
+
+  const initAutocomplete = useCallback(() => {
+    if (!locationInputRef.current || !window.google?.maps?.places) return
+    const ac = new window.google.maps.places.Autocomplete(locationInputRef.current, {
+      types: ['establishment', 'geocode'],
+      componentRestrictions: { country: 'ca' },
+    })
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace()
+      const addr = place.formatted_address || place.name || ''
+      if (addr) setValue('location', addr, { shouldValidate: true })
+    })
+  }, [setValue])
+
+  useEffect(() => {
+    if (!GMAPS_KEY) return
+    if (window.google?.maps?.places) { initAutocomplete(); return }
+    if (document.getElementById('gmaps-places-script')) {
+      window.__gmapsCallback = initAutocomplete
+      return
+    }
+    window.__gmapsCallback = initAutocomplete
+    const script = document.createElement('script')
+    script.id = 'gmaps-places-script'
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&libraries=places&callback=__gmapsCallback`
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
+  }, [initAutocomplete])
+
+  const { ref: rhfLocationRef, ...locationRest } = register('location')
 
   function handleBannerChange(e) {
     const file = e.target.files?.[0]
@@ -58,7 +93,6 @@ export default function CreateEvent() {
     setError(null)
     setSaving(true)
     try {
-      // 1. Insert event
       const { data: event, error: eventErr } = await supabase.from('events').insert({
         organizer_id: user.id,
         title: data.title,
@@ -71,13 +105,11 @@ export default function CreateEvent() {
       }).select().single()
       if (eventErr) throw eventErr
 
-      // 2. Upload banner
       const bannerUrl = await uploadBanner(event.id)
       if (bannerUrl) {
         await supabase.from('events').update({ banner_url: bannerUrl }).eq('id', event.id)
       }
 
-      // 3. Insert ticket types
       const ticketInserts = data.ticket_types.map(tt => ({
         event_id: event.id,
         name: tt.name,
@@ -108,7 +140,6 @@ export default function CreateEvent() {
         {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-6">{error}</div>}
 
         <form className="space-y-6">
-          {/* Basic info */}
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
             <h2 className="font-heading font-bold text-gray-900">Event details</h2>
 
@@ -146,18 +177,26 @@ export default function CreateEvent() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Venue / location"
-                placeholder="e.g. Shaw Centre, 55 Colonel By"
-                {...register('location')}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-muted">Venue / location</label>
+                <input
+                  {...locationRest}
+                  ref={(el) => {
+                    rhfLocationRef(el)
+                    locationInputRef.current = el
+                  }}
+                  placeholder="e.g. Shaw Centre, 55 Colonel By"
+                  autoComplete="off"
+                  className={`bg-white border ${errors.location ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition`}
+                />
+                {errors.location && <p className="text-red-500 text-xs">{errors.location.message}</p>}
+              </div>
               <Select label="Community" {...register('community_tag')}>
                 {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
               </Select>
             </div>
           </div>
 
-          {/* Banner upload */}
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
             <h2 className="font-heading font-bold text-gray-900">Banner image</h2>
             <label className="block cursor-pointer">
@@ -179,7 +218,6 @@ export default function CreateEvent() {
             </label>
           </div>
 
-          {/* Ticket types */}
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="font-heading font-bold text-gray-900">Ticket types</h2>
@@ -210,7 +248,6 @@ export default function CreateEvent() {
             </div>
           </div>
 
-          {/* Actions */}
           {Object.keys(errors).length > 0 && (
             <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
               Please fix the errors above before continuing.
