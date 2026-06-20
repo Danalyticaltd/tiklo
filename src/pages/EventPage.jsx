@@ -163,7 +163,7 @@ export default function EventPage() {
             {selectedType && available > 0 && (
               <div className="flex items-center gap-4 pt-2">
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">âˆ’</button>
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">-</button>
                   <span className="w-8 text-center text-gray-900 font-medium">{qty}</span>
                   <button onClick={() => setQty(q => Math.min(available, q + 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">+</button>
                 </div>
