@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
 // Public pages
@@ -23,7 +23,7 @@ import AdminOrganizers from './pages/admin/AdminOrganizers'
 
 function ProtectedRoute({ children, requiredRole }) {
   const { user, profile, loading } = useAuth()
-  if (loading) return <div className="min-h-screen bg-bg flex items-center justify-center text-muted">Loadingâ€¦</div>
+  if (loading) return <div className="min-h-screen bg-bg flex items-center justify-center text-muted">Loading...</div>
   if (!user) return <Navigate to="/login" replace />
   if (requiredRole && profile?.role !== requiredRole) return <Navigate to="/dashboard" replace />
   return children
