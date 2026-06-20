@@ -113,18 +113,6 @@ export default function Home() {
         <WordOfDay />
       </div>
 
-      {/* Hot right now */}
-      {!isFiltered && hotEvents.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 mb-12">
-          <div className="flex items-center gap-2 mb-5">
-            <Flame size={18} className="text-orange-500" />
-            <h2 className="font-heading font-bold text-gray-900 text-xl">Hot right now</h2>
-            <span className="text-muted text-sm">— selling fast</span>
-          </div>
-          <EventCarousel events={hotEvents} />
-        </div>
-      )}
-
       {/* Search + Filters */}
       <div className="max-w-6xl mx-auto px-4 pb-6">
         <div className="flex flex-col sm:flex-row gap-3">
@@ -146,6 +134,18 @@ export default function Home() {
           </select>
         </div>
       </div>
+
+      {/* Hot right now — first section after search */}
+      {!isFiltered && hotEvents.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 pt-4 mb-12">
+          <div className="flex items-center gap-2 mb-5">
+            <Flame size={18} className="text-orange-500" />
+            <h2 className="font-heading font-bold text-gray-900 text-xl">Hot right now</h2>
+            <span className="text-muted text-sm">— selling fast</span>
+          </div>
+          <EventCarousel events={hotEvents} />
+        </div>
+      )}
 
       {/* Event sections */}
       <div className="max-w-6xl mx-auto px-4 pb-16 space-y-14">
