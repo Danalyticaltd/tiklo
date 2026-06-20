@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { format } from 'date-fns'
@@ -25,10 +25,10 @@ export default function EventPage() {
       setEvent(ev)
 
       // Dynamic SEO meta tags
-      document.title = `${ev.title} — Tiklo`
-      setMeta('description', ev.description ?? `${ev.title} — Buy tickets on Tiklo`)
+      document.title = `${ev.title} â€” Tiklo`
+      setMeta('description', ev.description ?? `${ev.title} â€” Buy tickets on Tiklo`)
       setMeta('og:title', ev.title)
-      setMeta('og:description', ev.description ?? `${ev.title} — Buy tickets on Tiklo`)
+      setMeta('og:description', ev.description ?? `${ev.title} â€” Buy tickets on Tiklo`)
       setMeta('og:url', `https://tiklo.ca/events/${eventId}`)
       setMeta('og:type', 'event')
       if (ev.banner_url) setMeta('og:image', ev.banner_url)
@@ -43,8 +43,8 @@ export default function EventPage() {
     }
     load()
     return () => {
-      document.title = 'Tiklo — Event Ticketing'
-      setMeta('og:title', 'Tiklo — Event Ticketing')
+      document.title = 'Tiklo â€” Event Ticketing'
+      setMeta('og:title', 'Tiklo â€” Event Ticketing')
     }
   }, [eventId, navigate])
 
@@ -74,10 +74,12 @@ export default function EventPage() {
     <div className="min-h-screen bg-bg">
       <Navbar />
 
-      {/* Banner */}
+      {/* Flyer / banner */}
       {event.banner_url && (
-        <div className="w-full max-h-80 overflow-hidden">
-          <img src={event.banner_url} alt={event.title} className="w-full object-cover max-h-80" />
+        <div className="max-w-3xl mx-auto px-4 pt-6 flex flex-col sm:flex-row gap-6 items-start">
+          <div className="shrink-0 w-full sm:w-52">
+            <img src={event.banner_url} alt={event.title} className="w-full rounded-2xl object-cover shadow-lg border border-gray-100" style={{ maxHeight: 320 }} />
+          </div>
         </div>
       )}
 
@@ -93,7 +95,7 @@ export default function EventPage() {
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-muted text-sm">
               <Calendar size={15} />
-              <span>{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy · h:mm a')}</span>
+              <span>{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy Â· h:mm a')}</span>
             </div>
             {event.location && (
               <div className="flex items-center gap-2 text-muted text-sm">
@@ -130,7 +132,7 @@ export default function EventPage() {
                 function availLabel() {
                   if (soldOut) return null
                   if (avail <= tt.quantity / 4) return { text: 'Almost sold out!', color: '#ef4444' }
-                  if (avail <= tt.quantity / 2) return { text: 'Selling fast — grab yours', color: '#d97706' }
+                  if (avail <= tt.quantity / 2) return { text: 'Selling fast â€” grab yours', color: '#d97706' }
                   return { text: 'Tickets available', color: '#6B6355' }
                 }
                 const label = availLabel()
@@ -161,7 +163,7 @@ export default function EventPage() {
             {selectedType && available > 0 && (
               <div className="flex items-center gap-4 pt-2">
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">−</button>
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">âˆ’</button>
                   <span className="w-8 text-center text-gray-900 font-medium">{qty}</span>
                   <button onClick={() => setQty(q => Math.min(available, q + 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">+</button>
                 </div>
@@ -169,7 +171,7 @@ export default function EventPage() {
                   className="flex-1 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-primary/20 text-sm"
                   onClick={() => navigate(`/checkout/${eventId}?tt=${selected}&qty=${qty}`)}
                 >
-                  {selectedType.price === 0 ? 'Register free' : `Buy · $${(selectedType.price * qty).toFixed(2)}`}
+                  {selectedType.price === 0 ? 'Register free' : `Buy Â· $${(selectedType.price * qty).toFixed(2)}`}
                 </button>
               </div>
             )}
@@ -179,3 +181,4 @@ export default function EventPage() {
     </div>
   )
 }
+

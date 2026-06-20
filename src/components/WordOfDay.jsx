@@ -1,4 +1,4 @@
-﻿// Rotating cultural word of the week — picks by ISO week number
+﻿// Rotating cultural word of the day — picks by day of year
 const WORDS = [
   { word: 'Jambo', lang: 'Swahili', community: 'African', meaning: 'Hello / How are you', pronunciation: 'JAM-bo', flag: '🌍' },
   { word: 'Liming', lang: 'Trinidad Patois', community: 'Caribbean', meaning: 'Hanging out with friends, doing nothing in particular — pure vibes', pronunciation: 'LI-ming', flag: '🏝' },
@@ -22,12 +22,10 @@ const WORDS = [
   { word: 'Diaspora', lang: 'Greek', community: 'All', meaning: 'The scattering — communities who carry their culture wherever they go', pronunciation: 'die-AS-po-rah', flag: '🌐' },
 ]
 
-function getISOWeek(date) {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  d.setDate(d.getDate() + 4 - (d.getDay() || 7))
-  const yearStart = new Date(d.getFullYear(), 0, 1)
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
+function getDayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 0)
+  const diff = date - start
+  return Math.floor(diff / 86400000)
 }
 
 const communityColors = {
@@ -38,9 +36,9 @@ const communityColors = {
   All: 'from-purple-50 to-indigo-100 border-purple-200 text-purple-800',
 }
 
-export default function WordOfWeek() {
-  const week = getISOWeek(new Date())
-  const word = WORDS[week % WORDS.length]
+export default function WordOfDay() {
+  const day = getDayOfYear(new Date())
+  const word = WORDS[day % WORDS.length]
   const colorClass = communityColors[word.community] || communityColors.All
 
   return (
@@ -55,7 +53,7 @@ export default function WordOfWeek() {
         <p className="text-sm mt-0.5 opacity-80 line-clamp-1">{word.meaning}</p>
       </div>
       <div className="shrink-0 text-right hidden sm:block">
-        <p className="text-xs font-semibold opacity-60 uppercase tracking-wide">Word of the week</p>
+        <p className="text-xs font-semibold opacity-60 uppercase tracking-wide">Word of the day</p>
         <p className="text-xs opacity-50">{word.community}</p>
       </div>
     </div>

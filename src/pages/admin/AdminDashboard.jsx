@@ -1,37 +1,56 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, TicketIcon, DollarSign, CalendarDays } from 'lucide-react'
+import { format } from 'date-fns'
+import { Users, TicketIcon, DollarSign, CalendarDays, CheckCircle, XCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/Navbar'
+import Button from '../../components/ui/Button'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
   const [recentOrders, setRecentOrders] = useState([])
+  const [pendingEvents, setPendingEvents] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function load() {
-      const [
-        { count: organizerCount },
-        { count: eventCount },
-        { data: orders },
-        { count: pendingCount },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'organizer').eq('approved', true),
-        supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-        supabase.from('orders').select('*, events(title), ticket_types(name)').eq('status', 'paid').order('created_at', { ascending: false }).limit(10),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'organizer').eq('approved', false),
-      ])
+  async function load() {
+    const [
+      { count: organizerCount },
+      { count: eventCount },
+      { data: orders },
+      { count: pendingOrgCount },
+      { data: pendEvts },
+    ] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'organizer').eq('approved', true),
+      supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+      supabase.from('orders').select('*, events(title), ticket_types(name)').eq('status', 'paid').order('created_at', { ascending: false }).limit(10),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'organizer').eq('approved', false),
+      supabase.from('events')
+        .select('*, profiles!organizer_id(full_name, email)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false }),
+    ])
 
-      const revenue = (orders ?? []).reduce((s, o) => s + Number(o.platform_fee ?? 0), 0)
-      const tickets = (orders ?? []).reduce((s, o) => s + (o.quantity ?? 0), 0)
+    const revenue = (orders ?? []).reduce((s, o) => s + Number(o.platform_fee ?? 0), 0)
+    const tickets = (orders ?? []).reduce((s, o) => s + (o.quantity ?? 0), 0)
 
-      setStats({ organizerCount, eventCount, revenue, tickets, pendingCount })
-      setRecentOrders(orders ?? [])
-      setLoading(false)
-    }
-    load()
-  }, [])
+    setStats({ organizerCount, eventCount, revenue, tickets, pendingOrgCount })
+    setRecentOrders(orders ?? [])
+    setPendingEvents(pendEvts ?? [])
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
+
+  async function approveEvent(id) {
+    await supabase.from('events').update({ status: 'published' }).eq('id', id)
+    setPendingEvents(prev => prev.filter(e => e.id !== id))
+    setStats(s => s ? { ...s, eventCount: (s.eventCount ?? 0) + 1 } : s)
+  }
+
+  async function rejectEvent(id) {
+    await supabase.from('events').update({ status: 'draft' }).eq('id', id)
+    setPendingEvents(prev => prev.filter(e => e.id !== id))
+  }
 
   return (
     <div className="min-h-screen bg-bg">
@@ -47,9 +66,9 @@ export default function AdminDashboard() {
             className="relative inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-lg shadow-primary/20"
           >
             <Users size={15} /> Manage organizers
-            {stats?.pendingCount > 0 && (
+            {stats?.pendingOrgCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {stats.pendingCount}
+                {stats.pendingOrgCount}
               </span>
             )}
           </Link>
@@ -83,6 +102,50 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Pending event approvals */}
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm mb-6">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="font-semibold text-gray-900">Events pending approval</h2>
+            {pendingEvents.length > 0 && (
+              <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">{pendingEvents.length}</span>
+            )}
+          </div>
+          {pendingEvents.length === 0 ? (
+            <p className="text-center text-muted py-10 text-sm">All caught up — no events waiting for review.</p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {pendingEvents.map(ev => (
+                <div key={ev.id} className="px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 truncate">{ev.title}</p>
+                    <p className="text-muted text-xs mt-0.5">
+                      {format(new Date(ev.event_date), 'EEE, MMM d, yyyy')} · {ev.city} · {ev.community_tag}
+                    </p>
+                    <p className="text-muted text-xs">
+                      By {ev.profiles?.full_name ?? 'Unknown'} ({ev.profiles?.email})
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link to={`/events/${ev.id}`} target="_blank" className="text-xs text-accent underline">Preview</Link>
+                    <button
+                      onClick={() => approveEvent(ev.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 text-xs font-semibold transition"
+                    >
+                      <CheckCircle size={13} /> Approve
+                    </button>
+                    <button
+                      onClick={() => rejectEvent(ev.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold transition"
+                    >
+                      <XCircle size={13} /> Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Recent orders */}
         <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">

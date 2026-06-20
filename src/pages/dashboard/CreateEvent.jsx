@@ -101,7 +101,7 @@ export default function CreateEvent() {
         city: data.city,
         community_tag: data.community_tag,
         event_date: data.event_date,
-        status: publish ? 'published' : 'draft',
+        status: publish ? 'pending' : 'draft',
       }).select().single()
       if (eventErr) throw eventErr
 
@@ -198,7 +198,7 @@ export default function CreateEvent() {
           </div>
 
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900">Banner image</h2>
+            <h2 className="font-heading font-bold text-gray-900">Event flyer / poster</h2>
             <label className="block cursor-pointer">
               {bannerPreview ? (
                 <div className="relative rounded-xl overflow-hidden h-48">
@@ -210,8 +210,8 @@ export default function CreateEvent() {
               ) : (
                 <div className="h-48 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary transition text-muted">
                   <Upload size={24} />
-                  <span className="text-sm">Click to upload banner</span>
-                  <span className="text-xs text-gray-400">PNG, JPG up to 5 MB · 16:9 recommended</span>
+                  <span className="text-sm">Click to upload your event flyer</span>
+                  <span className="text-xs text-gray-400">PNG, JPG up to 5 MB · Portrait poster works great</span>
                 </div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={handleBannerChange} />
@@ -266,7 +266,7 @@ export default function CreateEvent() {
               disabled={saving}
               onClick={handleSubmit(data => onSubmit(data, true), () => {})}
             >
-              {saving ? 'Publishing…' : 'Publish event'}
+              {saving ? 'Submitting…' : 'Submit for approval'}
             </Button>
           </div>
         </form>
@@ -274,3 +274,4 @@ export default function CreateEvent() {
     </div>
   )
 }
+
