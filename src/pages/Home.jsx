@@ -4,19 +4,12 @@ import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import EventCard from '../components/EventCard'
+import EventCarousel from '../components/EventCarousel'
 import WordOfDay from '../components/WordOfDay'
 
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
 const TAGS = ['All Communities', 'African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const COMMUNITY_ORDER = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
-
-const COMMUNITY_ICONS = {
-  African: '🌍',
-  Caribbean: '🏝',
-  'South Asian': '🪷',
-  Latin: '🌶',
-  Other: '🌐',
-}
 
 const HERO_WORDS = ['community', 'culture', 'people', 'diaspora', 'vibe']
 
@@ -66,11 +59,10 @@ export default function Home() {
       const sb = (b.ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
       return sb - sa
     })
-    .slice(0, 3)
+    .slice(0, 6)
 
   const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim()
 
-  // Group by community for the unfiltered view
   const byCommunity = COMMUNITY_ORDER
     .map(community => ({
       community,
@@ -78,7 +70,6 @@ export default function Home() {
     }))
     .filter(g => g.events.length > 0)
 
-  // Events not matching any community (edge case)
   const uncategorised = visible.filter(e => !COMMUNITY_ORDER.includes(e.community_tag))
 
   return (
@@ -124,15 +115,13 @@ export default function Home() {
 
       {/* Hot right now */}
       {!isFiltered && hotEvents.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 mb-10">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="max-w-6xl mx-auto px-4 mb-12">
+          <div className="flex items-center gap-2 mb-5">
             <Flame size={18} className="text-orange-500" />
             <h2 className="font-heading font-bold text-gray-900 text-xl">Hot right now</h2>
             <span className="text-muted text-sm">— selling fast</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {hotEvents.map(event => <EventCard key={event.id} event={event} featured />)}
-          </div>
+          <EventCarousel events={hotEvents} />
         </div>
       )}
 
@@ -159,7 +148,7 @@ export default function Home() {
       </div>
 
       {/* Event sections */}
-      <div className="max-w-6xl mx-auto px-4 pb-16 space-y-12">
+      <div className="max-w-6xl mx-auto px-4 pb-16 space-y-14">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
@@ -173,34 +162,26 @@ export default function Home() {
             <p className="text-gray-400 text-sm mt-1">Try a different search or filter.</p>
           </div>
         ) : isFiltered ? (
-          // Flat grid when searching or filtering
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {visible.map(event => <EventCard key={event.id} event={event} />)}
           </div>
         ) : (
-          // Sectioned by community
           <>
             {byCommunity.map(({ community, events: evts }) => (
-              <section key={community}>
+              <section key={community} className="relative px-6">
                 <div className="flex items-center gap-2 mb-5">
-                  <span className="text-2xl">{COMMUNITY_ICONS[community]}</span>
                   <h2 className="font-heading font-bold text-gray-900 text-xl">{community}</h2>
                   <span className="text-muted text-sm">· {evts.length} event{evts.length !== 1 ? 's' : ''}</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {evts.map(event => <EventCard key={event.id} event={event} />)}
-                </div>
+                <EventCarousel events={evts} />
               </section>
             ))}
             {uncategorised.length > 0 && (
-              <section>
+              <section className="relative px-6">
                 <div className="flex items-center gap-2 mb-5">
-                  <span className="text-2xl">🎟</span>
                   <h2 className="font-heading font-bold text-gray-900 text-xl">More events</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {uncategorised.map(event => <EventCard key={event.id} event={event} />)}
-                </div>
+                <EventCarousel events={uncategorised} />
               </section>
             )}
           </>
