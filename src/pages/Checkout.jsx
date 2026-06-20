@@ -166,7 +166,7 @@ export default function Checkout() {
             <h2 className="font-heading font-bold text-gray-900 mb-4">Payment</h2>
             <Elements
               stripe={stripePromise}
-              options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#DC5E3D' } } }}
+              options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#DC5E3D' } }, defaultValues: { billingDetails: { address: { country: 'CA' } } } }}
             >
               <CheckoutForm orderId={orderId} />
             </Elements>
