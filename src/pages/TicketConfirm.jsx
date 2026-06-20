@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { CheckCircle, Download } from 'lucide-react'
+import { CheckCircle, PartyPopper } from 'lucide-react'
 import QRCode from 'qrcode'
 import { format } from 'date-fns'
+import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
@@ -31,7 +32,6 @@ export default function TicketConfirm() {
         .eq('order_id', orderId)
       setTickets(tix ?? [])
 
-      // Generate QR data URLs
       const codes = {}
       for (const t of tix ?? []) {
         codes[t.id] = await QRCode.toDataURL(t.qr_code, { width: 220, margin: 1, color: { dark: '#000', light: '#fff' } })
@@ -54,33 +54,84 @@ export default function TicketConfirm() {
 
   const event = order?.events
   const ticketTypeName = order?.ticket_types?.name
+  const qty = tickets.length
+
+  const funLines = [
+    "You're officially on the list 🎉",
+    "See you on the dance floor 🕺💃",
+    "The party just got better 🔥",
+    "Your seat is reserved — don't be late! ⏰",
+  ]
+  const tagline = funLines[Math.floor(Math.random() * funLines.length)]
 
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-8">
-        {/* Success banner */}
-        <div className="text-center mb-8">
-          <CheckCircle size={52} className="text-green-500 mx-auto mb-3" />
-          <h1 className="font-heading text-3xl font-bold text-gray-900">You're in!</h1>
-          <p className="text-muted mt-1">Your tickets have been sent to <span className="text-gray-900">{order?.buyer_email}</span></p>
+
+        {/* Confetti animation strip */}
+        <div className="flex justify-center gap-1 mb-6 overflow-hidden h-6">
+          {['🎊','🎉','✨','🎈','🎊','✨','🎉','🎈','🎊'].map((e, i) => (
+            <motion.span
+              key={i}
+              initial={{ y: -40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: i * 0.08, type: 'spring', stiffness: 200 }}
+              className="text-xl"
+            >
+              {e}
+            </motion.span>
+          ))}
         </div>
+
+        {/* Success banner */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          className="text-center mb-8"
+        >
+          <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-200">
+            <CheckCircle size={40} className="text-white" strokeWidth={2.5} />
+          </div>
+          <h1 className="font-heading text-3xl font-bold text-gray-900">You're in!</h1>
+          <p className="text-muted mt-1">{tagline}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            {qty} ticket{qty !== 1 ? 's' : ''} sent to <span className="font-semibold text-gray-900">{order?.buyer_email}</span>
+          </p>
+        </motion.div>
 
         {/* Event info */}
         {event && (
-          <div className="bg-white rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900 text-lg">{event.title}</h2>
-            <p className="text-muted text-sm mt-1">{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy · h:mm a')}</p>
-            {event.location && <p className="text-muted text-sm">{event.location}</p>}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-5 mb-6 border border-primary/10"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-2xl mt-0.5">🎟</span>
+              <div>
+                <h2 className="font-heading font-bold text-gray-900 text-lg">{event.title}</h2>
+                <p className="text-muted text-sm mt-1">{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy · h:mm a')}</p>
+                {event.location && <p className="text-muted text-sm">📍 {event.location}</p>}
+              </div>
+            </div>
+          </motion.div>
         )}
 
         {/* QR tickets */}
         <div className="space-y-4">
           {tickets.map((ticket, i) => (
-            <div key={ticket.id} className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
+            <motion.div
+              key={ticket.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + i * 0.1 }}
+              className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm"
+            >
               <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                {ticketTypeName} — Ticket {tickets.length > 1 ? `${i + 1} of ${tickets.length}` : ''}
+                {ticketTypeName}{tickets.length > 1 ? ` — Ticket ${i + 1} of ${tickets.length}` : ''}
               </p>
               <p className="font-semibold text-gray-900 mb-4">{order?.buyer_name}</p>
               {qrCodes[ticket.id] && (
@@ -92,15 +143,21 @@ export default function TicketConfirm() {
               {ticket.checked_in && (
                 <p className="text-green-600 text-xs mt-2 font-medium">✓ Checked in</p>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <div className="mt-8 text-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 text-center space-y-3"
+        >
+          <p className="text-gray-400 text-xs">PDF ticket attached to your confirmation email — show QR at the door.</p>
           <Link to="/">
             <Button variant="secondary">Browse more events</Button>
           </Link>
-        </div>
+        </motion.div>
       </div>
     </div>
   )
