@@ -301,7 +301,7 @@ export default function EditEvent() {
               </button>
             </div>
 
-            <div className="text-xs text-muted grid grid-cols-[1fr_7rem_6rem_2rem] gap-3 px-4">
+            <div className="hidden sm:grid text-xs text-muted grid-cols-[1fr_7rem_6rem_2rem] gap-3 px-4">
               <span>Name</span><span>Price</span><span>Capacity</span><span />
             </div>
 
@@ -310,40 +310,45 @@ export default function EditEvent() {
                 const sold = field.quantity_sold ?? 0
                 const hasSales = sold > 0
                 return (
-                  <div key={field.id} className="flex gap-3 items-start bg-gray-50 rounded-xl p-4 border border-gray-200">
-                    <div className="flex-1 min-w-0">
-                      <input
-                        placeholder="Ticket name (e.g. General, VIP)"
-                        {...register(`ticket_types.${index}.name`, { required: 'Name required' })}
-                        className="w-full bg-transparent border-b border-gray-300 focus:border-primary pb-1 text-gray-900 placeholder-gray-400 focus:outline-none text-sm transition"
-                      />
-                      {errors?.ticket_types?.[index]?.name && (
-                        <p className="text-red-500 text-xs mt-1">{errors.ticket_types[index].name.message}</p>
-                      )}
-                      {hasSales && <p className="text-xs text-amber-600 mt-1">{sold} sold — capacity cannot go below {sold}</p>}
+                  <div key={field.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-3">
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <label className="text-xs text-muted mb-1 block">Name</label>
+                        <input
+                          placeholder="e.g. General, VIP"
+                          {...register(`ticket_types.${index}.name`, { required: 'Name required' })}
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition"
+                        />
+                        {errors?.ticket_types?.[index]?.name && (
+                          <p className="text-red-500 text-xs mt-1">{errors.ticket_types[index].name.message}</p>
+                        )}
+                        {hasSales && <p className="text-xs text-amber-600 mt-1">{sold} sold — capacity cannot go below {sold}</p>}
+                      </div>
+                      <button type="button" onClick={() => remove(index)}
+                        disabled={fields.length === 1 || hasSales}
+                        title={hasSales ? 'Cannot remove — tickets already sold' : 'Remove'}
+                        className="mt-6 p-1.5 text-gray-400 hover:text-red-400 disabled:opacity-20 transition shrink-0"
+                      ><Trash2 size={15} /></button>
                     </div>
-                    <div className="w-28">
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">$</span>
-                        <input type="number" min="0" step="0.01" placeholder="0.00"
-                          {...register(`ticket_types.${index}.price`, { required: 'Required', min: { value: 0, message: '≥ 0' }, valueAsNumber: true })}
-                          className="w-full bg-white border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition"
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted mb-1 block">Price</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">$</span>
+                          <input type="number" min="0" step="0.01" placeholder="0.00"
+                            {...register(`ticket_types.${index}.price`, { required: 'Required', min: { value: 0, message: '≥ 0' }, valueAsNumber: true })}
+                            className="w-full bg-white border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted mb-1 block">Capacity</label>
+                        <input type="number" min={sold || 1} placeholder="Qty"
+                          {...register(`ticket_types.${index}.quantity`, { required: 'Required', min: { value: sold || 1, message: `≥ ${sold || 1}` }, valueAsNumber: true })}
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition"
                         />
                       </div>
                     </div>
-                    <div className="w-24">
-                      <input type="number" min={sold || 1} placeholder="Qty"
-                        {...register(`ticket_types.${index}.quantity`, { required: 'Required', min: { value: sold || 1, message: `≥ ${sold || 1}` }, valueAsNumber: true })}
-                        className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition"
-                      />
-                    </div>
-                    <button type="button" onClick={() => remove(index)}
-                      disabled={fields.length === 1 || hasSales}
-                      title={hasSales ? 'Cannot remove — tickets already sold' : 'Remove'}
-                      className="mt-1.5 text-gray-400 hover:text-red-500 disabled:opacity-20 transition"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 )
               })}
