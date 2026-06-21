@@ -1,88 +1,164 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
-import { CheckCircle, ExternalLink, Loader } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, CheckCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 
-export default function Connect() {
-  const { user, profile } = useAuth()
-  const [searchParams] = useSearchParams()
-  const success = searchParams.get('success') === '1'
-  const [loading, setLoading] = useState(false)
-  const [onboarded, setOnboarded] = useState(profile?.stripe_onboarded ?? false)
+export default function PaymentInfo() {
+  const { user, profile, fetchProfile } = useAuth()
+  const [method, setMethod] = useState('interac')
+  const [details, setDetails] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState(null)
 
-  // If returning from Stripe, check if onboarding completed
   useEffect(() => {
-    if (!success || !user) return
-    async function checkOnboarded() {
-      const { data } = await supabase
-        .from('profiles')
-        .select('stripe_onboarded, stripe_account_id')
-        .eq('id', user.id)
-        .single()
-      if (data?.stripe_onboarded) setOnboarded(true)
+    if (profile) {
+      setMethod(profile.payment_method ?? 'interac')
+      setDetails(profile.payment_details ?? '')
     }
-    checkOnboarded()
-  }, [success, user])
+  }, [profile])
 
-  async function startOnboarding() {
-    setLoading(true)
+  async function handleSave() {
+    setError(null)
+    setSaved(false)
+    setSaving(true)
     try {
-      const res = await fetch('/api/create-connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id,
-          return_url: `${window.location.origin}/dashboard/connect?success=1`,
-          refresh_url: `${window.location.origin}/dashboard/connect`,
-        }),
-      })
-      const { url, error } = await res.json()
-      if (error) throw new Error(error)
-      window.location.href = url
+      const { error: err } = await supabase
+        .from('profiles')
+        .update({ payment_method: method, payment_details: details })
+        .eq('id', user.id)
+      if (err) throw err
+      if (typeof fetchProfile === 'function') await fetchProfile(user.id)
+      setSaved(true)
     } catch (err) {
-      alert(err.message)
-      setLoading(false)
+      setError(err.message)
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
-      <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        {onboarded ? (
-          <>
-            <CheckCircle size={48} className="text-green-400 mx-auto mb-4" />
-            <h1 className="font-heading text-3xl font-bold text-slate-100 mb-2">Stripe connected!</h1>
-            <p className="text-muted mb-8">You're all set to receive payouts. Create and publish events to start selling tickets.</p>
-            <Link to="/dashboard"><Button>Go to dashboard</Button></Link>
-          </>
-        ) : (
-          <>
-            <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <span className="text-2xl">💳</span>
-            </div>
-            <h1 className="font-heading text-3xl font-bold text-slate-100 mb-3">Connect your bank</h1>
-            <p className="text-muted mb-2">Tiklo uses Stripe to pay you directly after every event.</p>
-            <p className="text-muted text-sm mb-8">Setup takes about 5 minutes. You'll need your bank account details and ID.</p>
+      <div className="max-w-lg mx-auto px-4 py-8">
+        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-6 transition">
+          <ArrowLeft size={14} /> Back to dashboard
+        </Link>
 
-            <div className="bg-surface rounded-2xl p-6 text-left mb-8 space-y-3">
-              {['Get paid within 2 business days', 'Tiklo fee: 2.5% + $0.99 per ticket', 'Free events have no platform fee', 'Manage payouts in your Stripe dashboard'].map(item => (
-                <div key={item} className="flex items-center gap-3 text-sm text-muted">
-                  <CheckCircle size={16} className="text-green-400 shrink-0" />
-                  <span>{item}</span>
-                </div>
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-1">Payment info</h1>
+        <p className="text-muted text-sm mb-8">Tell us how you'd like to receive your payouts after each event.</p>
+
+        {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-6">{error}</div>}
+        {saved && (
+          <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm mb-6 flex items-center gap-2">
+            <CheckCircle size={15} /> Payment info saved.
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-6">
+
+          {/* Method selector */}
+          <div>
+            <label className="block text-sm text-muted mb-3">Preferred payout method</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'interac', label: 'Interac e-Transfer', emoji: '🇨🇦' },
+                { value: 'bank_transfer', label: 'Bank transfer', emoji: '🏦' },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { setMethod(opt.value); setDetails('') }}
+                  className={`flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 transition text-sm font-medium
+                    ${method === opt.value ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                >
+                  <span className="text-2xl">{opt.emoji}</span>
+                  {opt.label}
+                </button>
               ))}
             </div>
+          </div>
 
-            <Button onClick={startOnboarding} disabled={loading} size="lg" className="w-full">
-              {loading ? <><Loader size={16} className="inline animate-spin mr-2" />Redirecting to Stripe…</> : <>Connect with Stripe <ExternalLink size={14} className="inline ml-1.5" /></>}
+          {/* Details */}
+          {method === 'interac' && (
+            <div>
+              <label className="block text-sm text-muted mb-1">Interac e-Transfer email</label>
+              <input
+                type="email"
+                value={details}
+                onChange={e => setDetails(e.target.value)}
+                placeholder="email@example.com"
+                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
+              />
+              <p className="text-xs text-muted mt-1.5">We'll send your payout to this email via Interac e-Transfer.</p>
+            </div>
+          )}
+
+          {method === 'bank_transfer' && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm text-muted mb-1">Bank name</label>
+                <input
+                  type="text"
+                  value={details.split('|')[0] ?? ''}
+                  onChange={e => {
+                    const parts = details.split('|')
+                    parts[0] = e.target.value
+                    setDetails(parts.join('|'))
+                  }}
+                  placeholder="e.g. TD Bank, RBC, Scotiabank"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-muted mb-1">Transit number</label>
+                  <input
+                    type="text"
+                    maxLength={5}
+                    value={details.split('|')[1] ?? ''}
+                    onChange={e => {
+                      const parts = details.split('|')
+                      parts[1] = e.target.value
+                      setDetails(parts.join('|'))
+                    }}
+                    placeholder="00000"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-muted mb-1">Account number</label>
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={details.split('|')[2] ?? ''}
+                    onChange={e => {
+                      const parts = details.split('|')
+                      parts[2] = e.target.value
+                      setDetails(parts.join('|'))
+                    }}
+                    placeholder="000000000"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted">Your banking details are stored securely and only used for payout processing.</p>
+            </div>
+          )}
+
+          <div className="bg-gray-50 rounded-xl p-4 text-xs text-muted leading-relaxed">
+            💡 Tiklo sends payouts within <span className="font-medium text-gray-700">5 business days</span> after your event ends. A platform fee of <span className="font-medium text-gray-700">2.5% + $0.99 per ticket</span> is deducted before payout. Free events have no fee.
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving || !details.trim()}>
+              {saving ? 'Saving...' : 'Save payment info'}
             </Button>
-            <Link to="/dashboard" className="inline-block mt-4 text-muted text-sm hover:text-slate-100 transition">Skip for now</Link>
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   )
