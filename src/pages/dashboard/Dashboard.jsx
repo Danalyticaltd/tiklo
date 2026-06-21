@@ -56,11 +56,17 @@ export default function Dashboard() {
   async function handleDelete(event) {
     setDeleting(true)
     try {
-      await supabase.from('tickets').delete().eq('event_id', event.id)
-      await supabase.from('orders').delete().eq('event_id', event.id)
-      await supabase.from('ticket_types').delete().eq('event_id', event.id)
-      await supabase.from('events').delete().eq('id', event.id)
-      setEvents(prev => prev.filter(e => e.id !== event.id))
+      const { error: e1 } = await supabase.from('tickets').delete().eq('event_id', event.id)
+      if (e1) throw new Error('Could not delete tickets: ' + e1.message)
+      const { error: e2 } = await supabase.from('orders').delete().eq('event_id', event.id)
+      if (e2) throw new Error('Could not delete orders: ' + e2.message)
+      const { error: e3 } = await supabase.from('ticket_types').delete().eq('event_id', event.id)
+      if (e3) throw new Error('Could not delete ticket types: ' + e3.message)
+      const { error: e4 } = await supabase.from('events').delete().eq('id', event.id)
+      if (e4) throw new Error('Could not delete event: ' + e4.message)
+
+      // Re-fetch to confirm deletion was persisted
+      await fetchEvents()
       setConfirmDelete(null)
     } catch (err) {
       alert('Delete failed: ' + err.message)
