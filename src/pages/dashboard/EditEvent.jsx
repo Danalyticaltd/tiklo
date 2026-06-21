@@ -264,9 +264,16 @@ export default function EditEvent() {
               />
             </div>
 
-            <Select label="Event type *" {...register('event_type')}>
-              {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </Select>
+            <Controller
+              name="event_type"
+              control={control}
+              defaultValue="Cultural show"
+              render={({ field }) => (
+                <Select label="Event type *" {...field}>
+                  {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </Select>
+              )}
+            />
           </div>
 
           {/* Banner */}
@@ -363,7 +370,7 @@ export default function EditEvent() {
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')}>Cancel</Button>
-            <Button type="button" disabled={saving} onClick={handleSubmit(onSubmit)}>
+            <Button type="button" disabled={saving} onClick={handleSubmit(onSubmit, (errs) => console.error('[EditEvent] validation errors:', errs))}>
               {saving ? 'Saving…' : 'Save changes'}
             </Button>
           </div>

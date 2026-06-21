@@ -207,9 +207,16 @@ export default function CreateEvent() {
               />
             </div>
 
-            <Select label="Event type *" {...register('event_type')}>
-              {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </Select>
+            <Controller
+              name="event_type"
+              control={control}
+              defaultValue="Cultural show"
+              render={({ field }) => (
+                <Select label="Event type *" {...field}>
+                  {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </Select>
+              )}
+            />
           </div>
 
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
