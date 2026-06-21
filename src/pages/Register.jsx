@@ -1,3 +1,4 @@
+import Footer from '../components/Footer'
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -78,6 +79,7 @@ export default function Register() {
           Already have an account? <Link to="/login" className="text-primary hover:underline">Sign in</Link>
         </p>
       </div>
+      <Footer />
     </div>
   )
 }

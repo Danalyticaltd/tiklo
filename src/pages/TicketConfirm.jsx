@@ -1,3 +1,4 @@
+import Footer from '../components/Footer'
 ﻿import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle, PartyPopper } from 'lucide-react'
@@ -159,6 +160,7 @@ export default function TicketConfirm() {
           </Link>
         </motion.div>
       </div>
+      <Footer />
     </div>
   )
 }

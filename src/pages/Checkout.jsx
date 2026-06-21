@@ -1,3 +1,4 @@
+import Footer from '../components/Footer'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -173,6 +174,7 @@ export default function Checkout() {
           </div>
         ) : null}
       </div>
+      <Footer />
     </div>
   )
 }

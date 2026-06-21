@@ -37,8 +37,8 @@ export default function EventCard({ event, featured = false }) {
     >
       <Link
         to={`/events/${id}`}
-        className={`block bg-white rounded-2xl overflow-hidden border transition-all duration-300 group
-          ${featured ? 'border-primary/30 shadow-lg shadow-primary/10' : 'border-gray-100 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'}`}
+        className={`block bg-white rounded-2xl overflow-hidden transition-all duration-300 group
+          ${featured ? 'shadow-lg shadow-primary/10' : 'shadow-md hover:shadow-xl'}`}
       >
         <div className="relative h-48 bg-gray-100">
           {banner_url

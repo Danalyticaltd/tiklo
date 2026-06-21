@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, Flame } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import EventCard from '../components/EventCard'
@@ -13,6 +12,7 @@ import Footer from '../components/Footer'
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
 const TAGS = ['All Communities', 'African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const COMMUNITY_ORDER = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
+const CHIPS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Free events', 'This weekend']
 
 export default function Home() {
   const [events, setEvents] = useState([])
@@ -20,6 +20,7 @@ export default function Home() {
   const [city, setCity] = useState('All Cities')
   const [tag, setTag] = useState('All Communities')
   const [search, setSearch] = useState('')
+  const [activeChip, setActiveChip] = useState(null)
 
   useEffect(() => {
     async function fetchEvents() {
@@ -40,12 +41,42 @@ export default function Home() {
     fetchEvents()
   }, [city, tag])
 
-  const visible = search.trim()
-    ? events.filter(e =>
+  function handleChip(chip) {
+    if (activeChip === chip) {
+      setActiveChip(null)
+      setTag('All Communities')
+      return
+    }
+    setActiveChip(chip)
+    if (COMMUNITY_ORDER.includes(chip)) {
+      setTag(chip)
+    } else {
+      setTag('All Communities')
+    }
+  }
+
+  const communityFiltered = activeChip && COMMUNITY_ORDER.includes(activeChip)
+
+  const visible = (() => {
+    let evts = events
+    if (search.trim()) {
+      evts = evts.filter(e =>
         e.title.toLowerCase().includes(search.toLowerCase()) ||
         (e.description ?? '').toLowerCase().includes(search.toLowerCase())
       )
-    : events
+    }
+    if (activeChip === 'Free events') {
+      evts = evts.filter(e => (e.ticket_types ?? []).some(t => Number(t.price) === 0))
+    }
+    if (activeChip === 'This weekend') {
+      const now = new Date()
+      const friday = new Date(now); friday.setDate(now.getDate() + (5 - now.getDay() + 7) % 7)
+      const sunday = new Date(friday); sunday.setDate(friday.getDate() + 2)
+      sunday.setHours(23, 59, 59)
+      evts = evts.filter(e => { const d = new Date(e.event_date); return d >= friday && d <= sunday })
+    }
+    return evts
+  })()
 
   const hotEvents = [...events]
     .filter(e => (e.ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0) >= 1)
@@ -56,7 +87,7 @@ export default function Home() {
     })
     .slice(0, 6)
 
-  const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim()
+  const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip
 
   const byCommunity = COMMUNITY_ORDER
     .map(community => ({
@@ -68,70 +99,91 @@ export default function Home() {
   const uncategorised = visible.filter(e => !COMMUNITY_ORDER.includes(e.community_tag))
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* ── COMPACT HERO + SEARCH ── */}
-      <section className="relative overflow-hidden bg-bg border-b border-gray-200">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/8 rounded-full blur-3xl" />
-          <div className="absolute top-0 right-1/4 w-56 h-56 bg-accent/8 rounded-full blur-3xl" />
+      {/* ── HERO: centred search ── */}
+      <section className="bg-white border-b border-gray-100 py-12 px-4 text-center">
+        <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          Find your next{' '}
+          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            cultural experience
+          </span>
+        </h1>
+        <p className="text-muted text-sm mb-8">
+          African, Caribbean, South Asian, Latin and more — across Canada.
+        </p>
+
+        {/* Search bar */}
+        <div className="flex max-w-2xl mx-auto rounded-xl overflow-hidden border border-gray-200 shadow-md bg-white">
+          <div className="flex items-center gap-2 flex-1 px-4">
+            <Search size={15} className="text-gray-400 shrink-0" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search events, artists, bands..."
+              className="flex-1 py-3.5 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none"
+            />
+          </div>
+          <div className="w-px bg-gray-200 my-2.5" />
+          <select
+            value={city}
+            onChange={e => setCity(e.target.value)}
+            className="px-3 py-3.5 text-sm text-gray-600 bg-transparent outline-none border-none"
+          >
+            {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <button
+            className="bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-6 transition"
+          >
+            Search
+          </button>
         </div>
-        <div className="relative max-w-6xl mx-auto px-4 pt-10 pb-8">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Events for your{' '}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">community</span>
-            </h1>
-            <p className="text-muted text-sm mb-6">
-              African, Caribbean, South Asian, Latin and more — tickets for multicultural Canada.
-            </p>
-            {/* Search + Filters */}
-            <div id="events" className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-                <input
-                  type="text" value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Search events, artists, cities..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition text-sm shadow-sm"
-                />
-              </div>
-              <select value={city} onChange={e => setCity(e.target.value)}
-                className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-primary transition min-w-[130px] shadow-sm">
-                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <select value={tag} onChange={e => setTag(e.target.value)}
-                className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-primary transition min-w-[155px] shadow-sm">
-                {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-          </motion.div>
+
+        {/* Category chips */}
+        <div className="flex flex-wrap justify-center gap-2 mt-5">
+          {CHIPS.map(chip => (
+            <button
+              key={chip}
+              onClick={() => handleChip(chip)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${
+                activeChip === chip
+                  ? 'bg-primary/10 border-primary text-primary'
+                  : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+              }`}
+            >
+              {chip === 'Hot right now' && <Flame size={11} className="inline mr-1" />}
+              {chip}
+            </button>
+          ))}
         </div>
       </section>
 
       {/* ── WORD OF THE DAY ── */}
-      <div className="max-w-6xl mx-auto px-4 mt-6 mb-2">
+      <div className="max-w-5xl mx-auto px-4 mt-6 mb-2">
         <WordOfDay />
       </div>
 
       {/* ── HOT RIGHT NOW ── */}
       {!isFiltered && hotEvents.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 pt-6 mb-10">
-          <div className="flex items-center gap-2 mb-5">
-            <Flame size={17} className="text-orange-500" />
-            <h2 className="font-heading font-bold text-gray-900 text-lg">Hot right now</h2>
-            <span className="text-muted text-sm">- selling fast</span>
+        <div className="max-w-5xl mx-auto px-4 pt-8 mb-10">
+          <div className="flex items-baseline justify-between mb-5">
+            <h2 className="font-heading font-bold text-gray-900 text-2xl flex items-center gap-2">
+              <Flame size={20} className="text-orange-500" /> Hot right now
+            </h2>
+            <span className="text-sm text-muted">Selling fast</span>
           </div>
           <EventCarousel events={hotEvents} />
         </div>
       )}
 
       {/* ── EVENT SECTIONS ── */}
-      <div className="max-w-6xl mx-auto px-4 pb-16 space-y-12">
+      <div className="max-w-5xl mx-auto px-4 pb-16 space-y-12">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl h-64 animate-pulse border border-gray-100" />
+              <div key={i} className="bg-gray-50 rounded-2xl h-64 animate-pulse" />
             ))}
           </div>
         ) : visible.length === 0 ? (
@@ -147,30 +199,39 @@ export default function Home() {
         ) : (
           <>
             {byCommunity.map(({ community, events: evts }) => (
-              <section key={community} className="relative px-6">
-                <div className="flex items-center gap-2 mb-5">
-                  <h2 className="font-heading font-bold text-gray-900 text-lg">{community}</h2>
-                  <span className="text-muted text-sm">- {evts.length} event{evts.length !== 1 ? 's' : ''}</span>
+              <section key={community}>
+                <div className="flex items-baseline justify-between mb-5 px-6">
+                  <h2 className="font-heading font-bold text-gray-900 text-2xl">
+                    {community}
+                    <span className="ml-2 text-base font-normal text-muted">{evts.length} event{evts.length !== 1 ? 's' : ''}</span>
+                  </h2>
+                  <button
+                    onClick={() => handleChip(community)}
+                    className="text-sm text-primary font-medium hover:underline"
+                  >
+                    See all
+                  </button>
                 </div>
-                <EventCarousel events={evts} />
+                <div className="px-6">
+                  <EventCarousel events={evts} />
+                </div>
               </section>
             ))}
             {uncategorised.length > 0 && (
-              <section className="relative px-6">
-                <div className="flex items-center gap-2 mb-5">
-                  <h2 className="font-heading font-bold text-gray-900 text-lg">More events</h2>
+              <section>
+                <div className="flex items-baseline justify-between mb-5 px-6">
+                  <h2 className="font-heading font-bold text-gray-900 text-2xl">More events</h2>
                 </div>
-                <EventCarousel events={uncategorised} />
+                <div className="px-6">
+                  <EventCarousel events={uncategorised} />
+                </div>
               </section>
             )}
           </>
         )}
       </div>
 
-      {/* ── HOW IT WORKS ── */}
       <HowItWorks />
-
-      {/* ── FOOTER ── */}
       <Footer />
     </div>
   )
