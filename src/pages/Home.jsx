@@ -131,18 +131,21 @@ export default function Home() {
 
   const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip || activeType
 
-  // Group by event type, ordered by chip list then any extras
-  const distinctTypes = [...new Set(visible.map(e => e.event_type).filter(Boolean))]
+  const hotIds = new Set(hotEvents.map(e => e.id))
+
+  // Group by event type, excluding events already featured in "Hot right now"
+  const belowFold = isFiltered ? visible : visible.filter(e => !hotIds.has(e.id))
+  const distinctTypes = [...new Set(belowFold.map(e => e.event_type).filter(Boolean))]
   const orderedTypes = [
     ...EVENT_TYPE_CHIPS.filter(t => distinctTypes.includes(t)),
     ...distinctTypes.filter(t => !EVENT_TYPE_CHIPS.includes(t)),
   ]
   const byType = orderedTypes.map(type => ({
     type,
-    events: visible.filter(e => e.event_type === type),
+    events: belowFold.filter(e => e.event_type === type),
   })).filter(g => g.events.length > 0)
 
-  const uncategorised = visible.filter(e => !e.event_type)
+  const uncategorised = belowFold.filter(e => !e.event_type)
 
   return (
     <div className="min-h-screen bg-white">
