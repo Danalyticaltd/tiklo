@@ -160,7 +160,7 @@ export default function Onboarding() {
                   { icon: '📝', title: 'Create your event', desc: 'Add your event details, upload a flyer, and set ticket types and prices.' },
                   { icon: '✅', title: 'Submit for approval', desc: 'Our team reviews your event to ensure quality. Usually within 24 hours.' },
                   { icon: '🎟️', title: 'Start selling', desc: 'Once approved, your event goes live and attendees can buy tickets instantly.' },
-                  { icon: '💰', title: 'Get paid', desc: 'Connect your Stripe account to receive payouts after your event.' },
+                  { icon: '💰', title: 'Get paid', desc: 'After your event, Tiklo sends your payout via Interac or bank transfer. No setup needed.' },
                 ].map(({ icon, title, desc }) => (
                   <div key={title} className="flex gap-3">
                     <span className="text-xl shrink-0 mt-0.5">{icon}</span>
