@@ -54,13 +54,15 @@ export default function Dashboard() {
   }
 
   async function submitForApproval(event) {
-    await supabase.from('events').update({ status: 'pending' }).eq('id', event.id)
-    setEvents(prev => prev.map(e => e.id === event.id ? { ...e, status: 'pending' } : e))
+    const { error } = await supabase.from('events').update({ status: 'pending' }).eq('id', event.id)
+    if (error) { alert('Could not submit: ' + error.message); return }
+    await fetchEvents()
   }
 
   async function unpublish(event) {
-    await supabase.from('events').update({ status: 'draft' }).eq('id', event.id)
-    setEvents(prev => prev.map(e => e.id === event.id ? { ...e, status: 'draft' } : e))
+    const { error } = await supabase.from('events').update({ status: 'draft' }).eq('id', event.id)
+    if (error) { alert('Could not unpublish: ' + error.message); return }
+    await fetchEvents()
   }
 
   async function handleDelete(event) {

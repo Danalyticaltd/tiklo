@@ -52,7 +52,7 @@ export default function EditEvent() {
         location: ev.location ?? '',
         city: ev.city,
         community_tag: ev.community_tag,
-        event_type: ev.event_type ?? 'Concert',
+        event_type: ev.event_type ?? 'Cultural show',
         event_date: ev.event_date ? ev.event_date.slice(0, 16) : '',
         ticket_types: (tts ?? []).map(tt => ({
           id: tt.id,
