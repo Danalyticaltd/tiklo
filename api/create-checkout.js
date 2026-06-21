@@ -33,8 +33,28 @@ async function generateTicketPdf(order, tickets) {
     const page = pdfDoc.addPage([420, 600])
     const { width, height } = page.getSize()
 
-    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: rgb(0.863, 0.369, 0.239) })
-    page.drawText('Tiklo', { x: 24, y: height - 52, size: 28, font, color: rgb(1, 1, 1) })
+    // White header + separator
+    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: rgb(1, 1, 1) })
+    page.drawLine({ start: { x: 0, y: height - 80 }, end: { x: width, y: height - 80 }, thickness: 0.5, color: rgb(0.88, 0.88, 0.88) })
+
+    // Icon: coral rounded square (matches TikloLogo.jsx viewBox 0 0 48 48, rendered at 46×46)
+    const s = 46 / 48
+    const ix = 20, ib = height - 63
+    page.drawRectangle({ x: ix, y: ib, width: 46, height: 46, color: rgb(1, 0.341, 0.2), borderRadius: 11 })
+    page.drawRectangle({ x: ix + 7*s, y: ib + 14*s, width: 34*s, height: 18*s,
+      color: rgb(1,1,1), opacity: 0.25, borderColor: rgb(1,1,1), borderWidth: 1.6, borderRadius: Math.round(4.5*s) })
+    page.drawCircle({ x: ix + 7*s, y: ib + 23*s, size: 5*s, color: rgb(1, 0.341, 0.2) })
+    page.drawCircle({ x: ix + 41*s, y: ib + 23*s, size: 5*s, color: rgb(1, 0.341, 0.2) })
+    page.drawLine({ start: { x: ix + 14*s, y: ib + 23*s }, end: { x: ix + 34*s, y: ib + 23*s },
+      thickness: 1.5, color: rgb(1,1,1), dashArray: [3, 2.5], dashPhase: 0 })
+    page.drawCircle({ x: ix + 24*s, y: ib + 27*s, size: 2.4, color: rgb(1,1,1) })
+
+    // Wordmark: "Tikl" dark + "o" coral, 6px gap after icon
+    const wX = ix + 46 + 6
+    const wY = height - 50
+    const tiklW = font.widthOfTextAtSize('Tikl', 28)
+    page.drawText('Tikl', { x: wX, y: wY, size: 28, font, color: rgb(0.1, 0.1, 0.1) })
+    page.drawText('o', { x: wX + tiklW, y: wY, size: 28, font, color: rgb(1, 0.341, 0.2) })
     page.drawText(event.title, { x: 24, y: height - 110, size: 16, font, color: rgb(0.1, 0.1, 0.1), maxWidth: width - 48 })
     page.drawText(eventDate, { x: 24, y: height - 135, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) })
     if (event.location) page.drawText(event.location, { x: 24, y: height - 152, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) })
