@@ -121,18 +121,17 @@ export default function Home() {
       {/* ── HERO: centred search ── */}
       <section className="bg-white border-b border-gray-100 py-12 px-4 text-center">
         <h1 className="font-heading text-3xl md:text-5xl font-bold text-gray-900 mb-3 leading-tight">
-          Create unforgettable{' '}
-          <span
-            key={heroWord}
-            className="inline-block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-fade-in"
-          >
-            {HERO_WORDS[heroWord]}
+          Create unforgettable<br />
+          <span className="flex items-center justify-center" style={{ minHeight: '1.35em' }}>
+            <span
+              key={heroWord}
+              className="inline-block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-fade-in"
+            >
+              {HERO_WORDS[heroWord]}.
+            </span>
           </span>
-          .<br className="hidden sm:block" /> Discover your next experience.
+          Discover your next experience.
         </h1>
-        <p className="text-muted text-sm mb-8 max-w-lg mx-auto leading-relaxed">
-          The easiest way to create events, sell tickets, and connect with your audience.
-        </p>
 
         {/* Search bar */}
         <div className="flex max-w-2xl mx-auto rounded-xl overflow-hidden border border-gray-200 shadow-md bg-white">
