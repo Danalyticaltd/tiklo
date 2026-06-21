@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, profile, logout } = useAuth()
 
   return (
     <nav className="border-b border-gray-200 bg-white/90 backdrop-blur sticky top-0 z-50">
@@ -11,6 +11,9 @@ export default function Navbar() {
         <div className="flex items-center gap-5">
           {user ? (
             <>
+              {profile?.role === 'admin' && (
+                <Link to="/admin" className="text-sm text-primary hover:text-primary/80 transition font-medium">Admin</Link>
+              )}
               <Link to="/dashboard" className="text-sm text-muted hover:text-gray-900 transition font-medium">Dashboard</Link>
               <button onClick={logout} className="text-sm text-muted hover:text-gray-900 transition">Sign out</button>
             </>
