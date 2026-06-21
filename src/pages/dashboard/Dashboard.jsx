@@ -94,12 +94,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {profile && !profile.approved && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-3 text-sm mb-6">
-            Your account is pending admin approval. You can create and submit events for review once approved.
-          </div>
-        )}
-
         {/* Delete confirmation modal */}
         {confirmDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">

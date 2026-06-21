@@ -8,6 +8,8 @@ import Checkout from './pages/Checkout'
 import TicketConfirm from './pages/TicketConfirm'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Verify from './pages/Verify'
+import Onboarding from './pages/Onboarding'
 
 // Organizer dashboard
 import Dashboard from './pages/dashboard/Dashboard'
@@ -43,6 +45,8 @@ export default function App() {
           <Route path="/ticket/confirmed" element={<TicketConfirm />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify" element={<Verify />} />
+          <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
           {/* Organizer */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
