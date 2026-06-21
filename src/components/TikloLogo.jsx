@@ -21,15 +21,7 @@ export default function TikloLogo({ size = 32 }) {
           fontWeight="700"
           letterSpacing="-1"
           fill="#1a1a1a"
-        >tikl</text>
-        <text
-          x="68" y="26"
-          fontFamily="system-ui, -apple-system, sans-serif"
-          fontSize="30"
-          fontWeight="700"
-          letterSpacing="-1"
-          fill="#FF5733"
-        >o</text>
+        >tikl<tspan fill="#FF5733">o</tspan></text>
       </svg>
     </span>
   )
