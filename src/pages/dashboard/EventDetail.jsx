@@ -123,12 +123,12 @@ export default function EventDetail() {
           <ArrowLeft size={14} /> Back to dashboard
         </Link>
 
-        <div className="flex items-start justify-between mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-8 gap-3">
           <div>
             <h1 className="font-heading text-2xl font-bold text-gray-900">{event?.title}</h1>
             <p className="text-muted text-sm mt-1">{event?.event_date && format(new Date(event.event_date), 'EEE, MMM d, yyyy · h:mm a')} · {event?.city}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link to={`/dashboard/events/${id}/edit`}>
               <Button variant="secondary"><Pencil size={14} className="mr-1.5" />Edit</Button>
             </Link>

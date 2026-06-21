@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import TikloLogo from '../components/TikloLogo'
 
 export default function Register() {
   const { register } = useAuth()
@@ -40,7 +41,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Link to="/" className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent block mb-8">Tiklo</Link>
+        <Link to="/" className="block mb-8"><TikloLogo size={28} /></Link>
         <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
           <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">Create your account</h1>
           <p className="text-muted text-sm mb-6">Start selling tickets on Tiklo</p>

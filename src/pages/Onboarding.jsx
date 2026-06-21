@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Upload, User, CheckCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import TikloLogo from '../components/TikloLogo'
 
 const STEPS = ['Your profile', 'How it works', "You're ready"]
 
@@ -71,7 +72,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-8 text-center">Tiklo</div>
+        <div className="flex justify-center mb-8"><TikloLogo size={28} /></div>
 
         {/* Step indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">

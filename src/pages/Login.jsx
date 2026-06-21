@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Footer from '../components/Footer'
+import TikloLogo from '../components/TikloLogo'
 
 export default function Login() {
   const { login } = useAuth()
@@ -32,6 +33,7 @@ export default function Login() {
           ← Back to events
         </Link>
         <div className="w-full max-w-sm bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+          <Link to="/" className="block mb-6"><TikloLogo size={28} /></Link>
           <h1 className="font-heading text-3xl font-bold text-gray-900 mb-1">Sign in</h1>
           <p className="text-muted text-sm mb-6">Organizer portal</p>
           {error && <p className="text-red-500 text-sm mb-4 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

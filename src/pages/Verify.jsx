@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import TikloLogo from '../components/TikloLogo'
 
 export default function Verify() {
   const [searchParams] = useSearchParams()
@@ -83,7 +84,7 @@ export default function Verify() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Link to="/" className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent block mb-8">Tiklo</Link>
+        <Link to="/" className="block mb-8"><TikloLogo size={28} /></Link>
         <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 text-2xl">📬</div>
           <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">Check your email</h1>

@@ -184,9 +184,10 @@ export default function Home() {
             {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <button
-            className="bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-6 transition"
+            className="bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-3 sm:px-6 transition shrink-0 flex items-center gap-1.5"
           >
-            Search
+            <Search size={15} className="shrink-0" />
+            <span className="hidden sm:inline">Search</span>
           </button>
         </div>
 
