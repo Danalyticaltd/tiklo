@@ -64,7 +64,7 @@ export default function CreateEvent() {
     window.__gmapsCallback = initAutocomplete
     const script = document.createElement('script')
     script.id = 'gmaps-places-script'
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&libraries=places&callback=__gmapsCallback`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&libraries=places&loading=async&callback=__gmapsCallback`
     script.async = true
     script.defer = true
     document.head.appendChild(script)
