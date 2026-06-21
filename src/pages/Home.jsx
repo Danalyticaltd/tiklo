@@ -9,7 +9,7 @@ import HowItWorks from '../components/HowItWorks'
 import Footer from '../components/Footer'
 
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
-const EVENT_TYPE_CHIPS = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking', 'Cultural show', 'Community event']
+const EVENT_TYPE_CHIPS = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sport Event', 'Networking', 'Cultural show', 'Community event']
 const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar']
 
 export default function Home() {
