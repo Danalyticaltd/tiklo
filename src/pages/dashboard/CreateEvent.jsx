@@ -269,14 +269,14 @@ export default function CreateEvent() {
             <Button
               type="button" variant="secondary"
               disabled={saving}
-              onClick={handleSubmit(data => onSubmit(data, false), () => {})}
+              onClick={handleSubmit(data => onSubmit(data, false), () => window.scrollTo({ top: 0, behavior: 'smooth' }))}
             >
               Save as draft
             </Button>
             <Button
               type="button"
               disabled={saving}
-              onClick={handleSubmit(data => onSubmit(data, true), () => {})}
+              onClick={handleSubmit(data => onSubmit(data, true), () => window.scrollTo({ top: 0, behavior: 'smooth' }))}
             >
               {saving ? 'Submitting…' : 'Submit for approval'}
             </Button>
