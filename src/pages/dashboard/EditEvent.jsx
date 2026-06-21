@@ -12,7 +12,7 @@ import CommunityInput from '../../components/CommunityInput'
 
 const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver', 'Edmonton', 'Winnipeg', 'Halifax']
 const TAGS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
-const EVENT_TYPES = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking', 'Other']
+const EVENT_TYPES = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking', 'Cultural show', 'Community event', 'Other']
 const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 export default function EditEvent() {

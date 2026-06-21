@@ -9,7 +9,7 @@ import HowItWorks from '../components/HowItWorks'
 import Footer from '../components/Footer'
 
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
-const EVENT_TYPE_CHIPS = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking']
+const EVENT_TYPE_CHIPS = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking', 'Cultural show', 'Community event']
 const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar']
 
 export default function Home() {
@@ -131,17 +131,18 @@ export default function Home() {
 
   const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip || activeType
 
-  // Group by distinct community tags present in visible events
-  const distinctCommunities = [...new Set(visible.map(e => e.community_tag).filter(Boolean))]
-  const byCommunity = distinctCommunities
-    .map(community => ({
-      community,
-      events: visible.filter(e => e.community_tag === community),
-    }))
-    .filter(g => g.events.length > 0)
-    .sort((a, b) => b.events.length - a.events.length)
+  // Group by event type, ordered by chip list then any extras
+  const distinctTypes = [...new Set(visible.map(e => e.event_type).filter(Boolean))]
+  const orderedTypes = [
+    ...EVENT_TYPE_CHIPS.filter(t => distinctTypes.includes(t)),
+    ...distinctTypes.filter(t => !EVENT_TYPE_CHIPS.includes(t)),
+  ]
+  const byType = orderedTypes.map(type => ({
+    type,
+    events: visible.filter(e => e.event_type === type),
+  })).filter(g => g.events.length > 0)
 
-  const uncategorised = visible.filter(e => !e.community_tag)
+  const uncategorised = visible.filter(e => !e.event_type)
 
   return (
     <div className="min-h-screen bg-white">
@@ -269,15 +270,15 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {byCommunity.map(({ community, events: evts }) => (
-              <section key={community}>
+            {byType.map(({ type, events: evts }) => (
+              <section key={type}>
                 <div className="flex items-baseline justify-between mb-5 px-6">
                   <h2 className="font-heading font-bold text-gray-900 text-2xl">
-                    {community}
+                    {type}s
                     <span className="ml-2 text-base font-normal text-muted">{evts.length} event{evts.length !== 1 ? 's' : ''}</span>
                   </h2>
                   <button
-                    onClick={() => handleChip(community)}
+                    onClick={() => handleTypeChip(type)}
                     className="text-sm text-primary font-medium hover:underline"
                   >
                     See all
