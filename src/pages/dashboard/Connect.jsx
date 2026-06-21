@@ -65,7 +65,7 @@ export default function PaymentInfo() {
             <label className="block text-sm text-muted mb-3">Preferred payout method</label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { value: 'interac', label: 'Interac e-Transfer', emoji: '🇨🇦' },
+                { value: 'interac', label: 'Interac e-Transfer', emoji: '⚡' },
                 { value: 'bank_transfer', label: 'Bank transfer', emoji: '🏦' },
               ].map(opt => (
                 <button
@@ -104,27 +104,32 @@ export default function PaymentInfo() {
                 <input
                   type="text"
                   value={details.split('|')[0] ?? ''}
-                  onChange={e => {
-                    const parts = details.split('|')
-                    parts[0] = e.target.value
-                    setDetails(parts.join('|'))
-                  }}
+                  onChange={e => { const p = details.split('|'); p[0] = e.target.value; setDetails(p.join('|')) }}
                   placeholder="e.g. TD Bank, RBC, Scotiabank"
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-sm text-muted mb-1">Transit number</label>
+                  <label className="block text-sm text-muted mb-1">Institution <span className="text-gray-400 text-xs">(3 digits)</span></label>
                   <input
                     type="text"
-                    maxLength={5}
+                    inputMode="numeric"
+                    maxLength={3}
                     value={details.split('|')[1] ?? ''}
-                    onChange={e => {
-                      const parts = details.split('|')
-                      parts[1] = e.target.value
-                      setDetails(parts.join('|'))
-                    }}
+                    onChange={e => { const p = details.split('|'); p[1] = e.target.value.replace(/\D/g, ''); setDetails(p.join('|')) }}
+                    placeholder="000"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-muted mb-1">Transit <span className="text-gray-400 text-xs">(5 digits)</span></label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={5}
+                    value={details.split('|')[2] ?? ''}
+                    onChange={e => { const p = details.split('|'); p[2] = e.target.value.replace(/\D/g, ''); setDetails(p.join('|')) }}
                     placeholder="00000"
                     className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
                   />
@@ -133,14 +138,11 @@ export default function PaymentInfo() {
                   <label className="block text-sm text-muted mb-1">Account number</label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     maxLength={12}
-                    value={details.split('|')[2] ?? ''}
-                    onChange={e => {
-                      const parts = details.split('|')
-                      parts[2] = e.target.value
-                      setDetails(parts.join('|'))
-                    }}
-                    placeholder="000000000"
+                    value={details.split('|')[3] ?? ''}
+                    onChange={e => { const p = details.split('|'); p[3] = e.target.value.replace(/\D/g, ''); setDetails(p.join('|')) }}
+                    placeholder="0000000"
                     className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
                   />
                 </div>
