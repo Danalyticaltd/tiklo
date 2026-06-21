@@ -1,4 +1,14 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
+function BrowseLink() {
+  const navigate = useNavigate()
+  function handleClick(e) {
+    e.preventDefault()
+    navigate('/')
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
+  }
+  return <a href="/" onClick={handleClick} className="text-muted hover:text-gray-900 transition">Browse events</a>
+}
 
 export default function Footer() {
   return (
@@ -10,18 +20,13 @@ export default function Footer() {
           <p className="mt-3 text-sm text-muted leading-relaxed">
             The ticketing platform for multicultural Canada — African, Caribbean, South Asian, Latin events and more.
           </p>
-          <div className="flex gap-3 mt-5">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram" className="text-xs text-muted hover:text-gray-900 transition font-medium">Instagram</a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="Twitter" className="text-xs text-muted hover:text-gray-900 transition font-medium">Twitter</a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="text-xs text-muted hover:text-gray-900 transition font-medium">Facebook</a>
-          </div>
         </div>
 
         {/* Attendees */}
         <div>
           <p className="text-gray-900 font-semibold text-sm mb-4">Attendees</p>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/" className="text-muted hover:text-gray-900 transition">Browse events</Link></li>
+            <li><BrowseLink /></li>
             <li><Link to="/login" className="text-muted hover:text-gray-900 transition">Sign in</Link></li>
             <li><Link to="/register" className="text-muted hover:text-gray-900 transition">Create account</Link></li>
           </ul>

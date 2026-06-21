@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Flame } from 'lucide-react'
+import { Search, Flame, ChevronLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import EventCard from '../components/EventCard'
 import EventCarousel from '../components/EventCarousel'
-import WordOfDay from '../components/WordOfDay'
 import HowItWorks from '../components/HowItWorks'
 import Footer from '../components/Footer'
 
@@ -45,6 +44,7 @@ export default function Home() {
     if (activeChip === chip) {
       setActiveChip(null)
       setTag('All Communities')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
     setActiveChip(chip)
@@ -53,6 +53,15 @@ export default function Home() {
     } else {
       setTag('All Communities')
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function clearFilters() {
+    setActiveChip(null)
+    setTag('All Communities')
+    setCity('All Cities')
+    setSearch('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const communityFiltered = activeChip && COMMUNITY_ORDER.includes(activeChip)
@@ -160,11 +169,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── WORD OF THE DAY ── */}
-      <div className="max-w-5xl mx-auto px-4 mt-6 mb-2">
-        <WordOfDay />
-      </div>
-
       {/* ── HOT RIGHT NOW ── */}
       {!isFiltered && hotEvents.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pt-8 mb-10">
@@ -175,6 +179,18 @@ export default function Home() {
             <span className="text-sm text-muted">Selling fast</span>
           </div>
           <EventCarousel events={hotEvents} />
+        </div>
+      )}
+
+      {/* ── ACTIVE FILTER BANNER ── */}
+      {isFiltered && (
+        <div className="max-w-5xl mx-auto px-4 pt-4">
+          <button
+            onClick={clearFilters}
+            className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
+          >
+            <ChevronLeft size={15} /> Back to all events
+          </button>
         </div>
       )}
 

@@ -19,7 +19,6 @@ export default function EventCarousel({ events }) {
   const next = useCallback(() => scrollTo((index + 1) % total), [index, total, scrollTo])
   const prev = useCallback(() => scrollTo((index - 1 + total) % total), [index, total, scrollTo])
 
-  // Sync dot when user swipes natively
   function handleScroll() {
     const track = trackRef.current
     if (!track) return
@@ -31,8 +30,8 @@ export default function EventCarousel({ events }) {
   if (total === 0) return null
 
   return (
-    <div className="relative">
-      {/* Scrollable track — 1 card on mobile, 3 on desktop */}
+    /* px-10 keeps arrows outside the card images */
+    <div className="relative px-10">
       <div
         ref={trackRef}
         onScroll={handleScroll}
@@ -48,19 +47,18 @@ export default function EventCarousel({ events }) {
         ))}
       </div>
 
-      {/* Arrows — always shown, loop */}
       {total > 1 && (
         <>
           <button
             onClick={prev}
-            className="absolute left-0 top-1/3 -translate-y-1/2 -translate-x-4 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-primary hover:border-primary transition"
+            className="absolute left-0 top-1/3 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-primary hover:border-primary transition"
             aria-label="Previous"
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={next}
-            className="absolute right-0 top-1/3 -translate-y-1/2 translate-x-4 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-primary hover:border-primary transition"
+            className="absolute right-0 top-1/3 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-primary hover:border-primary transition"
             aria-label="Next"
           >
             <ChevronRight size={18} />
@@ -68,7 +66,6 @@ export default function EventCarousel({ events }) {
         </>
       )}
 
-      {/* Dots */}
       {total > 1 && (
         <div className="flex justify-center gap-1.5 mt-4">
           {events.map((_, i) => (

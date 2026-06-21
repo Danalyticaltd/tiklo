@@ -1,9 +1,9 @@
 import Footer from '../components/Footer'
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { format } from 'date-fns'
-import { MapPin, Calendar, Tag } from 'lucide-react'
+import { MapPin, Calendar, Tag, ChevronLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
@@ -74,6 +74,13 @@ export default function EventPage() {
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
+
+      {/* Back link */}
+      <div className="max-w-3xl mx-auto px-4 pt-5">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 transition">
+          <ChevronLeft size={14} /> Back to events
+        </Link>
+      </div>
 
       {/* Flyer / banner */}
       {event.banner_url && (

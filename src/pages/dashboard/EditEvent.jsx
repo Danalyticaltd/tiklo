@@ -117,11 +117,21 @@ export default function EditEvent() {
       // 2. Upload new banner if changed
       if (bannerFile) {
         const ext = bannerFile.name.split('.').pop()
+        const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+        if (!allowedExts.includes(ext.toLowerCase())) {
+          throw new Error(`Unsupported image format ".${ext}". Please upload a JPG, PNG, or WebP file.`)
+        }
+        if (bannerFile.size > 5 * 1024 * 1024) {
+          throw new Error('Image is too large. Please upload a file under 5 MB.')
+        }
         const path = `${id}/banner.${ext}`
         const { error: upErr } = await supabase.storage.from('banners').upload(path, bannerFile, { upsert: true })
-        if (upErr) throw upErr
+        if (upErr) {
+          throw new Error(`Banner upload failed: ${upErr.message}. Check that you are signed in and the file is a valid image.`)
+        }
         const { data: urlData } = supabase.storage.from('banners').getPublicUrl(path)
-        await supabase.from('events').update({ banner_url: urlData.publicUrl }).eq('id', id)
+        const { error: updateErr } = await supabase.from('events').update({ banner_url: urlData.publicUrl }).eq('id', id)
+        if (updateErr) throw new Error(`Banner saved but could not update event: ${updateErr.message}`)
       }
 
       // 3. Upsert ticket types
