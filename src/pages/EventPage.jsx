@@ -14,6 +14,7 @@ export default function EventPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [event, setEvent] = useState(null)
+  const [organiser, setOrganiser] = useState(null)
   const [ticketTypes, setTicketTypes] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
@@ -37,8 +38,12 @@ export default function EventPage() {
       setMeta('twitter:description', ev.description ?? ev.title)
       if (ev.banner_url) setMeta('twitter:image', ev.banner_url)
 
-      const { data: tt } = await supabase.from('ticket_types').select('*').eq('event_id', eventId)
+      const [{ data: tt }, { data: org }] = await Promise.all([
+        supabase.from('ticket_types').select('*').eq('event_id', eventId),
+        supabase.from('profiles').select('full_name, avatar_url, bio').eq('id', ev.organizer_id).single(),
+      ])
       setTicketTypes(tt ?? [])
+      setOrganiser(org ?? null)
       if (tt?.length) setSelected(tt[0].id)
       setLoading(false)
     }
@@ -125,6 +130,23 @@ export default function EventPage() {
           <div>
             <h2 className="font-heading font-bold text-gray-900 mb-2">About</h2>
             <p className="text-muted leading-relaxed whitespace-pre-line">{event.description}</p>
+          </div>
+        )}
+
+        {/* Organiser */}
+        {organiser && (
+          <div className="flex items-center gap-3 py-4 border-t border-gray-100">
+            {organiser.avatar_url
+              ? <img src={organiser.avatar_url} alt={organiser.full_name} className="w-11 h-11 rounded-full object-cover border border-gray-200 shrink-0" />
+              : <div className="w-11 h-11 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 text-gray-400 font-semibold text-sm">
+                  {(organiser.full_name ?? 'O')[0].toUpperCase()}
+                </div>
+            }
+            <div>
+              <p className="text-xs text-muted">Organised by</p>
+              <p className="text-sm font-semibold text-gray-900">{organiser.full_name ?? 'Organiser'}</p>
+              {organiser.bio && <p className="text-xs text-muted mt-0.5 line-clamp-2">{organiser.bio}</p>}
+            </div>
           </div>
         )}
 

@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Plus, QrCode, BarChart2, RefreshCw, Pencil, Trash2, Send } from 'lucide-react'
+import { Plus, QrCode, BarChart2, RefreshCw, Pencil, Trash2, Send, UserCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/Navbar'
@@ -82,6 +82,12 @@ export default function Dashboard() {
             <button onClick={handleRefresh} title="Refresh stats" className="p-2 rounded-lg text-muted hover:text-gray-900 hover:bg-gray-100 transition">
               <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
             </button>
+            <Link to="/dashboard/profile" title="My profile">
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-gray-200 hover:border-primary transition" />
+                : <button className="p-2 rounded-lg text-muted hover:text-gray-900 hover:bg-gray-100 transition"><UserCircle size={20} /></button>
+              }
+            </Link>
             <Link to="/dashboard/events/new">
               <Button><Plus size={16} className="inline mr-1.5" />New event</Button>
             </Link>

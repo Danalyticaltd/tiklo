@@ -60,7 +60,7 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }
 
-  const value = { user, profile, loading, login, register, logout }
+  const value = { user, profile, loading, login, register, logout, fetchProfile }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

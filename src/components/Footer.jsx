@@ -18,7 +18,7 @@ export default function Footer() {
         <div>
           <span className="font-heading font-bold text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Tiklo</span>
           <p className="mt-3 text-sm text-muted leading-relaxed">
-            The ticketing platform for multicultural Canada — African, Caribbean, South Asian, Latin events and more.
+            The easiest way to create, promote, and sell tickets for any event across Canada.
           </p>
         </div>
 
@@ -34,7 +34,7 @@ export default function Footer() {
         <div>
           <p className="text-gray-900 font-semibold text-sm mb-4">Organisers</p>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/login" className="text-muted hover:text-gray-900 transition">List your event</Link></li>
+            <li><Link to="/login" className="text-muted hover:text-gray-900 transition">Start listing your event</Link></li>
             <li><Link to="/dashboard" className="text-muted hover:text-gray-900 transition">Organiser dashboard</Link></li>
             <li><a href="mailto:hello@tiklo.ca" className="text-muted hover:text-gray-900 transition">Contact us</a></li>
           </ul>
