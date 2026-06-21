@@ -207,13 +207,9 @@ export default function CreateEvent() {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
-              <Select label="Event type *" {...register('event_type', { required: 'Event type is required' })}>
-                <option value="">Select a type…</option>
-                {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </Select>
-              {errors.event_type && <p className="text-red-500 text-xs">{errors.event_type.message}</p>}
-            </div>
+            <Select label="Event type *" {...register('event_type')}>
+              {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </Select>
           </div>
 
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
