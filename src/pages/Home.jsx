@@ -12,6 +12,7 @@ const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vanco
 const TAGS = ['All Communities', 'African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const COMMUNITY_ORDER = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const CHIPS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Free events', 'This weekend']
+const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar']
 
 export default function Home() {
   const [events, setEvents] = useState([])
@@ -20,6 +21,12 @@ export default function Home() {
   const [tag, setTag] = useState('All Communities')
   const [search, setSearch] = useState('')
   const [activeChip, setActiveChip] = useState(null)
+  const [heroWord, setHeroWord] = useState(0)
+
+  useEffect(() => {
+    const t = setInterval(() => setHeroWord(w => (w + 1) % HERO_WORDS.length), 2600)
+    return () => clearInterval(t)
+  }, [])
 
   useEffect(() => {
     async function fetchEvents() {
@@ -113,14 +120,18 @@ export default function Home() {
 
       {/* ── HERO: centred search ── */}
       <section className="bg-white border-b border-gray-100 py-12 px-4 text-center">
-        <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-          Find your next{' '}
-          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            cultural experience
+        <h1 className="font-heading text-3xl md:text-5xl font-bold text-gray-900 mb-3 leading-tight">
+          Create unforgettable{' '}
+          <span
+            key={heroWord}
+            className="inline-block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-fade-in"
+          >
+            {HERO_WORDS[heroWord]}
           </span>
+          .<br className="hidden sm:block" /> Discover your next experience.
         </h1>
-        <p className="text-muted text-sm mb-8">
-          African, Caribbean, South Asian, Latin and more — across Canada.
+        <p className="text-muted text-sm mb-8 max-w-lg mx-auto leading-relaxed">
+          The easiest way to create events, sell tickets, and connect with your audience.
         </p>
 
         {/* Search bar */}
