@@ -109,14 +109,22 @@ export default async function handler(req, res) {
   if (!Number.isInteger(quantity) || quantity < 1) return res.status(400).json({ error: 'Quantity must be at least 1' })
 
   try {
-    // Fetch ticket type + event
+    // Fetch ticket type + event — always fresh, no cache
     const { data: ticketType } = await supabase
       .from('ticket_types')
-      .select('*, events(organizer_id, title, event_date, location, profiles!organizer_id(email, full_name))')
+      .select('*, events(id, status, event_date, organizer_id, title, location, profiles!organizer_id(email, full_name))')
       .eq('id', ticket_type_id)
       .single()
 
     if (!ticketType) return res.status(404).json({ error: 'Ticket type not found' })
+
+    const ev = ticketType.events
+    if (!ev || ev.status !== 'published') {
+      return res.status(400).json({ error: 'This event is no longer available for booking' })
+    }
+    if (new Date(ev.event_date) < new Date()) {
+      return res.status(400).json({ error: 'This event has already passed' })
+    }
 
     const unitAmount = Math.round(ticketType.price * 100) // cents
     const subtotal = ticketType.price * quantity
