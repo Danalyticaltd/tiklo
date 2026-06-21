@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
 
-function CheckoutForm({ orderId, onSuccess }) {
+function CheckoutForm({ orderId, buyerEmail, onSuccess }) {
   const stripe = useStripe()
   const elements = useElements()
   const [error, setError] = useState(null)
@@ -22,7 +22,7 @@ function CheckoutForm({ orderId, onSuccess }) {
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/ticket/confirmed?order=${orderId}`,
+        return_url: `${window.location.origin}/ticket/confirmed?order=${orderId}&email=${encodeURIComponent(buyerEmail)}`,
       },
     })
 
@@ -93,7 +93,7 @@ export default function Checkout() {
       setOrderId(data.order_id)
 
       if (data.free) {
-        navigate(`/ticket/confirmed?order=${data.order_id}`)
+        navigate(`/ticket/confirmed?order=${data.order_id}&email=${encodeURIComponent(buyerEmail)}`)
         return
       }
 
@@ -169,7 +169,7 @@ export default function Checkout() {
               stripe={stripePromise}
               options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#DC5E3D' } }, defaultValues: { billingDetails: { address: { country: 'CA' } } } }}
             >
-              <CheckoutForm orderId={orderId} />
+              <CheckoutForm orderId={orderId} buyerEmail={buyerEmail} />
             </Elements>
           </div>
         ) : null}

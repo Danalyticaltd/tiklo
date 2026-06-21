@@ -1,7 +1,7 @@
 import Footer from '../components/Footer'
 ﻿import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { CheckCircle, PartyPopper } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import QRCode from 'qrcode'
 import { format } from 'date-fns'
 import { motion } from 'framer-motion'
@@ -12,6 +12,7 @@ import Button from '../components/ui/Button'
 export default function TicketConfirm() {
   const [searchParams] = useSearchParams()
   const orderId = searchParams.get('order')
+  const emailFromUrl = searchParams.get('email')
   const [tickets, setTickets] = useState([])
   const [order, setOrder] = useState(null)
   const [qrCodes, setQrCodes] = useState({})
@@ -57,33 +58,10 @@ export default function TicketConfirm() {
   const ticketTypeName = order?.ticket_types?.name
   const qty = order?.quantity ?? tickets.length
 
-  const funLines = [
-    "You're officially on the list 🎉",
-    "See you on the dance floor 🕺💃",
-    "The party just got better 🔥",
-    "Your seat is reserved — don't be late! ⏰",
-  ]
-  const tagline = funLines[Math.floor(Math.random() * funLines.length)]
-
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-8">
-
-        {/* Confetti animation strip */}
-        <div className="flex justify-center gap-1 mb-6 overflow-hidden h-6">
-          {['🎊','🎉','✨','🎈','🎊','✨','🎉','🎈','🎊'].map((e, i) => (
-            <motion.span
-              key={i}
-              initial={{ y: -40, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: i * 0.08, type: 'spring', stiffness: 200 }}
-              className="text-xl"
-            >
-              {e}
-            </motion.span>
-          ))}
-        </div>
 
         {/* Success banner */}
         <motion.div
@@ -95,10 +73,13 @@ export default function TicketConfirm() {
           <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-200">
             <CheckCircle size={40} className="text-white" strokeWidth={2.5} />
           </div>
-          <h1 className="font-heading text-3xl font-bold text-gray-900">You're in!</h1>
-          <p className="text-muted mt-1">{tagline}</p>
+          <h1 className="font-heading text-3xl font-bold text-gray-900">You're officially in!</h1>
+          <p className="text-muted mt-1">Your booking is confirmed — see you there.</p>
           <p className="text-sm text-gray-500 mt-2">
-            {qty} ticket{qty !== 1 ? 's' : ''} sent to <span className="font-semibold text-gray-900">{order?.buyer_email}</span>
+            {qty} ticket{qty !== 1 ? 's' : ''} sent to{' '}
+            <span className="font-semibold text-gray-900">
+              {emailFromUrl || order?.buyer_email || '—'}
+            </span>
           </p>
         </motion.div>
 

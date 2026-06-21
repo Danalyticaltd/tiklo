@@ -105,9 +105,10 @@ export default function EditEvent() {
   async function onSubmit(data) {
     setError(null)
     setSaving(true)
+    console.log('[EditEvent] submitting:', { event_type: data.event_type, community_tag: data.community_tag })
     try {
       // 1. Update event fields
-      const { error: evErr } = await supabase.from('events').update({
+      const payload = {
         title: data.title,
         description: data.description,
         location: data.location,
@@ -115,8 +116,12 @@ export default function EditEvent() {
         community_tag: data.community_tag,
         event_type: data.event_type,
         event_date: data.event_date,
-      }).eq('id', id)
-      if (evErr) throw evErr
+      }
+      const { error: evErr } = await supabase.from('events').update(payload).eq('id', id)
+      if (evErr) {
+        console.error('[EditEvent] update error:', evErr)
+        throw evErr
+      }
 
       // 2. Upload new banner if changed
       if (bannerFile) {
