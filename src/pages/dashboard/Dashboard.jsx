@@ -29,6 +29,13 @@ export default function Dashboard() {
     if (user) fetchEvents().then(() => setLoading(false))
   }, [user])
 
+  // Re-fetch when user returns to this tab so status changes made by admin are reflected
+  useEffect(() => {
+    function onVisible() { if (document.visibilityState === 'visible' && user) fetchEvents() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [user])
+
   async function handleRefresh() {
     setRefreshing(true)
     await fetchEvents()

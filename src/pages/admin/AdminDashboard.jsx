@@ -43,13 +43,12 @@ export default function AdminDashboard() {
 
   async function approveEvent(id) {
     await supabase.from('events').update({ status: 'published' }).eq('id', id)
-    setPendingEvents(prev => prev.filter(e => e.id !== id))
-    setStats(s => s ? { ...s, eventCount: (s.eventCount ?? 0) + 1 } : s)
+    await load()
   }
 
   async function rejectEvent(id) {
     await supabase.from('events').update({ status: 'draft' }).eq('id', id)
-    setPendingEvents(prev => prev.filter(e => e.id !== id))
+    await load()
   }
 
   return (
