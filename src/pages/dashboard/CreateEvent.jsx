@@ -12,6 +12,7 @@ import TicketTypeRow from '../../components/TicketTypeRow'
 
 const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver', 'Edmonton', 'Winnipeg', 'Halifax']
 const TAGS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
+const EVENT_TYPES = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking', 'Other']
 
 const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
@@ -34,6 +35,7 @@ export default function CreateEvent() {
       location: '',
       city: 'Ottawa',
       community_tag: 'African',
+      event_type: 'Concert',
       event_date: '',
       ticket_types: [{ name: 'General Admission', price: 0, quantity: 100 }],
     },
@@ -100,6 +102,7 @@ export default function CreateEvent() {
         location: data.location,
         city: data.city,
         community_tag: data.community_tag,
+        event_type: data.event_type,
         event_date: data.event_date,
         status: publish ? 'pending' : 'draft',
       }).select().single()
@@ -195,6 +198,10 @@ export default function CreateEvent() {
                 {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
               </Select>
             </div>
+
+            <Select label="Event type *" {...register('event_type', { required: true })}>
+              {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </Select>
           </div>
 
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">

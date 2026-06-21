@@ -12,6 +12,7 @@ const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vanco
 const TAGS = ['All Communities', 'African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const COMMUNITY_ORDER = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const CHIPS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Free events', 'This weekend']
+const EVENT_TYPE_CHIPS = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking']
 const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar']
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
   const [tag, setTag] = useState('All Communities')
   const [search, setSearch] = useState('')
   const [activeChip, setActiveChip] = useState(null)
+  const [activeType, setActiveType] = useState(null)
   const [heroWord, setHeroWord] = useState(0)
 
   useEffect(() => {
@@ -63,8 +65,14 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  function handleTypeChip(type) {
+    setActiveType(t => t === type ? null : type)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   function clearFilters() {
     setActiveChip(null)
+    setActiveType(null)
     setTag('All Communities')
     setCity('All Cities')
     setSearch('')
@@ -91,6 +99,9 @@ export default function Home() {
       sunday.setHours(23, 59, 59)
       evts = evts.filter(e => { const d = new Date(e.event_date); return d >= friday && d <= sunday })
     }
+    if (activeType) {
+      evts = evts.filter(e => e.event_type?.toLowerCase() === activeType.toLowerCase())
+    }
     return evts
   })()
 
@@ -103,7 +114,7 @@ export default function Home() {
     })
     .slice(0, 6)
 
-  const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip
+  const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip || activeType
 
   const byCommunity = COMMUNITY_ORDER
     .map(community => ({
@@ -160,7 +171,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Category chips */}
+        {/* Community chips */}
         <div className="flex flex-wrap justify-center gap-2 mt-5">
           {CHIPS.map(chip => (
             <button
@@ -172,8 +183,24 @@ export default function Home() {
                   : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
               }`}
             >
-              {chip === 'Hot right now' && <Flame size={11} className="inline mr-1" />}
               {chip}
+            </button>
+          ))}
+        </div>
+
+        {/* Event type chips */}
+        <div className="flex flex-wrap justify-center gap-2 mt-2">
+          {EVENT_TYPE_CHIPS.map(type => (
+            <button
+              key={type}
+              onClick={() => handleTypeChip(type)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition ${
+                activeType === type
+                  ? 'bg-accent/10 border-accent text-accent'
+                  : 'bg-white border-gray-200 text-gray-500 hover:border-gray-400'
+              }`}
+            >
+              {type}
             </button>
           ))}
         </div>

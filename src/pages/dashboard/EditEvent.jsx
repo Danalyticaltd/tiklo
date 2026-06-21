@@ -11,6 +11,7 @@ import Input from '../../components/ui/Input'
 
 const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver', 'Edmonton', 'Winnipeg', 'Halifax']
 const TAGS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
+const EVENT_TYPES = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking', 'Other']
 const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 export default function EditEvent() {
@@ -50,6 +51,7 @@ export default function EditEvent() {
         location: ev.location ?? '',
         city: ev.city,
         community_tag: ev.community_tag,
+        event_type: ev.event_type ?? 'Concert',
         event_date: ev.event_date ? ev.event_date.slice(0, 16) : '',
         ticket_types: (tts ?? []).map(tt => ({
           id: tt.id,
@@ -110,6 +112,7 @@ export default function EditEvent() {
         location: data.location,
         city: data.city,
         community_tag: data.community_tag,
+        event_type: data.event_type,
         event_date: data.event_date,
       }).eq('id', id)
       if (evErr) throw evErr
@@ -247,6 +250,10 @@ export default function EditEvent() {
                 {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
               </Select>
             </div>
+
+            <Select label="Event type *" {...register('event_type', { required: true })}>
+              {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </Select>
           </div>
 
           {/* Banner */}
