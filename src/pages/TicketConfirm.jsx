@@ -55,7 +55,7 @@ export default function TicketConfirm() {
 
   const event = order?.events
   const ticketTypeName = order?.ticket_types?.name
-  const qty = tickets.length
+  const qty = order?.quantity ?? tickets.length
 
   const funLines = [
     "You're officially on the list 🎉",
