@@ -105,10 +105,8 @@ export default function EditEvent() {
   async function onSubmit(data) {
     setError(null)
     setSaving(true)
-    console.log('[EditEvent] submitting:', { event_type: data.event_type, community_tag: data.community_tag })
     try {
-      // 1. Update event fields
-      const payload = {
+      const { error: evErr } = await supabase.from('events').update({
         title: data.title,
         description: data.description,
         location: data.location,
@@ -116,12 +114,8 @@ export default function EditEvent() {
         community_tag: data.community_tag,
         event_type: data.event_type,
         event_date: data.event_date,
-      }
-      const { error: evErr } = await supabase.from('events').update(payload).eq('id', id)
-      if (evErr) {
-        console.error('[EditEvent] update error:', evErr)
-        throw evErr
-      }
+      }).eq('id', id)
+      if (evErr) throw evErr
 
       // 2. Upload new banner if changed
       if (bannerFile) {
@@ -370,7 +364,7 @@ export default function EditEvent() {
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')}>Cancel</Button>
-            <Button type="button" disabled={saving} onClick={handleSubmit(onSubmit, (errs) => console.error('[EditEvent] validation errors:', errs))}>
+            <Button type="button" disabled={saving} onClick={handleSubmit(onSubmit)}>
               {saving ? 'Saving…' : 'Save changes'}
             </Button>
           </div>
