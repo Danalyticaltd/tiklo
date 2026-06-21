@@ -1,6 +1,6 @@
 ﻿import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, Controller } from 'react-hook-form'
 import { Plus, ArrowLeft, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -9,6 +9,7 @@ import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Select from '../../components/ui/Select'
 import TicketTypeRow from '../../components/TicketTypeRow'
+import CommunityInput from '../../components/CommunityInput'
 
 const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver', 'Edmonton', 'Winnipeg', 'Halifax']
 const TAGS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
@@ -194,9 +195,13 @@ export default function CreateEvent() {
                 />
                 {errors.location && <p className="text-red-500 text-xs">{errors.location.message}</p>}
               </div>
-              <Select label="Community" {...register('community_tag')}>
-                {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
-              </Select>
+              <Controller
+                name="community_tag"
+                control={control}
+                render={({ field }) => (
+                  <CommunityInput label="Community" value={field.value} onChange={field.onChange} />
+                )}
+              />
             </div>
 
             <Select label="Event type *" {...register('event_type', { required: true })}>

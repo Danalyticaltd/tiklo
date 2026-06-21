@@ -9,9 +9,6 @@ import HowItWorks from '../components/HowItWorks'
 import Footer from '../components/Footer'
 
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
-const TAGS = ['All Communities', 'African', 'Caribbean', 'South Asian', 'Latin', 'Other']
-const COMMUNITY_ORDER = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
-const CHIPS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Free events', 'This weekend']
 const EVENT_TYPE_CHIPS = ['Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sports', 'Networking']
 const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar']
 
@@ -23,7 +20,25 @@ export default function Home() {
   const [search, setSearch] = useState('')
   const [activeChip, setActiveChip] = useState(null)
   const [activeType, setActiveType] = useState(null)
+  const [communityChips, setCommunityChips] = useState([])
   const [heroWord, setHeroWord] = useState(0)
+
+  // Fetch top community tags dynamically from published events
+  useEffect(() => {
+    async function fetchCommunities() {
+      const { data } = await supabase
+        .from('events')
+        .select('community_tag')
+        .eq('status', 'published')
+        .not('community_tag', 'is', null)
+      if (!data) return
+      const counts = {}
+      data.forEach(e => { if (e.community_tag) counts[e.community_tag] = (counts[e.community_tag] || 0) + 1 })
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([tag]) => tag)
+      setCommunityChips(sorted.slice(0, 8))
+    }
+    fetchCommunities()
+  }, [])
 
   useEffect(() => {
     const t = setInterval(() => setHeroWord(w => (w + 1) % HERO_WORDS.length), 2600)
@@ -57,7 +72,7 @@ export default function Home() {
       return
     }
     setActiveChip(chip)
-    if (COMMUNITY_ORDER.includes(chip)) {
+    if (chip !== 'Free events' && chip !== 'This weekend') {
       setTag(chip)
     } else {
       setTag('All Communities')
@@ -79,7 +94,7 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const communityFiltered = activeChip && COMMUNITY_ORDER.includes(activeChip)
+  const communityFiltered = activeChip && activeChip !== 'Free events' && activeChip !== 'This weekend'
 
   const visible = (() => {
     let evts = events
@@ -116,14 +131,17 @@ export default function Home() {
 
   const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip || activeType
 
-  const byCommunity = COMMUNITY_ORDER
+  // Group by distinct community tags present in visible events
+  const distinctCommunities = [...new Set(visible.map(e => e.community_tag).filter(Boolean))]
+  const byCommunity = distinctCommunities
     .map(community => ({
       community,
       events: visible.filter(e => e.community_tag === community),
     }))
     .filter(g => g.events.length > 0)
+    .sort((a, b) => b.events.length - a.events.length)
 
-  const uncategorised = visible.filter(e => !COMMUNITY_ORDER.includes(e.community_tag))
+  const uncategorised = visible.filter(e => !e.community_tag)
 
   return (
     <div className="min-h-screen bg-white">
@@ -171,9 +189,9 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Community chips */}
+        {/* Community chips (dynamic) + static chips */}
         <div className="flex flex-wrap justify-center gap-2 mt-5">
-          {CHIPS.map(chip => (
+          {[...communityChips, 'Free events', 'This weekend'].map(chip => (
             <button
               key={chip}
               onClick={() => handleChip(chip)}
