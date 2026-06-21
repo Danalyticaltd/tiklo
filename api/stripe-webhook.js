@@ -117,10 +117,14 @@ async function generateTicketPdf(order, tickets) {
     // Icon: coral rounded square (matches TikloLogo.jsx viewBox 0 0 48 48, rendered at 46×46)
     const s = 46 / 48
     const ix = 20, ib = height - 63  // icon left-x, icon bottom-y
-    page.drawRectangle({ x: ix, y: ib, width: 46, height: 46, color: rgb(1, 0.341, 0.2), borderRadius: 11 })
-    // Ticket body
-    page.drawRectangle({ x: ix + 7*s, y: ib + 14*s, width: 34*s, height: 18*s,
-      color: rgb(1,1,1), opacity: 0.25, borderColor: rgb(1,1,1), borderWidth: 1.6, borderRadius: Math.round(4.5*s) })
+    // Rounded square outer (r=11, matches TikloLogo border-radius) — drawRectangle ignores borderRadius so use SVG path
+    const rrOuter = `M 11 0 L 35 0 Q 46 0 46 11 L 46 35 Q 46 46 35 46 L 11 46 Q 0 46 0 35 L 0 11 Q 0 0 11 0 Z`
+    page.drawSvgPath(rrOuter, { x: ix, y: ib + 46, color: rgb(1, 0.341, 0.2) })
+    // Ticket body (inner rounded rect, semi-transparent white)
+    const iw = Math.round(34*s), ih = Math.round(18*s), ir = Math.round(4.5*s)
+    const rrInner = `M ${ir} 0 L ${iw-ir} 0 Q ${iw} 0 ${iw} ${ir} L ${iw} ${ih-ir} Q ${iw} ${ih} ${iw-ir} ${ih} L ${ir} ${ih} Q 0 ${ih} 0 ${ih-ir} L 0 ${ir} Q 0 0 ${ir} 0 Z`
+    page.drawSvgPath(rrInner, { x: ix + Math.round(7*s), y: ib + Math.round(14*s) + ih,
+      color: rgb(1,1,1), opacity: 0.25, borderColor: rgb(1,1,1), borderWidth: 1.6 })
     // Notch circles (coral — bites into ticket edges)
     page.drawCircle({ x: ix + 7*s, y: ib + 23*s, size: 5*s, color: rgb(1, 0.341, 0.2) })
     page.drawCircle({ x: ix + 41*s, y: ib + 23*s, size: 5*s, color: rgb(1, 0.341, 0.2) })
