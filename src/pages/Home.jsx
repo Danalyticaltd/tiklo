@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Flame, ArrowRight } from 'lucide-react'
+import { Search, Flame } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
@@ -13,8 +13,6 @@ import Footer from '../components/Footer'
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
 const TAGS = ['All Communities', 'African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const COMMUNITY_ORDER = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
-
-const COMMUNITY_PILLS = ['Afrobeats', 'Carnival', 'Bollywood', 'Reggae', 'Salsa', 'Highlife', 'Soca', 'Bhangra', 'Latin Jazz', 'Zouk']
 
 export default function Home() {
   const [events, setEvents] = useState([])
@@ -73,98 +71,55 @@ export default function Home() {
     <div className="min-h-screen bg-bg">
       <Navbar />
 
-      {/* ── HERO ── */}
-      <section className="relative overflow-hidden bg-gray-950 text-white">
-        {/* background blobs */}
+      {/* ── COMPACT HERO + SEARCH ── */}
+      <section className="relative overflow-hidden bg-bg border-b border-gray-200">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute top-10 right-0 w-[400px] h-[400px] bg-accent/15 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/8 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-1/4 w-56 h-56 bg-accent/8 rounded-full blur-3xl" />
         </div>
-
-        <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-24 flex flex-col md:flex-row items-center gap-12">
-          {/* Left — copy */}
-          <motion.div
-            className="flex-1 min-w-0"
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2 bg-primary/15 text-primary text-xs font-bold px-3 py-1.5 rounded-full mb-6 border border-primary/30 uppercase tracking-widest">
-              Multicultural Canada
-            </div>
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.1] mb-6">
-              Your culture.<br />
-              Your events.<br />
-              <span className="bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">Your tickets.</span>
+        <div className="relative max-w-6xl mx-auto px-4 pt-10 pb-8">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Events for your{' '}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">community</span>
             </h1>
-            <p className="text-gray-400 text-base md:text-lg max-w-md leading-relaxed mb-8">
-              African, Caribbean, South Asian, Latin — discover the events that feel like home, right here in Canada.
+            <p className="text-muted text-sm mb-6">
+              African, Caribbean, South Asian, Latin and more — tickets for multicultural Canada.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <a href="#events" className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-400 text-white font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition shadow-lg shadow-primary/30 text-sm">
-                Browse events <ArrowRight size={15} />
-              </a>
-              <Link to="/register" className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/15 transition text-sm">
-                Host an event
-              </Link>
+            {/* Search + Filters */}
+            <div id="events" className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+                <input
+                  type="text" value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Search events, artists, cities..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition text-sm shadow-sm"
+                />
+              </div>
+              <select value={city} onChange={e => setCity(e.target.value)}
+                className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-primary transition min-w-[130px] shadow-sm">
+                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select value={tag} onChange={e => setTag(e.target.value)}
+                className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-primary transition min-w-[155px] shadow-sm">
+                {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
             </div>
-          </motion.div>
-
-          {/* Right — floating pills visual */}
-          <motion.div
-            className="flex-1 hidden md:flex flex-wrap gap-2 max-w-sm justify-center"
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.15 }}
-          >
-            {COMMUNITY_PILLS.map((pill, i) => (
-              <motion.span
-                key={pill}
-                className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-medium text-gray-300 backdrop-blur"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.05 }}
-              >
-                {pill}
-              </motion.span>
-            ))}
           </motion.div>
         </div>
       </section>
 
       {/* ── WORD OF THE DAY ── */}
-      <div className="max-w-6xl mx-auto px-4 mt-8 mb-4">
+      <div className="max-w-6xl mx-auto px-4 mt-6 mb-2">
         <WordOfDay />
-      </div>
-
-      {/* ── SEARCH + FILTERS ── */}
-      <div id="events" className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-            <input
-              type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search events, artists, bands..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition text-sm"
-            />
-          </div>
-          <select value={city} onChange={e => setCity(e.target.value)}
-            className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-primary transition min-w-[140px]">
-            {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={tag} onChange={e => setTag(e.target.value)}
-            className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-primary transition min-w-[160px]">
-            {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
       </div>
 
       {/* ── HOT RIGHT NOW ── */}
       {!isFiltered && hotEvents.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 pt-2 mb-12">
+        <div className="max-w-6xl mx-auto px-4 pt-6 mb-10">
           <div className="flex items-center gap-2 mb-5">
-            <Flame size={18} className="text-orange-500" />
-            <h2 className="font-heading font-bold text-gray-900 text-xl">Hot right now</h2>
+            <Flame size={17} className="text-orange-500" />
+            <h2 className="font-heading font-bold text-gray-900 text-lg">Hot right now</h2>
             <span className="text-muted text-sm">- selling fast</span>
           </div>
           <EventCarousel events={hotEvents} />
@@ -172,7 +127,7 @@ export default function Home() {
       )}
 
       {/* ── EVENT SECTIONS ── */}
-      <div className="max-w-6xl mx-auto px-4 pb-16 space-y-14">
+      <div className="max-w-6xl mx-auto px-4 pb-16 space-y-12">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
@@ -194,7 +149,7 @@ export default function Home() {
             {byCommunity.map(({ community, events: evts }) => (
               <section key={community} className="relative px-6">
                 <div className="flex items-center gap-2 mb-5">
-                  <h2 className="font-heading font-bold text-gray-900 text-xl">{community}</h2>
+                  <h2 className="font-heading font-bold text-gray-900 text-lg">{community}</h2>
                   <span className="text-muted text-sm">- {evts.length} event{evts.length !== 1 ? 's' : ''}</span>
                 </div>
                 <EventCarousel events={evts} />
@@ -203,7 +158,7 @@ export default function Home() {
             {uncategorised.length > 0 && (
               <section className="relative px-6">
                 <div className="flex items-center gap-2 mb-5">
-                  <h2 className="font-heading font-bold text-gray-900 text-xl">More events</h2>
+                  <h2 className="font-heading font-bold text-gray-900 text-lg">More events</h2>
                 </div>
                 <EventCarousel events={uncategorised} />
               </section>
