@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
+import TikloLogo from './TikloLogo'
 
 function BrowseLink() {
   const navigate = useNavigate()
@@ -16,7 +17,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-3 gap-10">
         {/* Brand */}
         <div>
-          <span className="font-heading font-bold text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Tiklo</span>
+          <TikloLogo size={26} />
           <p className="mt-3 text-sm text-muted leading-relaxed">
             The easiest way to create, promote, and sell tickets for any event across Canada.
           </p>
@@ -44,7 +45,7 @@ export default function Footer() {
       <div className="border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
           <span>&copy; {new Date().getFullYear()} Tiklo. All rights reserved.</span>
-          <span>Made with love for multicultural Canada</span>
+          <span>Made with love by <a href="https://www.danalytica.ca" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition underline underline-offset-2">Danalytica Ltd</a></span>
         </div>
       </div>
     </footer>

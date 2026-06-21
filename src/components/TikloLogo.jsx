@@ -21,7 +21,7 @@ export default function TikloLogo({ size = 32 }) {
           fontWeight="700"
           letterSpacing="-1"
           fill="#1a1a1a"
-        >tikl<tspan fill="#FF5733">o</tspan></text>
+        >Tikl<tspan fill="#FF5733">o</tspan></text>
       </svg>
     </span>
   )
