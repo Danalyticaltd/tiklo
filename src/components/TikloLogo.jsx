@@ -1,6 +1,6 @@
 export default function TikloLogo({ size = 32 }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       {/* Icon */}
       <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
         <rect width="48" height="48" rx="13" fill="#FF5733"/>
