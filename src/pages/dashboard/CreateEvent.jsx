@@ -35,7 +35,7 @@ export default function CreateEvent() {
       description: '',
       location: '',
       city: 'Ottawa',
-      community_tag: 'African',
+      community_tag: '',
       event_type: 'Concert',
       event_date: '',
       ticket_types: [{ name: 'General Admission', price: 0, quantity: 100 }],
