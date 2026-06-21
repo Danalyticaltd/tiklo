@@ -39,7 +39,18 @@ export default function AdminDashboard() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+
+    const channel = supabase
+      .channel('admin-dashboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, load)
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [])
 
   async function approveEvent(id) {
     await supabase.from('events').update({ status: 'published' }).eq('id', id)

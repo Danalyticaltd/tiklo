@@ -26,14 +26,17 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    if (user) fetchEvents().then(() => setLoading(false))
-  }, [user])
+    if (!user) return
+    fetchEvents().then(() => setLoading(false))
 
-  // Re-fetch when user returns to this tab so status changes made by admin are reflected
-  useEffect(() => {
-    function onVisible() { if (document.visibilityState === 'visible' && user) fetchEvents() }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    const channel = supabase
+      .channel(`dashboard-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: `organizer_id=eq.${user.id}` }, fetchEvents)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_types' }, fetchEvents)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, fetchEvents)
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
   }, [user])
 
   async function handleRefresh() {
