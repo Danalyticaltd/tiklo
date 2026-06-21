@@ -116,9 +116,17 @@ async function generateTicketPdf(order, tickets) {
     const page = pdfDoc.addPage([420, 600])
     const { width, height } = page.getSize()
 
-    // Purple header bar
-    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: rgb(0.486, 0.227, 0.929) })
-    page.drawText('Tiklo', { x: 24, y: height - 52, size: 28, font, color: rgb(1, 1, 1) })
+    // Coral header bar
+    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: rgb(1, 0.341, 0.2) })
+
+    // Ticket icon outline (simplified: outer rect + two notch circles)
+    page.drawRectangle({ x: 24, y: height - 64, width: 36, height: 22, color: rgb(1, 1, 1), opacity: 0.2,
+      borderColor: rgb(1, 1, 1), borderWidth: 1.5, borderRadius: 4 })
+    page.drawCircle({ x: 24, y: height - 53, size: 5, color: rgb(1, 0.341, 0.2) })
+    page.drawCircle({ x: 60, y: height - 53, size: 5, color: rgb(1, 0.341, 0.2) })
+
+    // Wordmark: "Tiklo" in white
+    page.drawText('Tiklo', { x: 72, y: height - 58, size: 26, font, color: rgb(1, 1, 1) })
 
     // Event title
     page.drawText(event.title, { x: 24, y: height - 110, size: 16, font, color: rgb(0.1, 0.1, 0.1), maxWidth: width - 48 })
@@ -136,7 +144,7 @@ async function generateTicketPdf(order, tickets) {
     page.drawText('Ticket Type', { x: 24, y: height - 238, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
     page.drawText(ticketType.name, { x: 24, y: height - 256, size: 14, font, color: rgb(0.1, 0.1, 0.1) })
     page.drawText('Ticket ID', { x: 24, y: height - 281, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
-    page.drawText(ticket.id.slice(0, 8).toUpperCase(), { x: 24, y: height - 299, size: 13, font, color: rgb(0.486, 0.227, 0.929) })
+    page.drawText(ticket.id.slice(0, 8).toUpperCase(), { x: 24, y: height - 299, size: 13, font, color: rgb(1, 0.341, 0.2) })
 
     // QR code
     const qrBuffer = await QRCode.toBuffer(ticket.qr_code, { width: 180, margin: 1 })
@@ -182,7 +190,10 @@ async function sendTicketEmail(order, tickets) {
       <!DOCTYPE html>
       <html>
       <body style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f2937;">
-        <h1 style="font-size:24px;font-weight:800;color:#7C3AED;margin-bottom:4px;">Tiklo</h1>
+        <div style="display:table;margin-bottom:20px;">
+          <img src="https://tiklo.ca/favicon.svg" width="36" height="36" alt="" style="display:table-cell;vertical-align:middle;border-radius:10px;" />
+          <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#FF5733;">o</span></span>
+        </div>
         <p style="color:#6b7280;margin-bottom:24px;">Your tickets are confirmed!</p>
 
         <div style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:24px;">
@@ -228,7 +239,10 @@ async function sendOrganizerNotification(order) {
       <!DOCTYPE html>
       <html>
       <body style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f2937;">
-        <h1 style="font-size:24px;font-weight:800;color:#7C3AED;margin-bottom:4px;">Tiklo</h1>
+        <div style="display:table;margin-bottom:20px;">
+          <img src="https://tiklo.ca/favicon.svg" width="36" height="36" alt="" style="display:table-cell;vertical-align:middle;border-radius:10px;" />
+          <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#FF5733;">o</span></span>
+        </div>
         <p style="color:#6b7280;margin-bottom:24px;">You just made a sale!</p>
 
         <div style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:20px;">
@@ -243,7 +257,7 @@ async function sendOrganizerNotification(order) {
             <tr><td style="color:#6b7280;padding:4px 0;">Platform fee</td><td style="text-align:right;">−$${fee.toFixed(2)}</td></tr>
             <tr style="border-top:1px solid #e5e7eb;">
               <td style="padding:8px 0 4px;font-weight:700;">Your earnings</td>
-              <td style="text-align:right;font-weight:700;color:#7C3AED;">$${net.toFixed(2)} CAD</td>
+              <td style="text-align:right;font-weight:700;color:#FF5733;">$${net.toFixed(2)} CAD</td>
             </tr>
           </table>
         </div>

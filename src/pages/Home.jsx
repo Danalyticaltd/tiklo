@@ -10,7 +10,7 @@ import Footer from '../components/Footer'
 
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
 const EVENT_TYPE_CHIPS = ['Cultural show', 'Community event', 'Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sport Event', 'Networking']
-const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar']
+const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar', 'cultural show']
 
 export default function Home() {
   const [events, setEvents] = useState([])
@@ -151,7 +151,7 @@ export default function Home() {
       {/* ── HERO: centred search ── */}
       <section className="bg-white border-b border-gray-100 py-12 px-4 text-center">
         <h1 className="font-heading text-3xl md:text-5xl font-bold text-gray-900 mb-3 leading-tight">
-          Create unforgettable<br />
+          Create an unforgettable<br />
           <span className="flex items-center justify-center" style={{ minHeight: '1.35em' }}>
             <span
               key={heroWord}

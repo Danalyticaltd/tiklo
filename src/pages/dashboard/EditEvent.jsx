@@ -226,8 +226,11 @@ export default function EditEvent() {
                 <label className="text-sm text-muted">Date & time *</label>
                 <input
                   type="datetime-local"
-                  {...register('event_date', { required: 'Date is required' })}
-                  className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]"
+                  {...register('event_date', {
+                    required: 'Date is required',
+                    validate: v => new Date(v) > new Date() || 'Event date must be in the future',
+                  })}
+                  className={`bg-white border ${errors.event_date ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]`}
                 />
                 {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
               </div>
@@ -256,9 +259,13 @@ export default function EditEvent() {
               />
             </div>
 
-            <Select label="Event type *" {...register('event_type', { required: true })}>
-              {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </Select>
+            <div className="flex flex-col gap-1">
+              <Select label="Event type *" {...register('event_type', { required: 'Event type is required' })}>
+                <option value="">Select a type…</option>
+                {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </Select>
+              {errors.event_type && <p className="text-red-500 text-xs">{errors.event_type.message}</p>}
+            </div>
           </div>
 
           {/* Banner */}

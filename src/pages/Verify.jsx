@@ -6,7 +6,7 @@ export default function Verify() {
   const [searchParams] = useSearchParams()
   const email = searchParams.get('email') ?? ''
   const navigate = useNavigate()
-  const [digits, setDigits] = useState(Array(6).fill(''))
+  const [digits, setDigits] = useState(Array(8).fill(''))
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [cooldown, setCooldown] = useState(0)
