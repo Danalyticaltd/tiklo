@@ -37,6 +37,7 @@ export default function EventPage() {
       setMeta('twitter:title', ev.title)
       setMeta('twitter:description', ev.description ?? ev.title)
       if (ev.banner_url) setMeta('twitter:image', ev.banner_url)
+      setMeta('twitter:card', ev.banner_url ? 'summary_large_image' : 'summary')
 
       const [{ data: tt }, { data: org }] = await Promise.all([
         supabase.from('ticket_types').select('*').eq('event_id', eventId),
@@ -45,12 +46,43 @@ export default function EventPage() {
       setTicketTypes(tt ?? [])
       setOrganiser(org ?? null)
       if (tt?.length) setSelected(tt[0].id)
+
+      // Schema.org JSON-LD for Google rich results
+      const minPrice = tt?.length ? Math.min(...tt.map(t => Number(t.price))) : 0
+      const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: ev.title,
+        startDate: ev.event_date,
+        description: ev.description ?? ev.title,
+        url: `https://tiklo.ca/events/${eventId}`,
+        location: ev.location ? {
+          '@type': 'Place',
+          name: ev.location,
+          address: { '@type': 'PostalAddress', addressLocality: ev.city, addressCountry: 'CA' },
+        } : { '@type': 'VirtualLocation' },
+        ...(ev.banner_url && { image: ev.banner_url }),
+        organizer: { '@type': 'Organization', name: org?.full_name ?? 'Tiklo Organizer' },
+        offers: tt?.length ? {
+          '@type': 'Offer',
+          url: `https://tiklo.ca/events/${eventId}`,
+          price: minPrice,
+          priceCurrency: 'CAD',
+          availability: 'https://schema.org/InStock',
+          validFrom: ev.created_at,
+        } : undefined,
+      }
+      let ldEl = document.querySelector('script[type="application/ld+json"]')
+      if (!ldEl) { ldEl = document.createElement('script'); ldEl.type = 'application/ld+json'; document.head.appendChild(ldEl) }
+      ldEl.textContent = JSON.stringify(jsonLd)
+
       setLoading(false)
     }
     load()
     return () => {
       document.title = 'Tiklo - Event Ticketing'
       setMeta('og:title', 'Tiklo - Event Ticketing')
+      document.querySelector('script[type="application/ld+json"]')?.remove()
     }
   }, [eventId, navigate])
 
