@@ -5,20 +5,20 @@ const STEPS = [
   {
     icon: CalendarPlus,
     num: '01',
-    title: 'Create your event',
-    body: 'Fill in the details — date, venue, ticket types and pricing. Upload your event flyer.',
-  },
-  {
-    icon: ClipboardCheck,
-    num: '02',
-    title: 'Get approved',
-    body: 'Our team reviews your event within 24 hours to keep the community safe and on-brand.',
+    title: 'Create Your Event',
+    body: 'Add your event details, set ticket types and pricing, and upload your event flyer — in minutes.',
   },
   {
     icon: Ticket,
+    num: '02',
+    title: 'Sell Tickets Online',
+    body: 'Your event goes live after a quick review. Share your link and start collecting payments instantly.',
+  },
+  {
+    icon: ClipboardCheck,
     num: '03',
-    title: 'Sell and get paid',
-    body: 'Tickets go live after approval. Track sales in real time and export your attendee list.',
+    title: 'Check In Attendees',
+    body: 'Scan QR codes at the door with any smartphone. Track arrivals in real time from your dashboard.',
   },
 ]
 

@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar'
 import EventCard from '../components/EventCard'
 import EventCarousel from '../components/EventCarousel'
 import HowItWorks from '../components/HowItWorks'
+import WhyTiklo from '../components/WhyTiklo'
 import Footer from '../components/Footer'
 
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
@@ -151,20 +152,30 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* ── HERO: centred search ── */}
-      <section className="bg-white border-b border-gray-100 py-12 px-4 text-center">
-        <h1 className="font-heading text-3xl md:text-5xl font-bold text-gray-900 mb-3 leading-tight">
-          Create an unforgettable<br />
-          <span className="flex items-center justify-center" style={{ minHeight: '1.35em' }}>
-            <span
-              key={heroWord}
-              className="inline-block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-fade-in"
-            >
-              {HERO_WORDS[heroWord]}.
-            </span>
-          </span>
-          Discover your next experience.
+      {/* ── HERO ── */}
+      <section className="bg-white border-b border-gray-100 py-14 px-4 text-center">
+        <p className="text-primary text-xs font-bold uppercase tracking-widest mb-3">Canada's Event Ticketing Platform</p>
+        <h1 className="font-heading text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+          Sell Event Tickets<br />
+          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Online in Minutes</span>
         </h1>
+        <p className="text-muted text-base md:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
+          Canada's simple ticketing platform for cultural events, concerts, conferences, fundraisers, festivals, and community gatherings.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+          <Link
+            to="/register"
+            className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md shadow-primary/20 text-sm"
+          >
+            Create Your Event
+          </Link>
+          <a
+            href="#events"
+            className="border border-gray-200 hover:border-primary text-gray-700 hover:text-primary font-semibold px-6 py-3 rounded-xl transition text-sm"
+          >
+            Browse Events
+          </a>
+        </div>
 
         {/* Search bar */}
         <div className="flex max-w-2xl mx-auto rounded-xl overflow-hidden border border-gray-200 shadow-md bg-white">
@@ -255,7 +266,7 @@ export default function Home() {
       )}
 
       {/* ── EVENT SECTIONS ── */}
-      <div className="max-w-5xl mx-auto px-4 pb-16 space-y-12">
+      <div id="events" className="max-w-5xl mx-auto px-4 pb-16 space-y-12">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
@@ -305,6 +316,7 @@ export default function Home() {
         )}
       </div>
 
+      <WhyTiklo />
       <HowItWorks />
       <Footer />
     </div>

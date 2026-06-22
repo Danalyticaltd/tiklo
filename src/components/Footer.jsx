@@ -23,11 +23,17 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Attendees */}
+        {/* Events by city */}
         <div>
-          <p className="text-gray-900 font-semibold text-sm mb-4">Attendees</p>
+          <p className="text-gray-900 font-semibold text-sm mb-4">Events by City</p>
           <ul className="space-y-2 text-sm">
-            <li><BrowseLink /></li>
+            {['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver'].map(c => (
+              <li key={c}>
+                <Link to={`/events/city/${c.toLowerCase()}`} className="text-muted hover:text-gray-900 transition">
+                  Events in {c}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -35,7 +41,8 @@ export default function Footer() {
         <div>
           <p className="text-gray-900 font-semibold text-sm mb-4">Organisers</p>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/login" className="text-muted hover:text-gray-900 transition">Start listing your event</Link></li>
+            <li><BrowseLink /></li>
+            <li><Link to="/register" className="text-muted hover:text-gray-900 transition">Create your event</Link></li>
             <li><Link to="/dashboard" className="text-muted hover:text-gray-900 transition">Organiser dashboard</Link></li>
             <li><a href="mailto:hello@tiklo.ca" className="text-muted hover:text-gray-900 transition">Contact us</a></li>
           </ul>

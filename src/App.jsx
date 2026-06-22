@@ -4,6 +4,7 @@ import PageLoader from './components/PageLoader'
 
 // Public pages
 import Home from './pages/Home'
+import CityEvents from './pages/CityEvents'
 import EventPage from './pages/EventPage'
 import Checkout from './pages/Checkout'
 import TicketConfirm from './pages/TicketConfirm'
@@ -40,6 +41,7 @@ export default function App() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
+          <Route path="/events/city/:city" element={<CityEvents />} />
           <Route path="/events/:slug" element={<EventPage />} />
           <Route path="/checkout/:orderId" element={<Checkout />} />
           <Route path="/ticket/:ticketId" element={<TicketConfirm />} />
