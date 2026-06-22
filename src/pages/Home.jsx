@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Flame, ChevronLeft } from 'lucide-react'
+import { Search, Flame, ChevronLeft, QrCode } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import EventCard from '../components/EventCard'
@@ -11,7 +11,6 @@ import Footer from '../components/Footer'
 
 const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
 const EVENT_TYPE_CHIPS = ['Cultural show', 'Community event', 'Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sport Event', 'Networking']
-const HERO_WORDS = ['event', 'meetup', 'workshop', 'conference', 'festival', 'fundraiser', 'seminar', 'cultural show']
 
 export default function Home() {
   const [events, setEvents] = useState([])
@@ -22,9 +21,7 @@ export default function Home() {
   const [activeChip, setActiveChip] = useState(null)
   const [activeType, setActiveType] = useState(null)
   const [communityChips, setCommunityChips] = useState([])
-  const [heroWord, setHeroWord] = useState(0)
 
-  // Fetch top community tags dynamically from published events
   useEffect(() => {
     async function fetchCommunities() {
       const { data } = await supabase
@@ -35,15 +32,10 @@ export default function Home() {
       if (!data) return
       const counts = {}
       data.forEach(e => { if (e.community_tag) counts[e.community_tag] = (counts[e.community_tag] || 0) + 1 })
-      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([tag]) => tag)
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([t]) => t)
       setCommunityChips(sorted.slice(0, 8))
     }
     fetchCommunities()
-  }, [])
-
-  useEffect(() => {
-    const t = setInterval(() => setHeroWord(w => (w + 1) % HERO_WORDS.length), 2600)
-    return () => clearInterval(t)
   }, [])
 
   useEffect(() => {
@@ -54,10 +46,8 @@ export default function Home() {
         .select('*, ticket_types(price, quantity_sold)')
         .eq('status', 'published')
         .order('event_date', { ascending: true })
-
       if (city !== 'All Cities') query = query.eq('city', city)
       if (tag !== 'All Communities') query = query.eq('community_tag', tag)
-
       const { data } = await query
       setEvents(data ?? [])
       setLoading(false)
@@ -67,57 +57,40 @@ export default function Home() {
 
   function handleChip(chip) {
     if (activeChip === chip) {
-      setActiveChip(null)
-      setTag('All Communities')
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      setActiveChip(null); setTag('All Communities')
+      document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })
       return
     }
     setActiveChip(chip)
-    if (chip !== 'Free events' && chip !== 'This weekend') {
-      setTag(chip)
-    } else {
-      setTag('All Communities')
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (chip !== 'Free events' && chip !== 'This weekend') setTag(chip)
+    else setTag('All Communities')
+    document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   function handleTypeChip(type) {
     setActiveType(t => t === type ? null : type)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   function clearFilters() {
-    setActiveChip(null)
-    setActiveType(null)
-    setTag('All Communities')
-    setCity('All Cities')
-    setSearch('')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setActiveChip(null); setActiveType(null)
+    setTag('All Communities'); setCity('All Cities'); setSearch('')
   }
-
-  const communityFiltered = activeChip && activeChip !== 'Free events' && activeChip !== 'This weekend'
 
   const visible = (() => {
     let evts = events
-    if (search.trim()) {
-      evts = evts.filter(e =>
-        e.title.toLowerCase().includes(search.toLowerCase()) ||
-        (e.description ?? '').toLowerCase().includes(search.toLowerCase())
-      )
-    }
-    if (activeChip === 'Free events') {
-      evts = evts.filter(e => (e.ticket_types ?? []).some(t => Number(t.price) === 0))
-    }
+    if (search.trim()) evts = evts.filter(e =>
+      e.title.toLowerCase().includes(search.toLowerCase()) ||
+      (e.description ?? '').toLowerCase().includes(search.toLowerCase())
+    )
+    if (activeChip === 'Free events') evts = evts.filter(e => (e.ticket_types ?? []).some(t => Number(t.price) === 0))
     if (activeChip === 'This weekend') {
       const now = new Date()
       const friday = new Date(now); friday.setDate(now.getDate() + (5 - now.getDay() + 7) % 7)
-      const sunday = new Date(friday); sunday.setDate(friday.getDate() + 2)
-      sunday.setHours(23, 59, 59)
+      const sunday = new Date(friday); sunday.setDate(friday.getDate() + 2); sunday.setHours(23, 59, 59)
       evts = evts.filter(e => { const d = new Date(e.event_date); return d >= friday && d <= sunday })
     }
-    if (activeType) {
-      evts = evts.filter(e => e.event_type?.toLowerCase() === activeType.toLowerCase())
-    }
+    if (activeType) evts = evts.filter(e => e.event_type?.toLowerCase() === activeType.toLowerCase())
     return evts
   })()
 
@@ -131,10 +104,7 @@ export default function Home() {
     .slice(0, 6)
 
   const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip || activeType
-
   const hotIds = new Set(hotEvents.map(e => e.id))
-
-  // Group by event type, excluding events already featured in "Hot right now"
   const belowFold = isFiltered ? visible : visible.filter(e => !hotIds.has(e.id))
   const distinctTypes = [...new Set(belowFold.map(e => e.event_type).filter(Boolean))]
   const orderedTypes = [
@@ -145,7 +115,6 @@ export default function Home() {
     type,
     events: belowFold.filter(e => e.event_type === type),
   })).filter(g => g.events.length > 0)
-
   const uncategorised = belowFold.filter(e => !e.event_type)
 
   return (
@@ -153,98 +122,167 @@ export default function Home() {
       <Navbar />
 
       {/* ── HERO ── */}
-      <section className="bg-white border-b border-gray-100 py-14 px-4 text-center">
-        <p className="text-primary text-xs font-bold uppercase tracking-widest mb-3">Canada's Event Ticketing Platform</p>
-        <h1 className="font-heading text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-          Sell Event Tickets<br />
-          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Online in Minutes</span>
-        </h1>
-        <p className="text-muted text-base md:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
-          Canada's simple ticketing platform for cultural events, concerts, conferences, fundraisers, festivals, and community gatherings.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-          <Link
-            to="/register"
-            className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md shadow-primary/20 text-sm"
-          >
-            Create Your Event
-          </Link>
-          <a
-            href="#events"
-            className="border border-gray-200 hover:border-primary text-gray-700 hover:text-primary font-semibold px-6 py-3 rounded-xl transition text-sm"
-          >
-            Browse Events
-          </a>
-        </div>
+      <section
+        className="relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #635BFF 0%, #7C4DFF 55%, #00D4FF 100%)' }}
+      >
+        {/* Subtle background orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, white, transparent 70%)', transform: 'translate(30%, -30%)' }} />
+        <div className="absolute bottom-0 left-1/4 w-64 h-64 rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, white, transparent 70%)', transform: 'translateY(40%)' }} />
 
-        {/* Search bar */}
-        <div className="flex max-w-2xl mx-auto rounded-xl overflow-hidden border border-gray-200 shadow-md bg-white">
-          <div className="flex items-center gap-2 flex-1 px-4">
-            <Search size={15} className="text-gray-400 shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search events, artists, bands..."
-              className="flex-1 py-3.5 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none"
-            />
+        <div className="max-w-6xl mx-auto px-4 py-16 md:py-20 flex flex-col lg:flex-row items-center gap-12">
+
+          {/* Left — headline + CTAs */}
+          <div className="flex-1 relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] inline-block shrink-0" />
+              <span className="text-white/80 text-xs font-semibold">Canada's Event Ticketing Platform</span>
+            </div>
+
+            <h1 className="font-heading text-4xl md:text-5xl font-bold text-white leading-[1.08] tracking-tight mb-4">
+              Sell Event Tickets<br />Online in Minutes.
+            </h1>
+            <p className="text-white/65 text-base leading-relaxed max-w-sm mb-8">
+              Create your event, set pricing, and start collecting payments — no setup fees, no monthly cost.
+            </p>
+
+            <div className="flex flex-wrap gap-3 mb-10">
+              <Link
+                to="/register"
+                className="bg-white text-primary font-bold px-6 py-3 rounded-xl text-sm hover:bg-white/90 transition shadow-sm"
+              >
+                Create your event →
+              </Link>
+              <a
+                href="#events"
+                className="bg-white/10 text-white border border-white/25 font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/20 transition"
+              >
+                Browse events
+              </a>
+            </div>
+
+            <div className="flex gap-8 pt-6 border-t border-white/10">
+              <div><p className="text-xl font-bold text-white">0%</p><p className="text-white/45 text-xs mt-0.5">Setup fee</p></div>
+              <div><p className="text-xl font-bold text-white">5 min</p><p className="text-white/45 text-xs mt-0.5">To go live</p></div>
+              <div><p className="text-xl font-bold text-white">🍁 CA</p><p className="text-white/45 text-xs mt-0.5">Canada-first</p></div>
+            </div>
           </div>
-          <div className="w-px bg-gray-200 my-2.5" />
-          <select
-            value={city}
-            onChange={e => setCity(e.target.value)}
-            className="px-3 py-3.5 text-sm text-gray-600 bg-transparent outline-none border-none"
-          >
-            {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <button
-            className="bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-3 sm:px-6 transition shrink-0 flex items-center gap-1.5"
-          >
-            <Search size={15} className="shrink-0" />
-            <span className="hidden sm:inline">Search</span>
-          </button>
-        </div>
 
-        {/* Community chips (dynamic) + static chips */}
-        <div className="flex flex-wrap justify-center gap-2 mt-5">
-          {[...communityChips, 'Free events', 'This weekend'].map(chip => (
-            <button
-              key={chip}
-              onClick={() => handleChip(chip)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${
-                activeChip === chip
-                  ? 'bg-primary/10 border-primary text-primary'
-                  : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
-              }`}
-            >
-              {chip}
-            </button>
-          ))}
+          {/* Right — dashboard mockup (decorative) */}
+          <div className="hidden lg:block flex-shrink-0 w-72 relative z-10">
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+              <div className="p-5">
+                <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-3">Event Dashboard</p>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {[
+                    { n: '247', l: 'Tickets sold', c: 'text-primary' },
+                    { n: '$4.8k', l: 'Revenue', c: 'text-success' },
+                    { n: '18', l: 'Days left', c: 'text-navy' },
+                  ].map(({ n, l, c }) => (
+                    <div key={l} className="bg-surface rounded-xl p-2.5 text-center">
+                      <p className={`text-base font-bold ${c}`}>{n}</p>
+                      <p className="text-[10px] text-muted mt-0.5">{l}</p>
+                    </div>
+                  ))}
+                </div>
+                {[
+                  { name: 'Ottawa Gala Night', dot: 'bg-primary' },
+                  { name: 'Toronto Jazz Fest', dot: 'bg-[#00D4FF]' },
+                  { name: 'Afro Culture Fest', dot: 'bg-success' },
+                ].map(({ name, dot }) => (
+                  <div key={name} className="flex items-center gap-2.5 py-2 border-b border-[#E3E8EE] last:border-0">
+                    <div className={`w-2 h-2 rounded-full ${dot} shrink-0`} />
+                    <span className="text-xs font-semibold text-navy flex-1 truncate">{name}</span>
+                    <span className="text-[10px] font-bold text-success bg-green-50 px-2 py-0.5 rounded-md shrink-0">Live</span>
+                  </div>
+                ))}
+                <div className="mt-3 bg-surface rounded-xl p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-navy rounded-lg flex items-center justify-center shrink-0">
+                    <QrCode size={14} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-navy">QR Check-In Active</p>
+                    <p className="text-[10px] text-muted">Scan tickets at the door</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Event type chips */}
-        <div className="flex flex-wrap justify-center gap-2 mt-2">
-          {EVENT_TYPE_CHIPS.map(type => (
-            <button
-              key={type}
-              onClick={() => handleTypeChip(type)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition ${
-                activeType === type
-                  ? 'bg-accent/10 border-accent text-accent'
-                  : 'bg-white border-gray-200 text-gray-500 hover:border-gray-400'
-              }`}
+      {/* ── SEARCH + FILTERS ── */}
+      <section className="bg-white border-b border-[#E3E8EE] px-4 py-6">
+        <div className="max-w-6xl mx-auto space-y-4">
+          {/* Search bar */}
+          <div className="flex max-w-2xl mx-auto rounded-xl overflow-hidden border border-[#E3E8EE] shadow-sm bg-white">
+            <div className="flex items-center gap-2 flex-1 px-4">
+              <Search size={15} className="text-muted shrink-0" />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search events, artists, bands..."
+                className="flex-1 py-3.5 text-sm text-navy placeholder-muted bg-transparent outline-none"
+              />
+            </div>
+            <div className="w-px bg-[#E3E8EE] my-2.5" />
+            <select
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              className="px-3 py-3.5 text-sm text-muted bg-transparent outline-none border-none"
             >
-              {type}
+              {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <button className="bg-primary hover:bg-[#574BFF] text-white font-semibold text-sm px-4 sm:px-6 transition shrink-0 flex items-center gap-1.5">
+              <Search size={15} className="shrink-0" />
+              <span className="hidden sm:inline">Search</span>
             </button>
-          ))}
+          </div>
+
+          {/* Community chips */}
+          {communityChips.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2">
+              {[...communityChips, 'Free events', 'This weekend'].map(chip => (
+                <button
+                  key={chip}
+                  onClick={() => handleChip(chip)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${
+                    activeChip === chip
+                      ? 'bg-primary/10 border-primary text-primary'
+                      : 'bg-white border-[#E3E8EE] text-muted hover:border-navy/30 hover:text-navy'
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Event type chips */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {EVENT_TYPE_CHIPS.map(type => (
+              <button
+                key={type}
+                onClick={() => handleTypeChip(type)}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition ${
+                  activeType === type
+                    ? 'bg-primary/10 border-primary text-primary'
+                    : 'bg-white border-[#E3E8EE] text-muted hover:border-navy/30 hover:text-navy'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── HOT RIGHT NOW ── */}
       {!isFiltered && hotEvents.length > 0 && (
-        <div className="max-w-5xl mx-auto px-4 pt-8 mb-10">
+        <div className="max-w-6xl mx-auto px-4 pt-10 mb-10">
           <div className="flex items-baseline justify-between mb-5">
-            <h2 className="font-heading font-bold text-gray-900 text-2xl flex items-center gap-2">
+            <h2 className="font-heading font-bold text-navy text-2xl flex items-center gap-2">
               <Flame size={20} className="text-orange-500" /> Hot right now
             </h2>
             <span className="text-sm text-muted">Selling fast</span>
@@ -253,9 +291,9 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── ACTIVE FILTER BANNER ── */}
+      {/* ── FILTER CLEAR ── */}
       {isFiltered && (
-        <div className="max-w-5xl mx-auto px-4 pt-4">
+        <div className="max-w-6xl mx-auto px-4 pt-4">
           <button
             onClick={clearFilters}
             className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
@@ -266,21 +304,21 @@ export default function Home() {
       )}
 
       {/* ── EVENT SECTIONS ── */}
-      <div id="events" className="max-w-5xl mx-auto px-4 pb-16 space-y-12">
+      <div id="events" className="max-w-6xl mx-auto px-4 pb-16 space-y-12 mt-2">
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-gray-50 rounded-2xl h-64 animate-pulse" />
+              <div key={i} className="bg-surface rounded-2xl h-64 animate-pulse border border-[#E3E8EE]" />
             ))}
           </div>
         ) : visible.length === 0 ? (
           <div className="text-center py-24">
             <p className="text-4xl mb-4">🎟</p>
             <p className="text-muted text-lg">No events found.</p>
-            <p className="text-gray-400 text-sm mt-1">Try a different search or filter.</p>
+            <p className="text-muted/60 text-sm mt-1">Try a different search or filter.</p>
           </div>
         ) : isFiltered ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-4">
             {visible.map(event => <EventCard key={event.id} event={event} />)}
           </div>
         ) : (
@@ -289,15 +327,10 @@ export default function Home() {
               <section key={type}>
                 <div className="flex items-center justify-between mb-4 px-1">
                   <div className="min-w-0">
-                    <h2 className="font-heading font-bold text-gray-900 text-xl sm:text-2xl truncate">
-                      {type}s
-                    </h2>
+                    <h2 className="font-heading font-bold text-navy text-xl sm:text-2xl truncate">{type}s</h2>
                     <p className="text-sm text-muted">{evts.length} event{evts.length !== 1 ? 's' : ''}</p>
                   </div>
-                  <button
-                    onClick={() => handleTypeChip(type)}
-                    className="text-sm text-primary font-medium hover:underline shrink-0 ml-4"
-                  >
+                  <button onClick={() => handleTypeChip(type)} className="text-sm text-primary font-medium hover:underline shrink-0 ml-4">
                     See all
                   </button>
                 </div>
@@ -307,7 +340,7 @@ export default function Home() {
             {uncategorised.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <h2 className="font-heading font-bold text-gray-900 text-xl sm:text-2xl">More events</h2>
+                  <h2 className="font-heading font-bold text-navy text-xl sm:text-2xl">More events</h2>
                 </div>
                 <EventCarousel events={uncategorised} />
               </section>
@@ -318,6 +351,23 @@ export default function Home() {
 
       <WhyTiklo />
       <HowItWorks />
+
+      {/* ── CTA BAND ── */}
+      <section className="bg-navy px-4 py-20 text-center">
+        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">
+          Ready to sell tickets?
+        </h2>
+        <p className="text-white/50 text-sm mb-8 max-w-sm mx-auto leading-relaxed">
+          Join Canadian event organisers already using Tiklo. It's free to start — no credit card required.
+        </p>
+        <Link
+          to="/register"
+          className="inline-block bg-primary hover:bg-[#574BFF] text-white font-bold px-8 py-3.5 rounded-xl text-sm transition shadow-sm shadow-primary/30"
+        >
+          Create your event — it's free
+        </Link>
+      </section>
+
       <Footer />
     </div>
   )

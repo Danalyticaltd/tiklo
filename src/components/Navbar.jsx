@@ -6,22 +6,34 @@ export default function Navbar() {
   const { user, profile, logout } = useAuth()
 
   return (
-    <nav className="border-b border-gray-200 bg-white/90 backdrop-blur sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/"><TikloLogo size={30} /></Link>
-        <div className="flex items-center gap-5">
+    <nav className="border-b border-[#E3E8EE] bg-white sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 h-[62px] flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link to="/"><TikloLogo size={28} /></Link>
+          <div className="hidden md:flex items-center gap-1">
+            <Link to="/#events" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">Browse Events</Link>
+            <Link to="/register" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">For Organizers</Link>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
           {user ? (
             <>
               {profile?.role === 'admin' && (
-                <Link to="/admin" className="text-sm text-primary hover:text-primary/80 transition font-medium">Admin</Link>
+                <Link to="/admin" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 transition">Admin</Link>
               )}
-              <Link to="/dashboard" className="text-sm text-muted hover:text-gray-900 transition font-medium">Dashboard</Link>
-              <button onClick={logout} className="text-sm text-muted hover:text-gray-900 transition">Sign out</button>
+              <Link to="/dashboard" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 transition">Dashboard</Link>
+              <button onClick={logout} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 transition">Sign out</button>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm text-muted hover:text-gray-900 transition font-medium">Sign in</Link>
-              <Link to="/register" className="text-sm bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white px-4 py-2 rounded-xl transition font-semibold shadow-lg shadow-primary/20">Get started</Link>
+              <Link to="/login" className="text-sm font-medium text-navy px-3 py-1.5 transition hover:text-primary">Sign in</Link>
+              <Link
+                to="/register"
+                className="text-sm font-semibold bg-primary hover:bg-[#574BFF] text-white px-5 py-2 rounded-xl transition shadow-sm shadow-primary/20"
+              >
+                Sign up free
+              </Link>
             </>
           )}
         </div>

@@ -1,13 +1,13 @@
-﻿import { forwardRef } from 'react'
+import { forwardRef } from 'react'
 import { motion } from 'framer-motion'
 
 const base = 'inline-flex items-center justify-center font-semibold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed'
 
 const variants = {
-  primary: 'bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white shadow-lg shadow-primary/20',
-  secondary: 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200',
-  ghost: 'text-muted hover:text-gray-900',
-  danger: 'bg-red-500 hover:bg-red-600 text-white',
+  primary:   'bg-primary hover:bg-[#574BFF] text-white shadow-sm shadow-primary/20',
+  secondary: 'bg-white hover:bg-surface text-navy border border-[#E3E8EE]',
+  ghost:     'text-muted hover:text-navy',
+  danger:    'bg-red-500 hover:bg-red-600 text-white',
 }
 
 const sizes = {
@@ -23,8 +23,8 @@ const Button = forwardRef(function Button(
   return (
     <motion.button
       ref={ref}
-      whileHover={disabled ? {} : { scale: 1.03 }}
-      whileTap={disabled ? {} : { scale: 0.97 }}
+      whileHover={disabled ? {} : { scale: 1.02 }}
+      whileTap={disabled ? {} : { scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       disabled={disabled}
       className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}

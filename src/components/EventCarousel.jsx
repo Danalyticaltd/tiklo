@@ -71,7 +71,7 @@ export default function EventCarousel({ events }) {
             <button
               key={i}
               onClick={() => scrollTo(i)}
-              className={`rounded-full transition-all duration-300 ${i === index ? 'w-5 h-2 bg-primary' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
+              className={`rounded-full transition-all duration-300 ${i === index ? 'w-5 h-2 bg-primary' : 'w-2 h-2 bg-[#E3E8EE] hover:bg-muted'}`}
             />
           ))}
         </div>
