@@ -30,8 +30,7 @@ export default function EventCarousel({ events }) {
   if (total === 0) return null
 
   return (
-    /* px-10 keeps arrows outside the card images */
-    <div className="relative px-10">
+    <div className={`relative ${total > 1 ? 'px-10' : ''}`}>
       <div
         ref={trackRef}
         onScroll={handleScroll}
@@ -40,7 +39,7 @@ export default function EventCarousel({ events }) {
         {events.map(event => (
           <div
             key={event.id}
-            className="snap-start shrink-0 w-[85vw] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
+            className={`snap-start shrink-0 ${total === 1 ? 'w-full' : 'w-[85vw] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]'}`}
           >
             <EventCard event={event} />
           </div>

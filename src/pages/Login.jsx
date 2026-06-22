@@ -28,10 +28,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-4">
-        <Link to="/" className="fixed top-5 left-5 flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 transition">
-          ← Back to events
-        </Link>
+      <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+        <div className="w-full max-w-sm">
+          <Link to="/" className="flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 transition mb-4">
+            ← Back to events
+          </Link>
+        </div>
         <div className="w-full max-w-sm bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
           <Link to="/" className="block mb-6"><TikloLogo size={28} /></Link>
           <h1 className="font-heading text-3xl font-bold text-gray-900 mb-1">Sign in</h1>
@@ -63,6 +65,7 @@ export default function Login() {
             No account? <Link to="/register" className="text-primary hover:underline">Register</Link>
           </p>
         </div>
+      </div>
       </div>
       <Footer />
     </div>

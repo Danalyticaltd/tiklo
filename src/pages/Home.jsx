@@ -276,31 +276,29 @@ export default function Home() {
           <>
             {byType.map(({ type, events: evts }) => (
               <section key={type}>
-                <div className="flex items-baseline justify-between mb-5 px-6">
-                  <h2 className="font-heading font-bold text-gray-900 text-2xl">
-                    {type}s
-                    <span className="ml-2 text-base font-normal text-muted">{evts.length} event{evts.length !== 1 ? 's' : ''}</span>
-                  </h2>
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <div className="min-w-0">
+                    <h2 className="font-heading font-bold text-gray-900 text-xl sm:text-2xl truncate">
+                      {type}s
+                    </h2>
+                    <p className="text-sm text-muted">{evts.length} event{evts.length !== 1 ? 's' : ''}</p>
+                  </div>
                   <button
                     onClick={() => handleTypeChip(type)}
-                    className="text-sm text-primary font-medium hover:underline"
+                    className="text-sm text-primary font-medium hover:underline shrink-0 ml-4"
                   >
                     See all
                   </button>
                 </div>
-                <div className="px-6">
-                  <EventCarousel events={evts} />
-                </div>
+                <EventCarousel events={evts} />
               </section>
             ))}
             {uncategorised.length > 0 && (
               <section>
-                <div className="flex items-baseline justify-between mb-5 px-6">
-                  <h2 className="font-heading font-bold text-gray-900 text-2xl">More events</h2>
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <h2 className="font-heading font-bold text-gray-900 text-xl sm:text-2xl">More events</h2>
                 </div>
-                <div className="px-6">
-                  <EventCarousel events={uncategorised} />
-                </div>
+                <EventCarousel events={uncategorised} />
               </section>
             )}
           </>
