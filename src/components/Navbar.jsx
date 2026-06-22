@@ -12,7 +12,7 @@ export default function Navbar() {
           <Link to="/"><TikloLogo size={28} /></Link>
           <div className="hidden md:flex items-center gap-1">
             <Link to="/#events" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">Browse Events</Link>
-            <Link to="/register" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">For Organizers</Link>
+            <Link to={user ? "/dashboard" : "/register"} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">For Organizers</Link>
           </div>
         </div>
 

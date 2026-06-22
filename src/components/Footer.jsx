@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import TikloLogo from './TikloLogo'
+import { supabase } from '../lib/supabase'
 
 function BrowseLink() {
   const navigate = useNavigate()
@@ -8,13 +10,28 @@ function BrowseLink() {
     navigate('/')
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
   }
-  return <a href="/" onClick={handleClick} className="text-white/45 hover:text-white/80 transition text-sm">Browse events</a>
+  return <a href="/" onClick={handleClick} className="text-sm text-white/45 hover:text-white/80 transition">Browse events</a>
 }
 
 const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
-const CATEGORIES = ['Cultural events', 'Music', 'Conferences', 'Fundraisers', 'Workshops', 'Festivals']
 
 export default function Footer() {
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    supabase
+      .from('events')
+      .select('event_type')
+      .eq('status', 'published')
+      .not('event_type', 'is', null)
+      .then(({ data }) => {
+        if (!data) return
+        const counts = {}
+        data.forEach(e => { if (e.event_type) counts[e.event_type] = (counts[e.event_type] || 0) + 1 })
+        setCategories(Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([t]) => t).slice(0, 6))
+      })
+  }, [])
+
   return (
     <footer className="bg-navy">
       <div className="max-w-6xl mx-auto px-4 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -54,15 +71,22 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Categories */}
+        {/* Categories — driven by DB */}
         <div>
           <p className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">Categories</p>
           <ul className="space-y-2.5">
-            {CATEGORIES.map(c => (
-              <li key={c}>
-                <Link to="/" className="text-sm text-white/45 hover:text-white/80 transition">{c}</Link>
+            {categories.length > 0 ? categories.map(cat => (
+              <li key={cat}>
+                <Link
+                  to={`/?eventType=${encodeURIComponent(cat)}`}
+                  className="text-sm text-white/45 hover:text-white/80 transition"
+                >
+                  {cat}
+                </Link>
               </li>
-            ))}
+            )) : (
+              <li className="text-sm text-white/25">Coming soon</li>
+            )}
           </ul>
         </div>
       </div>
