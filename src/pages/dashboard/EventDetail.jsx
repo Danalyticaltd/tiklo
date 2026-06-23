@@ -23,7 +23,7 @@ export default function EventDetail() {
       const [{ data: ev }, { data: tt }, { data: ord }] = await Promise.all([
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id),
-        supabase.from('orders').select('*, ticket_types(name)').eq('event_id', id).in('status', ['paid', 'refunded']).order('created_at', { ascending: false }),
+        supabase.from('orders').select('*, ticket_types(name)').eq('event_id', id).in('status', ['paid', 'refunded', 'refund_requested']).order('created_at', { ascending: false }),
       ])
       setEvent(ev)
       setTicketTypes(tt ?? [])
@@ -56,7 +56,6 @@ export default function EventDetail() {
   }
 
   async function handleRefund(orderId) {
-    if (!window.confirm('Refund this order? The buyer will receive their money back via Stripe.')) return
     setRefundingId(orderId)
     try {
       const res = await fetch('/api/refund', {
@@ -66,7 +65,7 @@ export default function EventDetail() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Refund failed')
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'refunded' } : o))
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'refund_requested' } : o))
     } catch (err) {
       alert('Refund failed: ' + err.message)
     } finally {
@@ -148,7 +147,7 @@ export default function EventDetail() {
             <h1 className="font-heading text-2xl font-bold text-gray-900">{event?.title}</h1>
             <p className="text-muted text-sm mt-1">{event?.event_date && format(new Date(event.event_date), 'EEE, MMM d, yyyy · h:mm a')} · {event?.city}</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             <Link to={`/dashboard/events/${id}/edit`}>
               <Button variant="secondary"><Pencil size={14} className="mr-1.5" />Edit</Button>
             </Link>
@@ -217,6 +216,8 @@ export default function EventDetail() {
                     </div>
                     {o.status === 'refunded' ? (
                       <span className="text-xs font-medium text-muted bg-gray-100 px-2 py-0.5 rounded-full">Refunded</span>
+                    ) : o.status === 'refund_requested' ? (
+                      <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Refund pending</span>
                     ) : (
                       <button
                         onClick={() => handleRefund(o.id)}
