@@ -86,9 +86,9 @@ id uuid references auth.users primary key,
 email text,
 full_name text,
 role text default 'organizer',        -- 'organizer' | 'admin'
-stripe_account_id text,               -- Stripe Connect account
-stripe_onboarded boolean default false,
 approved boolean default false,        -- Admin must approve
+payment_method text,                   -- 'interac' | 'bank_transfer'
+payment_details text,                  -- Interac email or bank info (JSON)
 created_at timestamptz default now()
 ```
 
