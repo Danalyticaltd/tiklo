@@ -24,7 +24,7 @@ export default function ResetPassword() {
       // Token expired / already used
       setError(
         err.message.toLowerCase().includes('expired') || err.message.toLowerCase().includes('invalid')
-          ? 'This reset link has expired or already been used. Request a new one from your profile settings.'
+          ? 'This reset link has expired or already been used. Request a new one below.'
           : err.message
       )
       return
@@ -58,7 +58,7 @@ export default function ResetPassword() {
                   {error}
                   {error.includes('expired') && (
                     <p className="mt-1">
-                      <Link to="/dashboard/profile" className="text-primary hover:underline">Request a new link →</Link>
+                      <Link to="/forgot-password" className="text-primary hover:underline">Request a new link →</Link>
                     </p>
                   )}
                 </div>

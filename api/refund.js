@@ -7,6 +7,12 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
+  // Verify the caller is an authenticated organiser
+  const token = req.headers.authorization?.replace('Bearer ', '')
+  if (!token) return res.status(401).json({ error: 'Unauthorized' })
+  const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
+  if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' })
+
   const { orderId } = req.body
   if (!orderId) return res.status(400).json({ error: 'orderId required' })
 
@@ -18,6 +24,10 @@ export default async function handler(req, res) {
 
   if (fetchErr || !order) return res.status(404).json({ error: 'Order not found' })
   if (order.status !== 'paid') return res.status(400).json({ error: `Order is already ${order.status}` })
+
+  // Verify the caller owns the event
+  const { data: ev } = await supabase.from('events').select('organizer_id').eq('id', order.event_id).single()
+  if (!ev || ev.organizer_id !== user.id) return res.status(403).json({ error: 'Forbidden' })
 
   // Flag the order — admin processes the actual Stripe refund manually
   const { error: updateErr } = await supabase

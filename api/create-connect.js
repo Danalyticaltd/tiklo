@@ -10,7 +10,14 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { user_id, return_url, refresh_url } = req.body
+  // Auth — use the caller's JWT, never trust body user_id
+  const token = req.headers.authorization?.replace('Bearer ', '')
+  if (!token) return res.status(401).json({ error: 'Unauthorized' })
+  const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
+  if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' })
+
+  const { return_url, refresh_url } = req.body
+  const user_id = user.id
 
   try {
     // Fetch or create Stripe Express account for this organizer

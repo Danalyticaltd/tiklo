@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Html5Qrcode } from 'html5-qrcode'
 import { CheckCircle, XCircle, ArrowLeft } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/Navbar'
 
 export default function CheckIn() {
@@ -15,10 +16,16 @@ export default function CheckIn() {
   const scannerRef = useRef(null)
   const processingRef = useRef(false)
 
+  const { user } = useAuth()
+
   useEffect(() => {
-    supabase.from('events').select('title').eq('id', eventId).single()
-      .then(({ data }) => setEvent(data))
-  }, [eventId])
+    supabase.from('events').select('title, organizer_id').eq('id', eventId).single()
+      .then(({ data }) => {
+        if (!data) { setCameraError('Event not found.'); return }
+        if (data.organizer_id !== user?.id) { setCameraError('You do not have permission to check in this event.'); return }
+        setEvent(data)
+      })
+  }, [eventId, user])
 
   useEffect(() => {
     const scanner = new Html5Qrcode('qr-reader')

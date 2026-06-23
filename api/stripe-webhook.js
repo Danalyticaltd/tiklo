@@ -52,6 +52,16 @@ export default async function handler(req, res) {
 
       if (!order) return res.status(200).end()
 
+      // Idempotency guard: if tickets already exist this webhook was already processed
+      const { count: existingTickets } = await supabase
+        .from('tickets')
+        .select('id', { count: 'exact', head: true })
+        .eq('order_id', orderId)
+      if (existingTickets > 0) {
+        console.log(`[webhook] order ${orderId} already fulfilled — skipping duplicate`)
+        return res.status(200).end()
+      }
+
       // Guard against oversell: verify capacity hasn't been exceeded since checkout was created
       const { data: freshTT } = await supabase
         .from('ticket_types')

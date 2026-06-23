@@ -84,6 +84,8 @@ export default function CreateEvent() {
 
   async function uploadBanner(eventId) {
     if (!bannerFile) return null
+    if (bannerFile.size > 5 * 1024 * 1024) throw new Error('Banner image must be under 5 MB.')
+    if (!bannerFile.type.startsWith('image/')) throw new Error('Banner must be an image file (JPG, PNG, WEBP).')
     const ext = bannerFile.name.split('.').pop()
     const path = `${eventId}/banner.${ext}`
     const { error } = await supabase.storage.from('banners').upload(path, bannerFile, { upsert: true })

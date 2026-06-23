@@ -1,5 +1,5 @@
 import Footer from '../components/Footer'
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { CheckCircle } from 'lucide-react'
 import QRCode from 'qrcode'
@@ -17,28 +17,34 @@ export default function TicketConfirm() {
   const [order, setOrder] = useState(null)
   const [qrCodes, setQrCodes] = useState({})
   const [loading, setLoading] = useState(true)
+  const [invalid, setInvalid] = useState(false)
 
   useEffect(() => {
     async function load() {
-      if (!orderId) return
+      if (!orderId) { setInvalid(true); setLoading(false); return }
+
       const { data: ord } = await supabase
         .from('orders')
         .select('*, events(title, event_date, location), ticket_types(name)')
         .eq('id', orderId)
         .single()
+
+      if (!ord) { setInvalid(true); setLoading(false); return }
       setOrder(ord)
 
       const { data: tix } = await supabase
         .from('tickets')
         .select('*')
         .eq('order_id', orderId)
-      setTickets(tix ?? [])
 
-      const codes = {}
-      for (const t of tix ?? []) {
-        codes[t.id] = await QRCode.toDataURL(t.qr_code, { width: 220, margin: 1, color: { dark: '#000', light: '#fff' } })
-      }
-      setQrCodes(codes)
+      const list = tix ?? []
+      setTickets(list)
+
+      // Generate all QR codes in parallel
+      const entries = await Promise.all(
+        list.map(async t => [t.id, await QRCode.toDataURL(t.qr_code, { width: 220, margin: 1, color: { dark: '#000', light: '#fff' } })])
+      )
+      setQrCodes(Object.fromEntries(entries))
       setLoading(false)
     }
     load()
@@ -51,6 +57,21 @@ export default function TicketConfirm() {
         <div className="w-16 h-16 bg-gray-100 rounded-full animate-pulse mx-auto mb-4" />
         <div className="h-6 bg-gray-100 rounded w-1/2 mx-auto animate-pulse" />
       </div>
+    </div>
+  )
+
+  if (invalid) return (
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Navbar />
+      <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+        <p className="text-5xl mb-4">🎟</p>
+        <h1 className="text-xl font-bold text-navy mb-2">Ticket link not found</h1>
+        <p className="text-muted text-sm mb-6">This link may be expired or invalid. Look up your tickets by email below.</p>
+        <Link to="/my-tickets" className="bg-primary hover:bg-[#574BFF] text-white font-semibold px-6 py-2.5 rounded-xl transition">
+          Find my tickets
+        </Link>
+      </div>
+      <Footer />
     </div>
   )
 
@@ -142,6 +163,11 @@ export default function TicketConfirm() {
           >
             🖨 Print / Save as PDF
           </button>
+          <div>
+            <Link to="/my-tickets" className="text-xs text-muted hover:text-primary transition">
+              Can't find your ticket later? → Find my tickets
+            </Link>
+          </div>
           <Link to="/">
             <Button variant="secondary">Browse more events</Button>
           </Link>

@@ -17,6 +17,8 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
+    if (fullName.trim().length < 2) { setError('Please enter your full name.'); return }
     setLoading(true)
     try {
       await register(email, password, fullName)

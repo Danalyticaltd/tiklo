@@ -227,7 +227,7 @@ export default function EditEvent() {
                   type="datetime-local"
                   {...register('event_date', {
                     required: 'Date is required',
-                    validate: v => new Date(v) > new Date() || 'Event date must be in the future',
+                    validate: v => !v || new Date(v) > new Date(Date.now() - 86400000) || 'Event date cannot be more than 1 day in the past',
                   })}
                   className={`bg-white border ${errors.event_date ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]`}
                 />

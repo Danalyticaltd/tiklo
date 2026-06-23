@@ -150,7 +150,7 @@ async function sendThankYouEmails() {
 export default async function handler(req, res) {
   // Verify cron secret to prevent unauthorized calls
   const auth = req.headers.authorization
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 

@@ -83,7 +83,15 @@ export default function OrgProfile() {
     setBio(profile.bio ?? '')
     setAvatarPreview(profile.avatar_url ?? null)
     setMethod(profile.payment_method ?? 'interac')
-    setDetails(profile.payment_details ?? '')
+    // Support both legacy pipe format and new JSON format
+    const raw = profile.payment_details ?? ''
+    if (profile.payment_method === 'bank_transfer' && raw && !raw.startsWith('{')) {
+      // Migrate legacy pipe format to JSON on first load
+      const parts = raw.split('|')
+      setDetails(JSON.stringify({ bank: parts[0] ?? '', institution: parts[1] ?? '', transit: parts[2] ?? '', account: parts[3] ?? '' }))
+    } else {
+      setDetails(raw)
+    }
     const prefs = profile.notification_prefs ?? {}
     setNotifSales(prefs.sales !== false)
     setNotifReminders(prefs.reminders !== false)
@@ -273,26 +281,30 @@ export default function OrgProfile() {
             </div>
           )}
 
-          {method === 'bank_transfer' && (
+          {method === 'bank_transfer' && (() => {
+            let bd = { bank: '', institution: '', transit: '', account: '' }
+            try { bd = { ...bd, ...JSON.parse(details || '{}') } } catch {}
+            const setField = (key, val) => setDetails(JSON.stringify({ ...bd, [key]: val }))
+            return (
             <div className="space-y-3">
               <div>
                 <label className="block text-sm text-muted mb-1">Bank name</label>
-                <input type="text" value={details.split('|')[0] ?? ''}
-                  onChange={e => { const p = details.split('|'); p[0] = e.target.value; setDetails(p.join('|')) }}
+                <input type="text" value={bd.bank}
+                  onChange={e => setField('bank', e.target.value)}
                   placeholder="e.g. TD Bank, RBC, Scotiabank"
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Institution', hint: '3 digits', idx: 1, max: 3, ph: '000' },
-                  { label: 'Transit', hint: '5 digits', idx: 2, max: 5, ph: '00000' },
-                  { label: 'Account number', hint: '', idx: 3, max: 12, ph: '0000000' },
-                ].map(({ label, hint, idx, max, ph }) => (
-                  <div key={idx}>
+                  { label: 'Institution', hint: '3 digits', key: 'institution', max: 3, ph: '000' },
+                  { label: 'Transit', hint: '5 digits', key: 'transit', max: 5, ph: '00000' },
+                  { label: 'Account number', hint: '', key: 'account', max: 12, ph: '0000000' },
+                ].map(({ label, hint, key, max, ph }) => (
+                  <div key={key}>
                     <label className="block text-sm text-muted mb-1">{label} {hint && <span className="text-gray-400 text-xs">({hint})</span>}</label>
-                    <input type="text" inputMode="numeric" maxLength={max} value={details.split('|')[idx] ?? ''}
-                      onChange={e => { const p = details.split('|'); p[idx] = e.target.value.replace(/\D/g, ''); setDetails(p.join('|')) }}
+                    <input type="text" inputMode="numeric" maxLength={max} value={bd[key]}
+                      onChange={e => setField(key, e.target.value.replace(/\D/g, ''))}
                       placeholder={ph}
                       className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
                     />
@@ -301,7 +313,8 @@ export default function OrgProfile() {
               </div>
               <p className="text-xs text-muted">Your banking details are stored securely and only used for payout processing.</p>
             </div>
-          )}
+            )
+          })()}
 
           <div className="bg-surface rounded-xl p-4 text-xs text-muted leading-relaxed">
             💡 Tiklo sends payouts within <span className="font-medium text-gray-700">5 business days</span> after your event ends. A platform fee of <span className="font-medium text-gray-700">2.5% + $0.99 per ticket</span> is deducted before payout. Free events have no fee.
@@ -338,8 +351,8 @@ export default function OrgProfile() {
             <p className="text-sm text-muted text-center py-4">No sales yet — earnings will appear here after your first ticket sale.</p>
           ) : (
             <div className="divide-y divide-[#E3E8EE]">
-              {payouts.map((p, i) => (
-                <div key={i} className="py-3 flex items-center justify-between gap-4">
+              {payouts.map((p) => (
+                <div key={p.title + p.date} className="py-3 flex items-center justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-navy truncate">{p.title}</p>
                     <p className="text-xs text-muted">{new Date(p.date).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })} · {p.tickets} ticket{p.tickets !== 1 ? 's' : ''}</p>

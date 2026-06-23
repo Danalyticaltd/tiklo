@@ -44,7 +44,7 @@ export default function Home() {
     async function fetchDashStats() {
       try {
         const [{ data: ttData }, { count }, { data: evData }] = await Promise.all([
-          supabase.from('ticket_types').select('quantity_sold').eq('events.status', 'published'),
+          supabase.from('ticket_types').select('quantity_sold, events!inner(status)').eq('events.status', 'published'),
           supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'published'),
           supabase.from('events').select('id, title').eq('status', 'published').order('event_date', { ascending: true }).limit(3),
         ])
@@ -79,14 +79,21 @@ export default function Home() {
   useEffect(() => {
     async function fetchEvents() {
       setLoading(true)
-      let query = supabase
-        .from('events').select('*, ticket_types(price, quantity_sold)')
-        .eq('status', 'published').order('event_date', { ascending: true })
-      if (city !== 'All Cities') query = query.eq('city', city)
-      if (tag !== 'All Communities') query = query.eq('community_tag', tag)
-      const { data } = await query
-      setEvents(data ?? [])
-      setLoading(false)
+      try {
+        let query = supabase
+          .from('events').select('*, ticket_types(price, quantity_sold)')
+          .eq('status', 'published').order('event_date', { ascending: true })
+        if (city !== 'All Cities') query = query.eq('city', city)
+        if (tag !== 'All Communities') query = query.eq('community_tag', tag)
+        const { data, error } = await query
+        if (error) throw error
+        setEvents(data ?? [])
+      } catch (err) {
+        console.error('[fetchEvents]', err)
+        setEvents([])
+      } finally {
+        setLoading(false)
+      }
     }
     fetchEvents()
   }, [city, tag])

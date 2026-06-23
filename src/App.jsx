@@ -15,6 +15,7 @@ import Onboarding from './pages/Onboarding'
 import ResetPassword from './pages/ResetPassword'
 import ForgotPassword from './pages/ForgotPassword'
 import MyTickets from './pages/MyTickets'
+import NotFound from './pages/NotFound'
 
 // Organizer dashboard
 import Dashboard from './pages/dashboard/Dashboard'
@@ -47,7 +48,6 @@ export default function App() {
           <Route path="/events/city/:city" element={<CityEvents />} />
           <Route path="/events/:slug" element={<EventPage />} />
           <Route path="/checkout/:orderId" element={<Checkout />} />
-          <Route path="/ticket/:ticketId" element={<TicketConfirm />} />
           <Route path="/ticket/confirmed" element={<TicketConfirm />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -69,6 +69,8 @@ export default function App() {
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/organizers" element={<ProtectedRoute requiredRole="admin"><AdminOrganizers /></ProtectedRoute>} />
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

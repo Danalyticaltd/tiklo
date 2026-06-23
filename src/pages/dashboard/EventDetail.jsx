@@ -17,6 +17,7 @@ export default function EventDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [refundingId, setRefundingId] = useState(null)
+  const [confirmRefundId, setConfirmRefundId] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -34,14 +35,16 @@ export default function EventDetail() {
   }, [id])
 
   function exportCsv() {
+    const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
     const rows = [
-      ['Buyer Name', 'Buyer Email', 'Ticket Type', 'Quantity', 'Subtotal', 'Date'],
-      ...orders.map(o => [
-        o.buyer_name,
-        o.buyer_email,
-        o.ticket_types?.name,
+      ['Buyer Name', 'Buyer Email', 'Ticket Type', 'Quantity', 'Subtotal', 'Status', 'Date'],
+      ...orders.filter(o => o.status === 'paid').map(o => [
+        esc(o.buyer_name),
+        esc(o.buyer_email),
+        esc(o.ticket_types?.name),
         o.quantity,
         `$${Number(o.subtotal).toFixed(2)}`,
+        o.status,
         format(new Date(o.created_at), 'yyyy-MM-dd HH:mm'),
       ])
     ]
@@ -56,11 +59,13 @@ export default function EventDetail() {
   }
 
   async function handleRefund(orderId) {
+    setConfirmRefundId(null)
     setRefundingId(orderId)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/refund', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
         body: JSON.stringify({ orderId }),
       })
       const json = await res.json()
@@ -76,10 +81,14 @@ export default function EventDetail() {
   async function handleDelete() {
     setDeleting(true)
     try {
-      await supabase.from('tickets').delete().eq('event_id', id)
-      await supabase.from('orders').delete().eq('event_id', id)
-      await supabase.from('ticket_types').delete().eq('event_id', id)
-      await supabase.from('events').delete().eq('id', id)
+      const [r1, r2, r3, r4] = await Promise.all([
+        supabase.from('tickets').delete().eq('event_id', id),
+        supabase.from('orders').delete().eq('event_id', id),
+        supabase.from('ticket_types').delete().eq('event_id', id),
+        supabase.from('events').delete().eq('id', id),
+      ])
+      const err = r1.error || r2.error || r3.error || r4.error
+      if (err) throw new Error(err.message)
       navigate('/dashboard')
     } catch (err) {
       alert('Delete failed: ' + err.message)
@@ -109,6 +118,25 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
+
+      {/* Refund confirmation modal */}
+      {confirmRefundId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Request refund?</h3>
+            <p className="text-muted text-sm mb-4">This will flag the order for refund and notify Tiklo admin to process it. The buyer will be contacted by the support team.</p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={() => setConfirmRefundId(null)}>Cancel</Button>
+              <button
+                onClick={() => handleRefund(confirmRefundId)}
+                className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition"
+              >
+                Yes, request refund
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation modal */}
       {confirmDelete && (
@@ -148,6 +176,9 @@ export default function EventDetail() {
             <p className="text-muted text-sm mt-1">{event?.event_date && format(new Date(event.event_date), 'EEE, MMM d, yyyy · h:mm a')} · {event?.city}</p>
           </div>
           <div className="flex items-center gap-2">
+            <Link to={`/events/${id}`} target="_blank" rel="noopener noreferrer">
+              <Button variant="secondary">View page ↗</Button>
+            </Link>
             <Link to={`/dashboard/events/${id}/edit`}>
               <Button variant="secondary"><Pencil size={14} className="mr-1.5" />Edit</Button>
             </Link>
@@ -220,7 +251,7 @@ export default function EventDetail() {
                       <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Refund pending</span>
                     ) : (
                       <button
-                        onClick={() => handleRefund(o.id)}
+                        onClick={() => setConfirmRefundId(o.id)}
                         disabled={refundingId === o.id}
                         className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-2 py-0.5 rounded-full transition disabled:opacity-40"
                       >
