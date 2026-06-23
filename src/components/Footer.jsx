@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import TikloLogo from './TikloLogo'
 import { supabase } from '../lib/supabase'
 
-function BrowseLink() {
+// All footer nav links use this — navigate then immediately scroll to top
+function FooterNavLink({ to, children, className }) {
   const navigate = useNavigate()
   function handleClick(e) {
     e.preventDefault()
-    navigate('/')
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
+    navigate(to)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-  return <a href="/" onClick={handleClick} className="text-sm text-white/45 hover:text-white/80 transition">Browse events</a>
+  return (
+    <a href={to} onClick={handleClick} className={className ?? 'text-sm text-white/45 hover:text-white/80 transition'}>
+      {children}
+    </a>
+  )
 }
 
 const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
@@ -52,9 +57,7 @@ export default function Footer() {
           <ul className="space-y-2.5">
             {CITIES.map(c => (
               <li key={c}>
-                <Link to={`/?city=${encodeURIComponent(c)}`} className="text-sm text-white/45 hover:text-white/80 transition">
-                  Events in {c}
-                </Link>
+                <FooterNavLink to={`/?city=${encodeURIComponent(c)}`}>Events in {c}</FooterNavLink>
               </li>
             ))}
           </ul>
@@ -64,9 +67,9 @@ export default function Footer() {
         <div>
           <p className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">Organisers</p>
           <ul className="space-y-2.5">
-            <li><BrowseLink /></li>
-            <li><Link to="/register" className="text-sm text-white/45 hover:text-white/80 transition">Create your event</Link></li>
-            <li><Link to="/dashboard" className="text-sm text-white/45 hover:text-white/80 transition">Organiser dashboard</Link></li>
+            <li><FooterNavLink to="/">Browse events</FooterNavLink></li>
+            <li><FooterNavLink to="/register">Create your event</FooterNavLink></li>
+            <li><FooterNavLink to="/dashboard">Organiser dashboard</FooterNavLink></li>
             <li><a href="mailto:hello@tiklo.ca" className="text-sm text-white/45 hover:text-white/80 transition">Contact us</a></li>
           </ul>
         </div>
@@ -77,12 +80,7 @@ export default function Footer() {
           <ul className="space-y-2.5">
             {categories.length > 0 ? categories.map(cat => (
               <li key={cat}>
-                <Link
-                  to={`/?eventType=${encodeURIComponent(cat)}`}
-                  className="text-sm text-white/45 hover:text-white/80 transition"
-                >
-                  {cat}
-                </Link>
+                <FooterNavLink to={`/?eventType=${encodeURIComponent(cat)}`}>{cat}</FooterNavLink>
               </li>
             )) : (
               <li className="text-sm text-white/25">Coming soon</li>
