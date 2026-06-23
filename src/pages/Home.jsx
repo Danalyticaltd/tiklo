@@ -92,12 +92,10 @@ export default function Home() {
     setActiveChip(chip)
     if (chip !== 'Free events' && chip !== 'This weekend') setTag(chip)
     else setTag('All Communities')
-    document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   function handleTypeChip(type) {
     setActiveType(t => t === type ? null : type)
-    document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   function clearFilters() {
