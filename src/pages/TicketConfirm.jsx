@@ -56,7 +56,7 @@ export default function TicketConfirm() {
 
   const event = order?.events
   const ticketTypeName = order?.ticket_types?.name
-  const qty = order?.quantity ?? tickets.length
+  const qty = tickets.length || order?.quantity || 0
 
   return (
     <div className="min-h-screen bg-bg">
