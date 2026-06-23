@@ -1,35 +1,40 @@
-import { Zap, ShieldCheck, QrCode, HeartHandshake, Mail, Smartphone } from 'lucide-react'
+import { Ticket, ScanLine, CreditCard, BellRing, BarChart3 } from 'lucide-react'
 
-const BENEFITS = [
+const FEATURES = [
   {
-    icon: Zap,
-    title: 'Easy Event Setup',
-    body: 'Create and publish your event in under 5 minutes. No technical skills required.',
+    icon: Ticket,
+    emoji: '🎟',
+    label: 'Easy Ticketing',
+    desc: 'Create and publish your event in minutes. Add ticket types, set prices, go live.',
+    color: 'bg-violet-50 text-violet-600 border-violet-100',
   },
   {
-    icon: ShieldCheck,
-    title: 'Secure Payments',
-    body: 'Stripe-powered checkout. PCI-compliant. Funds deposited directly to your bank.',
+    icon: ScanLine,
+    emoji: '📱',
+    label: 'QR Check-In',
+    desc: 'Scan attendees at the door with any phone — no app needed.',
+    color: 'bg-cyan-50 text-cyan-600 border-cyan-100',
   },
   {
-    icon: QrCode,
-    title: 'QR Code Ticketing',
-    body: 'Every ticket includes a unique QR code. Check in attendees instantly at the door.',
+    icon: CreditCard,
+    emoji: '💳',
+    label: 'Secure Payments',
+    desc: 'Stripe-powered checkout. Funds go directly to your bank account.',
+    color: 'bg-emerald-50 text-emerald-600 border-emerald-100',
   },
   {
-    icon: Mail,
-    title: 'Instant Ticket Delivery',
-    body: 'Tickets emailed immediately after purchase with a PDF attachment ready to print.',
+    icon: BellRing,
+    emoji: '📧',
+    label: 'Automated Reminders',
+    desc: 'Attendees get ticket confirmation, 7-day, and 24-hour reminders automatically.',
+    color: 'bg-amber-50 text-amber-600 border-amber-100',
   },
   {
-    icon: Smartphone,
-    title: 'Mobile Friendly',
-    body: 'Optimized for all devices. Attendees buy and check in from their phone.',
-  },
-  {
-    icon: HeartHandshake,
-    title: 'Canadian Support',
-    body: 'Responsive support from a local Canadian team that understands your community.',
+    icon: BarChart3,
+    emoji: '📊',
+    label: 'Real-Time Analytics',
+    desc: 'Watch ticket sales, revenue, and attendance update live from your dashboard.',
+    color: 'bg-rose-50 text-rose-600 border-rose-100',
   },
 ]
 
@@ -37,6 +42,7 @@ export default function WhyTiklo() {
   return (
     <section className="bg-white border-t border-[#E3E8EE] py-20 px-4">
       <div className="max-w-6xl mx-auto">
+
         <div className="text-center mb-12">
           <span className="text-primary text-xs font-bold uppercase tracking-widest">Why Tiklo</span>
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-navy mt-2">
@@ -47,17 +53,22 @@ export default function WhyTiklo() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {BENEFITS.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="bg-surface rounded-2xl p-6 border border-[#E3E8EE] hover:border-primary/30 hover:shadow-md transition group">
-              <div className="w-11 h-11 rounded-xl bg-[#EDE9FF] flex items-center justify-center mb-4 border border-primary/20 group-hover:bg-primary/20 transition">
-                <Icon size={20} className="text-primary" />
+        {/* Icon strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {FEATURES.map(({ icon: Icon, label, desc, color }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center text-center p-5 rounded-2xl border border-[#E3E8EE] hover:border-primary/30 hover:shadow-md transition group bg-surface"
+            >
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 border ${color} group-hover:scale-110 transition-transform`}>
+                <Icon size={26} strokeWidth={1.8} />
               </div>
-              <h3 className="font-heading font-bold text-navy text-base mb-1.5">{title}</h3>
-              <p className="text-muted text-sm leading-relaxed">{body}</p>
+              <h3 className="font-heading font-bold text-navy text-sm mb-1.5 leading-snug">{label}</h3>
+              <p className="text-muted text-xs leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   )
