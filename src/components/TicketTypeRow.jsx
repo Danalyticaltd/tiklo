@@ -1,9 +1,10 @@
 import { Trash2 } from 'lucide-react'
 
 export default function TicketTypeRow({ index, register, errors, onRemove, canRemove, soldQty = 0 }) {
-  const nameErr     = errors?.ticket_types?.[index]?.name
-  const priceErr    = errors?.ticket_types?.[index]?.price
-  const quantityErr = errors?.ticket_types?.[index]?.quantity
+  const nameErr        = errors?.ticket_types?.[index]?.name
+  const priceErr       = errors?.ticket_types?.[index]?.price
+  const quantityErr    = errors?.ticket_types?.[index]?.quantity
+  const maxPerOrderErr = errors?.ticket_types?.[index]?.max_per_order
 
   return (
     <div className="flex gap-3 items-start bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -34,7 +35,7 @@ export default function TicketTypeRow({ index, register, errors, onRemove, canRe
 
       <div className="w-24">
         <input
-          type="number" min={soldQty || 1} placeholder="Qty"
+          type="number" min={soldQty || 1} placeholder="Total qty"
           {...register(`ticket_types.${index}.quantity`, {
             required: 'Required',
             min: { value: soldQty || 1, message: `Min ${soldQty || 1}` },
@@ -43,6 +44,19 @@ export default function TicketTypeRow({ index, register, errors, onRemove, canRe
           className={`w-full bg-white border ${quantityErr ? 'border-red-400' : 'border-gray-300'} rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition`}
         />
         {quantityErr && <p className="text-red-500 text-xs mt-1">{quantityErr.message}</p>}
+      </div>
+
+      <div className="w-20" title="Max tickets one buyer can purchase at once">
+        <input
+          type="number" min="1" placeholder="Max/order"
+          {...register(`ticket_types.${index}.max_per_order`, {
+            required: 'Required',
+            min: { value: 1, message: 'Min 1' },
+            valueAsNumber: true,
+          })}
+          className={`w-full bg-white border ${maxPerOrderErr ? 'border-red-400' : 'border-gray-300'} rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition`}
+        />
+        {maxPerOrderErr && <p className="text-red-500 text-xs mt-1">{maxPerOrderErr.message}</p>}
       </div>
 
       <button

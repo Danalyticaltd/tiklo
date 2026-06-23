@@ -62,6 +62,7 @@ export default function EditEvent() {
           price: tt.price,
           quantity: tt.quantity,
           quantity_sold: tt.quantity_sold,
+          max_per_order: tt.max_per_order ?? 10,
         })),
       })
       setLoading(false)
@@ -174,6 +175,7 @@ export default function EditEvent() {
             name: tt.name,
             price: tt.price,
             quantity: safeQty,
+            max_per_order: tt.max_per_order ?? 10,
           }).eq('id', tt.id)
         } else {
           // New ticket type
@@ -182,6 +184,7 @@ export default function EditEvent() {
             name: tt.name,
             price: tt.price,
             quantity: tt.quantity,
+            max_per_order: tt.max_per_order ?? 10,
           })
         }
       }

@@ -38,7 +38,7 @@ export default function CreateEvent() {
       community_tag: '',
       event_type: 'Cultural show',
       event_date: '',
-      ticket_types: [{ name: 'General Admission', price: 0, quantity: 100 }],
+      ticket_types: [{ name: 'General Admission', price: 0, quantity: 100, max_per_order: 10 }],
     },
   })
 
@@ -134,6 +134,7 @@ export default function CreateEvent() {
         name: tt.name,
         price: tt.price,
         quantity: tt.quantity,
+        max_per_order: tt.max_per_order ?? 10,
       }))
       const { error: ttErr } = await supabase.from('ticket_types').insert(ticketInserts)
       if (ttErr) throw ttErr

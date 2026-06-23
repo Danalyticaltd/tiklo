@@ -158,6 +158,11 @@ export default async function handler(req, res) {
 
     if (!ticketType) return res.status(404).json({ error: 'Ticket type not found' })
 
+    const maxPerOrder = ticketType.max_per_order ?? 10
+    if (quantity > maxPerOrder) {
+      return res.status(400).json({ error: `Maximum ${maxPerOrder} ticket${maxPerOrder !== 1 ? 's' : ''} per order for this ticket type` })
+    }
+
     const ev = ticketType.events
     if (!ev || ev.status !== 'published') {
       return res.status(400).json({ error: 'This event is no longer available for booking' })

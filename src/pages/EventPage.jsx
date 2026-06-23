@@ -108,6 +108,7 @@ export default function EventPage() {
 
   const selectedType = ticketTypes.find(t => t.id === selected)
   const available = selectedType ? selectedType.quantity - selectedType.quantity_sold : 0
+  const maxPerOrder = selectedType ? Math.min(available, selectedType.max_per_order ?? 10) : 1
 
   return (
     <div className="min-h-screen bg-bg">
@@ -248,14 +249,19 @@ export default function EventPage() {
                 <div className="flex items-center gap-2">
                   <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">-</button>
                   <span className="w-8 text-center text-gray-900 font-medium">{qty}</span>
-                  <button onClick={() => setQty(q => Math.min(available, q + 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">+</button>
+                  <button onClick={() => setQty(q => Math.min(maxPerOrder, q + 1))} className="w-8 h-8 rounded-full border border-gray-300 text-gray-700 hover:border-primary transition flex items-center justify-center text-lg">+</button>
                 </div>
-                <button
-                  className="flex-1 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-primary/20 text-sm"
-                  onClick={() => navigate(`/checkout/${eventId}?tt=${selected}&qty=${qty}`)}
-                >
-                  {selectedType.price === 0 ? 'Register free' : `Buy - $${(selectedType.price * qty).toFixed(2)}`}
-                </button>
+                <div className="flex-1 flex flex-col gap-1">
+                  <button
+                    className="w-full bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-primary/20 text-sm"
+                    onClick={() => navigate(`/checkout/${eventId}?tt=${selected}&qty=${qty}`)}
+                  >
+                    {selectedType.price === 0 ? 'Register free' : `Buy - $${(selectedType.price * qty).toFixed(2)}`}
+                  </button>
+                  {(selectedType.max_per_order ?? 10) < available && (
+                    <p className="text-xs text-muted text-center">Max {selectedType.max_per_order ?? 10} tickets per order</p>
+                  )}
+                </div>
               </div>
             )}
           </div>
