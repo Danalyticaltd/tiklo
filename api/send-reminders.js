@@ -10,7 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const LOGO = `
   <div style="display:table;margin-bottom:20px;">
     <img src="https://tiklo.ca/favicon.svg" width="36" height="36" alt="" style="display:table-cell;vertical-align:middle;border-radius:10px;" />
-    <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#FF5733;">o</span></span>
+    <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#635BFF;">o</span></span>
   </div>`
 
 function eventBlock(event) {
@@ -55,7 +55,7 @@ async function send7DayReminders() {
           <p style="color:#6b7280;margin-bottom:20px;">Hi ${order.buyer_name}, just a heads-up — your event is one week away!</p>
           ${eventBlock(event)}
           <p style="font-size:14px;color:#374151;margin-bottom:8px;">Your QR code ticket was sent in your original confirmation email. Make sure to have it ready at the door.</p>
-          <a href="https://tiklo.ca" style="display:inline-block;margin-top:8px;background:#FF5733;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Browse more events</a>
+          <a href="https://tiklo.ca" style="display:inline-block;margin-top:8px;background:#635BFF;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Browse more events</a>
         `),
       })
       await supabase.from('orders').update({ reminder_7day_sent: true }).eq('id', order.id)
@@ -137,7 +137,7 @@ async function sendThankYouEmails() {
           <p style="font-size:14px;color:#374151;margin-bottom:20px;">
             Discover more upcoming events in your city and keep the experience going.
           </p>
-          <a href="https://tiklo.ca" style="display:inline-block;background:#FF5733;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Browse upcoming events</a>
+          <a href="https://tiklo.ca" style="display:inline-block;background:#635BFF;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Browse upcoming events</a>
         `),
       })
       await supabase.from('orders').update({ thankyou_sent: true }).eq('id', order.id)

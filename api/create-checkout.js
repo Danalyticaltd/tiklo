@@ -41,13 +41,13 @@ async function generateTicketPdf(order, tickets) {
     const s = 46 / 48
     const ix = 20, ib = height - 63
     const rrOuter = `M 11 0 L 35 0 Q 46 0 46 11 L 46 35 Q 46 46 35 46 L 11 46 Q 0 46 0 35 L 0 11 Q 0 0 11 0 Z`
-    page.drawSvgPath(rrOuter, { x: ix, y: ib + 46, color: rgb(1, 0.341, 0.2) })
+    page.drawSvgPath(rrOuter, { x: ix, y: ib + 46, color: rgb(0.388, 0.357, 1.0) })
     const iw = Math.round(34*s), ih = Math.round(18*s), ir = Math.round(4.5*s)
     const rrInner = `M ${ir} 0 L ${iw-ir} 0 Q ${iw} 0 ${iw} ${ir} L ${iw} ${ih-ir} Q ${iw} ${ih} ${iw-ir} ${ih} L ${ir} ${ih} Q 0 ${ih} 0 ${ih-ir} L 0 ${ir} Q 0 0 ${ir} 0 Z`
     page.drawSvgPath(rrInner, { x: ix + Math.round(7*s), y: ib + Math.round(14*s) + ih,
       color: rgb(1,1,1), opacity: 0.25, borderColor: rgb(1,1,1), borderWidth: 1.6 })
-    page.drawCircle({ x: ix + 7*s, y: ib + 23*s, size: 5*s, color: rgb(1, 0.341, 0.2) })
-    page.drawCircle({ x: ix + 41*s, y: ib + 23*s, size: 5*s, color: rgb(1, 0.341, 0.2) })
+    page.drawCircle({ x: ix + 7*s, y: ib + 23*s, size: 5*s, color: rgb(0.388, 0.357, 1.0) })
+    page.drawCircle({ x: ix + 41*s, y: ib + 23*s, size: 5*s, color: rgb(0.388, 0.357, 1.0) })
     page.drawLine({ start: { x: ix + 14*s, y: ib + 23*s }, end: { x: ix + 34*s, y: ib + 23*s },
       thickness: 1.5, color: rgb(1,1,1), dashArray: [3, 2.5], dashPhase: 0 })
     page.drawCircle({ x: ix + 24*s, y: ib + 27*s, size: 2.4, color: rgb(1,1,1) })
@@ -57,7 +57,7 @@ async function generateTicketPdf(order, tickets) {
     const wY = height - 50
     const tiklW = font.widthOfTextAtSize('Tikl', 28)
     page.drawText('Tikl', { x: wX, y: wY, size: 28, font, color: rgb(0.1, 0.1, 0.1) })
-    page.drawText('o', { x: wX + tiklW, y: wY, size: 28, font, color: rgb(1, 0.341, 0.2) })
+    page.drawText('o', { x: wX + tiklW, y: wY, size: 28, font, color: rgb(0.388, 0.357, 1.0) })
     page.drawText(event.title, { x: 24, y: height - 110, size: 16, font, color: rgb(0.1, 0.1, 0.1), maxWidth: width - 48 })
     page.drawText(eventDate, { x: 24, y: height - 135, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) })
     if (event.location) page.drawText(event.location, { x: 24, y: height - 152, size: 11, font: fontReg, color: rgb(0.4, 0.4, 0.4) })
@@ -67,7 +67,7 @@ async function generateTicketPdf(order, tickets) {
     page.drawText('Ticket Type', { x: 24, y: height - 238, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
     page.drawText(ticketType.name, { x: 24, y: height - 256, size: 14, font, color: rgb(0.1, 0.1, 0.1) })
     page.drawText('Ticket ID', { x: 24, y: height - 281, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
-    page.drawText(ticket.id.slice(0, 8).toUpperCase(), { x: 24, y: height - 299, size: 13, font, color: rgb(0.863, 0.369, 0.239) })
+    page.drawText(ticket.id.slice(0, 8).toUpperCase(), { x: 24, y: height - 299, size: 13, font, color: rgb(0.388, 0.357, 1.0) })
     const qrBuffer = await QRCode.toBuffer(ticket.qr_code, { width: 180, margin: 1 })
     const qrImage = await pdfDoc.embedPng(qrBuffer)
     page.drawImage(qrImage, { x: (width - 180) / 2, y: height - 500, width: 180, height: 180 })

@@ -1,4 +1,4 @@
-export default function TikloLogo({ size = 32 }) {
+export default function TikloLogo({ size = 32, light = false }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       {/* Icon */}
@@ -20,7 +20,7 @@ export default function TikloLogo({ size = 32 }) {
           fontSize="30"
           fontWeight="700"
           letterSpacing="-1"
-          fill="#0A2540"
+          fill={light ? '#FFFFFF' : '#0A2540'}
         >Tikl<tspan fill="#635BFF">o</tspan></text>
       </svg>
     </span>

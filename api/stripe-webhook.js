@@ -205,7 +205,7 @@ async function sendTicketEmail(order, tickets) {
       <body style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f2937;">
         <div style="display:table;margin-bottom:20px;">
           <img src="https://tiklo.ca/favicon.svg" width="36" height="36" alt="" style="display:table-cell;vertical-align:middle;border-radius:10px;" />
-          <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#FF5733;">o</span></span>
+          <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#635BFF;">o</span></span>
         </div>
         <p style="color:#6b7280;margin-bottom:24px;">Your tickets are confirmed!</p>
 
@@ -254,7 +254,7 @@ async function sendOrganizerNotification(order) {
       <body style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f2937;">
         <div style="display:table;margin-bottom:20px;">
           <img src="https://tiklo.ca/favicon.svg" width="36" height="36" alt="" style="display:table-cell;vertical-align:middle;border-radius:10px;" />
-          <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#FF5733;">o</span></span>
+          <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#635BFF;">o</span></span>
         </div>
         <p style="color:#6b7280;margin-bottom:24px;">You just made a sale!</p>
 
@@ -270,7 +270,7 @@ async function sendOrganizerNotification(order) {
             <tr><td style="color:#6b7280;padding:4px 0;">Platform fee</td><td style="text-align:right;">−$${fee.toFixed(2)}</td></tr>
             <tr style="border-top:1px solid #e5e7eb;">
               <td style="padding:8px 0 4px;font-weight:700;">Your earnings</td>
-              <td style="text-align:right;font-weight:700;color:#FF5733;">$${net.toFixed(2)} CAD</td>
+              <td style="text-align:right;font-weight:700;color:#635BFF;">$${net.toFixed(2)} CAD</td>
             </tr>
           </table>
         </div>

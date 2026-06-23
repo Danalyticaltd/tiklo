@@ -39,7 +39,7 @@ export default function Footer() {
         {/* Brand */}
         <div className="lg:col-span-1">
           <div className="mb-4">
-            <TikloLogo size={26} />
+            <TikloLogo size={26} light />
           </div>
           <p className="text-sm text-white/40 leading-relaxed max-w-xs">
             The easiest way to create, promote, and sell tickets for any event across Canada.

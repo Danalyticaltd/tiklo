@@ -29,6 +29,15 @@ export default function EventCarousel({ events }) {
 
   if (total === 0) return null
 
+  // 1–2 events: plain grid, no carousel chrome needed
+  if (total <= 2) {
+    return (
+      <div className={`grid gap-5 ${total === 1 ? 'grid-cols-1 max-w-sm' : 'grid-cols-1 sm:grid-cols-2'}`}>
+        {events.map(event => <EventCard key={event.id} event={event} />)}
+      </div>
+    )
+  }
+
   return (
     <div className={`relative ${total > 1 ? 'px-10' : ''}`}>
       <div

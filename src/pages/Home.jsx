@@ -30,14 +30,14 @@ export default function Home() {
   const [dashStats, setDashStats] = useState({ ticketsSold: 0, activeEvents: 0 })
   const [dashEvents, setDashEvents] = useState([])
 
-  // Apply ?eventType= URL param on first load (from footer category links)
+  // Apply ?eventType= URL param whenever it changes (footer category links)
   useEffect(() => {
     const type = searchParams.get('eventType')
     if (type) {
       setActiveType(type)
-      setTimeout(() => document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' }), 400)
+      setTimeout(() => document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' }), 200)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   // Fetch dashboard widget stats + real-time subscription
   useEffect(() => {
@@ -173,7 +173,7 @@ export default function Home() {
               <Link to={ctaTarget} className="bg-white text-primary font-bold px-6 py-3 rounded-xl text-sm hover:bg-white/90 transition shadow-sm">
                 {user ? 'Go to dashboard →' : 'Create your event →'}
               </Link>
-              <a href="#events" className="bg-white/10 text-white border border-white/25 font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/20 transition">
+              <a href="#search-section" className="bg-white/10 text-white border border-white/25 font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/20 transition">
                 Browse events
               </a>
             </div>
@@ -189,34 +189,39 @@ export default function Home() {
             <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
               <div className="p-5">
                 <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-3">Live Platform Stats</p>
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <div className="bg-surface rounded-xl p-3 text-center">
-                    <p className="text-xl font-bold text-primary">{dashStats.ticketsSold}</p>
-                    <p className="text-[10px] text-muted mt-0.5">Tickets sold</p>
-                  </div>
+                <div className={`grid gap-2 mb-4 ${dashStats.ticketsSold >= 1000 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <div className="bg-surface rounded-xl p-3 text-center">
                     <p className="text-xl font-bold text-navy">{dashStats.activeEvents}</p>
                     <p className="text-[10px] text-muted mt-0.5">Events live</p>
                   </div>
+                  {dashStats.ticketsSold >= 1000 && (
+                    <div className="bg-surface rounded-xl p-3 text-center">
+                      <p className="text-xl font-bold text-primary">{dashStats.ticketsSold.toLocaleString()}</p>
+                      <p className="text-[10px] text-muted mt-0.5">Tickets sold</p>
+                    </div>
+                  )}
                 </div>
                 {dashEvents.length > 0 ? dashEvents.map((ev, i) => (
-                  <div key={ev.id} className="flex items-center gap-2.5 py-2 border-b border-[#E3E8EE] last:border-0">
+                  <Link key={ev.id} to={`/events/${ev.id}`} className="flex items-center gap-2.5 py-2 border-b border-[#E3E8EE] last:border-0 hover:bg-surface rounded-lg px-1 -mx-1 transition">
                     <div className={`w-2 h-2 rounded-full ${DOT_COLORS[i % DOT_COLORS.length]} shrink-0`} />
                     <span className="text-xs font-semibold text-navy flex-1 truncate">{ev.title}</span>
-                    <span className="text-[10px] font-bold text-success bg-green-50 px-2 py-0.5 rounded-md shrink-0">Live</span>
-                  </div>
+                    <span className="text-[10px] font-bold text-success bg-green-50 px-2 py-0.5 rounded-md shrink-0">Live →</span>
+                  </Link>
                 )) : (
                   <p className="text-xs text-muted text-center py-2">No events yet</p>
                 )}
-                <div className="mt-3 bg-surface rounded-xl p-3 flex items-center gap-3">
+                <Link
+                  to={user ? '/dashboard' : '/login'}
+                  className="mt-3 bg-surface hover:bg-[#E3E8EE] rounded-xl p-3 flex items-center gap-3 transition"
+                >
                   <div className="w-8 h-8 bg-navy rounded-lg flex items-center justify-center shrink-0">
                     <QrCode size={14} className="text-white" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-navy">QR Check-In Active</p>
-                    <p className="text-[10px] text-muted">Scan tickets at the door</p>
+                    <p className="text-[10px] text-muted">{user ? 'Go to dashboard →' : 'Sign in to start scanning →'}</p>
                   </div>
-                </div>
+                </Link>
               </div>
             </div>
           </div>
@@ -224,7 +229,7 @@ export default function Home() {
       </section>
 
       {/* ── SEARCH + FILTERS ── */}
-      <section className="bg-white border-b border-[#E3E8EE] px-4 py-6">
+      <section id="search-section" className="scroll-mt-20 bg-white border-b border-[#E3E8EE] px-4 py-6">
         <div className="max-w-6xl mx-auto space-y-4">
           <div className="flex max-w-2xl mx-auto rounded-xl overflow-hidden border border-[#E3E8EE] shadow-sm bg-white">
             <div className="flex items-center gap-2 flex-1 px-4">
