@@ -10,6 +10,8 @@ export default function CheckIn() {
   const [event, setEvent] = useState(null)
   const [result, setResult] = useState(null) // { ok, message, ticket }
   const [scanning, setScanning] = useState(false)
+  const [cameraError, setCameraError] = useState(null)
+  const [checkedInCount, setCheckedInCount] = useState(0)
   const scannerRef = useRef(null)
   const processingRef = useRef(false)
 
@@ -33,7 +35,14 @@ export default function CheckIn() {
         setTimeout(() => { processingRef.current = false; setScanning(false) }, 3000)
       },
       () => {}
-    ).catch(console.error)
+    ).catch(err => {
+      const msg = err?.message ?? String(err)
+      if (msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('denied')) {
+        setCameraError('Camera access denied. Please allow camera access in your browser settings and reload.')
+      } else {
+        setCameraError('Could not start camera: ' + msg)
+      }
+    })
 
     return () => {
       scanner.stop().catch(() => {})
@@ -64,6 +73,7 @@ export default function CheckIn() {
     }).eq('id', ticket.id)
 
     setResult({ ok: true, message: 'Valid ticket — checked in!', ticket })
+    setCheckedInCount(n => n + 1)
   }
 
   return (
@@ -74,13 +84,25 @@ export default function CheckIn() {
           <ArrowLeft size={14} /> Back to dashboard
         </Link>
 
-        <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">Check-In Scanner</h1>
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="font-heading text-2xl font-bold text-gray-900">Check-In Scanner</h1>
+          {checkedInCount > 0 && (
+            <span className="text-sm font-bold text-success bg-green-50 border border-green-200 px-3 py-1 rounded-full">
+              ✓ {checkedInCount} checked in
+            </span>
+          )}
+        </div>
         {event && <p className="text-muted text-sm mb-6">{event.title}</p>}
 
-        {/* Scanner */}
-        <div className="bg-white rounded-2xl overflow-hidden mb-6 border border-gray-100 shadow-sm">
-          <div id="qr-reader" className="w-full" />
-        </div>
+        {cameraError ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5 text-sm mb-6">
+            {cameraError}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl overflow-hidden mb-6 border border-gray-100 shadow-sm">
+            <div id="qr-reader" className="w-full" />
+          </div>
+        )}
 
         {/* Result */}
         {result && (

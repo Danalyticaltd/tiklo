@@ -94,7 +94,10 @@ export default function Footer() {
       <div className="border-t border-white/[0.07]">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="text-xs text-white/25">&copy; {new Date().getFullYear()} Tiklo. All rights reserved.</span>
-          <span className="text-xs text-white/25">Made with love by <a href="https://www.danalytica.ca" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition underline underline-offset-2">Danalytica Ltd</a></span>
+          <div className="flex items-center gap-4">
+            <a href="/my-tickets" className="text-xs text-white/30 hover:text-white/60 transition">Find my tickets</a>
+            <span className="text-xs text-white/25">Made with love by <a href="https://www.danalytica.ca" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition underline underline-offset-2">Danalytica Ltd</a></span>
+          </div>
         </div>
       </div>
     </footer>

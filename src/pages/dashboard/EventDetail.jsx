@@ -16,13 +16,14 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [refundingId, setRefundingId] = useState(null)
 
   useEffect(() => {
     async function load() {
       const [{ data: ev }, { data: tt }, { data: ord }] = await Promise.all([
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id),
-        supabase.from('orders').select('*, ticket_types(name)').eq('event_id', id).eq('status', 'paid').order('created_at', { ascending: false }),
+        supabase.from('orders').select('*, ticket_types(name)').eq('event_id', id).in('status', ['paid', 'refunded']).order('created_at', { ascending: false }),
       ])
       setEvent(ev)
       setTicketTypes(tt ?? [])
@@ -52,6 +53,25 @@ export default function EventDetail() {
     a.download = `${event?.title ?? 'event'}-attendees.csv`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  async function handleRefund(orderId) {
+    if (!window.confirm('Refund this order? The buyer will receive their money back via Stripe.')) return
+    setRefundingId(orderId)
+    try {
+      const res = await fetch('/api/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Refund failed')
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'refunded' } : o))
+    } catch (err) {
+      alert('Refund failed: ' + err.message)
+    } finally {
+      setRefundingId(null)
+    }
   }
 
   async function handleDelete() {
@@ -167,7 +187,7 @@ export default function EventDetail() {
                 <XAxis dataKey="name" tick={{ fill: '#6B6355', fontSize: 12 }} />
                 <YAxis tick={{ fill: '#6B6355', fontSize: 12 }} allowDecimals={false} />
                 <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111827' }} />
-                <Bar dataKey="sold" name="Sold" fill="#DC5E3D" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="sold" name="Sold" fill="#635BFF" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="remaining" name="Remaining" fill="#e5e7eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -190,9 +210,22 @@ export default function EventDetail() {
                     <p className="text-gray-900 font-medium truncate">{o.buyer_name}</p>
                     <p className="text-muted text-xs truncate">{o.buyer_email}</p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm text-gray-700">{o.ticket_types?.name} × {o.quantity}</p>
-                    <p className="text-xs text-muted">{format(new Date(o.created_at), 'MMM d, h:mm a')}</p>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <p className="text-sm text-gray-700">{o.ticket_types?.name} × {o.quantity}</p>
+                      <p className="text-xs text-muted">{format(new Date(o.created_at), 'MMM d, h:mm a')}</p>
+                    </div>
+                    {o.status === 'refunded' ? (
+                      <span className="text-xs font-medium text-muted bg-gray-100 px-2 py-0.5 rounded-full">Refunded</span>
+                    ) : (
+                      <button
+                        onClick={() => handleRefund(o.id)}
+                        disabled={refundingId === o.id}
+                        className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-2 py-0.5 rounded-full transition disabled:opacity-40"
+                      >
+                        {refundingId === o.id ? '…' : 'Refund'}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

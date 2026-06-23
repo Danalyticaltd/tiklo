@@ -15,7 +15,7 @@ const DOT_COLORS = ['bg-primary', 'bg-[#00D4FF]', 'bg-success']
 
 export default function Home() {
   const { user } = useAuth()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -42,14 +42,18 @@ export default function Home() {
   // Fetch dashboard widget stats + real-time subscription
   useEffect(() => {
     async function fetchDashStats() {
-      const [{ data: ttData }, { count }, { data: evData }] = await Promise.all([
-        supabase.from('ticket_types').select('quantity_sold'),
-        supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-        supabase.from('events').select('id, title').eq('status', 'published').order('event_date', { ascending: true }).limit(3),
-      ])
-      const ticketsSold = (ttData ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
-      setDashStats({ ticketsSold, activeEvents: count ?? 0 })
-      setDashEvents(evData ?? [])
+      try {
+        const [{ data: ttData }, { count }, { data: evData }] = await Promise.all([
+          supabase.from('ticket_types').select('quantity_sold').eq('events.status', 'published'),
+          supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+          supabase.from('events').select('id, title').eq('status', 'published').order('event_date', { ascending: true }).limit(3),
+        ])
+        const ticketsSold = (ttData ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
+        setDashStats({ ticketsSold, activeEvents: count ?? 0 })
+        setDashEvents(evData ?? [])
+      } catch (err) {
+        console.error('[fetchDashStats]', err)
+      }
     }
     fetchDashStats()
 
@@ -101,6 +105,7 @@ export default function Home() {
   function clearFilters() {
     setActiveChip(null); setActiveType(null)
     setTag('All Communities'); setCity('All Cities'); setSearch('')
+    setSearchParams({})
   }
 
   const visible = (() => {

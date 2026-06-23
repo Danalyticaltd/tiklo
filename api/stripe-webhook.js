@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       // Mark order as paid
       const { data: order } = await supabase
         .from('orders')
-        .update({ status: 'paid' })
+        .update({ status: 'paid', payment_intent_id: intent.id })
         .eq('id', orderId)
         .select('*, ticket_types(name, price, quantity, quantity_sold), events(title, event_date, location, organizer_id, profiles!organizer_id(email, full_name))')
         .single()

@@ -12,6 +12,9 @@ const CITY_MAP = {
   montreal: 'Montreal',
   calgary: 'Calgary',
   vancouver: 'Vancouver',
+  edmonton: 'Edmonton',
+  winnipeg: 'Winnipeg',
+  halifax: 'Halifax',
 }
 
 export default function CityEvents() {

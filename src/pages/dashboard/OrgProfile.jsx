@@ -23,6 +23,35 @@ function Section({ title, subtitle, children }) {
 export default function OrgProfile() {
   const { user, profile, fetchProfile } = useAuth()
   const fileRef = useRef(null)
+  const [payouts, setPayouts] = useState([])
+
+  useEffect(() => {
+    if (!user) return
+    // First get this organizer's event IDs, then fetch their paid orders
+    supabase.from('events').select('id, title, event_date').eq('organizer_id', user.id)
+      .then(({ data: events }) => {
+        if (!events?.length) return
+        const ids = events.map(e => e.id)
+        const eventMap = Object.fromEntries(events.map(e => [e.id, e]))
+        supabase.from('orders')
+          .select('subtotal, platform_fee, quantity, event_id')
+          .in('event_id', ids)
+          .eq('status', 'paid')
+          .then(({ data: orders }) => {
+            if (!orders) return
+            const byEvent = {}
+            orders.forEach(o => {
+              const ev = eventMap[o.event_id]
+              if (!ev) return
+              if (!byEvent[o.event_id]) byEvent[o.event_id] = { title: ev.title, date: ev.event_date, revenue: 0, fee: 0, tickets: 0 }
+              byEvent[o.event_id].revenue += Number(o.subtotal ?? 0)
+              byEvent[o.event_id].fee += Number(o.platform_fee ?? 0)
+              byEvent[o.event_id].tickets += o.quantity ?? 0
+            })
+            setPayouts(Object.values(byEvent).sort((a, b) => new Date(b.date) - new Date(a.date)))
+          })
+      })
+  }, [user])
 
   // Profile fields
   const [displayName, setDisplayName] = useState('')
@@ -116,6 +145,7 @@ export default function OrgProfile() {
         .update({ notification_prefs: { sales: notifSales, reminders: notifReminders } })
         .eq('id', user.id)
       if (error) throw error
+      if (typeof fetchProfile === 'function') await fetchProfile(user.id)
       setNotifMsg({ ok: true, text: 'Preferences saved!' })
     } catch (err) {
       setNotifMsg({ ok: false, text: err.message })
@@ -126,9 +156,10 @@ export default function OrgProfile() {
 
   async function sendPasswordReset() {
     setResetLoading(true)
-    await supabase.auth.resetPasswordForEmail(user.email, { redirectTo: `${window.location.origin}/reset-password` })
-    setResetSent(true)
+    const { error: err } = await supabase.auth.resetPasswordForEmail(user.email, { redirectTo: `${window.location.origin}/reset-password` })
     setResetLoading(false)
+    if (err) { alert('Could not send reset email: ' + err.message); return }
+    setResetSent(true)
   }
 
   function Msg({ msg }) {
@@ -301,7 +332,29 @@ export default function OrgProfile() {
           </div>
         </Section>
 
-        {/* ── 4. Security ── */}
+        {/* ── 4. Payout history ── */}
+        <Section title="Payout history" subtitle="Earnings per event after platform fees.">
+          {payouts.length === 0 ? (
+            <p className="text-sm text-muted text-center py-4">No sales yet — earnings will appear here after your first ticket sale.</p>
+          ) : (
+            <div className="divide-y divide-[#E3E8EE]">
+              {payouts.map((p, i) => (
+                <div key={i} className="py-3 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-navy truncate">{p.title}</p>
+                    <p className="text-xs text-muted">{new Date(p.date).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })} · {p.tickets} ticket{p.tickets !== 1 ? 's' : ''}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold text-primary">${(p.revenue - p.fee).toFixed(2)}</p>
+                    <p className="text-[10px] text-muted">after ${p.fee.toFixed(2)} fee</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* ── 5. Security ── */}
         <Section title="Account &amp; security">
           <div>
             <label className="block text-sm text-muted mb-1">Email address</label>

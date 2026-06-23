@@ -13,6 +13,8 @@ import Register from './pages/Register'
 import Verify from './pages/Verify'
 import Onboarding from './pages/Onboarding'
 import ResetPassword from './pages/ResetPassword'
+import ForgotPassword from './pages/ForgotPassword'
+import MyTickets from './pages/MyTickets'
 
 // Organizer dashboard
 import Dashboard from './pages/dashboard/Dashboard'
@@ -51,6 +53,8 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/my-tickets" element={<MyTickets />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
           {/* Organizer */}

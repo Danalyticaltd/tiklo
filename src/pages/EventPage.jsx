@@ -19,6 +19,7 @@ export default function EventPage() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
   const [qty, setQty] = useState(1)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -136,6 +137,20 @@ export default function EventPage() {
             <span className="text-xs text-muted bg-gray-100 px-2 py-0.5 rounded-full">{event.community_tag}</span>
           </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">{event.title}</h1>
+
+          {/* Share buttons */}
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            <span className="text-xs text-muted font-medium">Share:</span>
+            <button
+              onClick={() => { navigator.clipboard.writeText(`https://tiklo.ca/events/${eventId}`); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+              className="px-3 py-1 rounded-lg bg-surface text-navy text-xs font-medium hover:bg-gray-200 transition border border-[#E3E8EE]"
+            >
+              {copied ? '✓ Copied!' : '🔗 Copy link'}
+            </button>
+            <a href={`https://wa.me/?text=${encodeURIComponent(`${event.title} — Get tickets: https://tiklo.ca/events/${eventId}`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 rounded-lg bg-[#25D366] text-white text-xs font-medium hover:opacity-90 transition">WhatsApp</a>
+            <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(event.title)}&url=${encodeURIComponent(`https://tiklo.ca/events/${eventId}`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 rounded-lg bg-black text-white text-xs font-medium hover:opacity-90 transition">𝕏 Twitter</a>
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://tiklo.ca/events/${eventId}`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 rounded-lg bg-[#1877F2] text-white text-xs font-medium hover:opacity-90 transition">Facebook</a>
+          </div>
 
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-muted text-sm">

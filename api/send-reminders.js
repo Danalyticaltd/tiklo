@@ -60,7 +60,7 @@ async function send7DayReminders() {
       })
       await supabase.from('orders').update({ reminder_7day_sent: true }).eq('id', order.id)
       sent++
-    } catch {}
+    } catch (err) { console.error('[send-reminders]', err.message) }
   }
   return sent
 }
@@ -103,7 +103,7 @@ async function send1DayReminders() {
       })
       await supabase.from('orders').update({ reminder_1day_sent: true }).eq('id', order.id)
       sent++
-    } catch {}
+    } catch (err) { console.error('[send-reminders]', err.message) }
   }
   return sent
 }
@@ -142,7 +142,7 @@ async function sendThankYouEmails() {
       })
       await supabase.from('orders').update({ thankyou_sent: true }).eq('id', order.id)
       sent++
-    } catch {}
+    } catch (err) { console.error('[send-reminders]', err.message) }
   }
   return sent
 }

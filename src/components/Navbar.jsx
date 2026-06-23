@@ -18,7 +18,7 @@ export default function Navbar() {
   }, [menuOpen])
 
   const initials = profile?.full_name
-    ? profile.full_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    ? profile.full_name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase()
     : user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (

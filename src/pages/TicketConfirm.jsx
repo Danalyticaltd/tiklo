@@ -136,6 +136,12 @@ export default function TicketConfirm() {
           className="mt-8 text-center space-y-3"
         >
           <p className="text-gray-400 text-xs">PDF ticket attached to your confirmation email — show QR at the door.</p>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary hover:text-primary transition"
+          >
+            🖨 Print / Save as PDF
+          </button>
           <Link to="/">
             <Button variant="secondary">Browse more events</Button>
           </Link>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import TikloLogo from '../components/TikloLogo'
@@ -6,20 +6,11 @@ import Footer from '../components/Footer'
 
 export default function ResetPassword() {
   const navigate = useNavigate()
-  const [ready, setReady] = useState(false)
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [done, setDone] = useState(false)
-
-  useEffect(() => {
-    // Supabase fires PASSWORD_RECOVERY when the reset link is followed
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -29,7 +20,15 @@ export default function ResetPassword() {
     setLoading(true)
     const { error: err } = await supabase.auth.updateUser({ password })
     setLoading(false)
-    if (err) { setError(err.message); return }
+    if (err) {
+      // Token expired / already used
+      setError(
+        err.message.toLowerCase().includes('expired') || err.message.toLowerCase().includes('invalid')
+          ? 'This reset link has expired or already been used. Request a new one from your profile settings.'
+          : err.message
+      )
+      return
+    }
     setDone(true)
     setTimeout(() => navigate('/dashboard'), 2500)
   }
@@ -52,14 +51,18 @@ export default function ResetPassword() {
             <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-4 text-sm text-center">
               ✓ Password updated! Redirecting to your dashboard…
             </div>
-          ) : !ready ? (
-            <div className="text-sm text-muted text-center py-4">
-              Verifying reset link…
-              <p className="mt-3 text-xs">If nothing happens, the link may have expired. <Link to="/dashboard/profile" className="text-primary hover:underline">Request a new one.</Link></p>
-            </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && <p className="text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+              {error && (
+                <div className="text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2">
+                  {error}
+                  {error.includes('expired') && (
+                    <p className="mt-1">
+                      <Link to="/dashboard/profile" className="text-primary hover:underline">Request a new link →</Link>
+                    </p>
+                  )}
+                </div>
+              )}
               <div>
                 <label className="block text-sm text-muted mb-1">New password</label>
                 <input
