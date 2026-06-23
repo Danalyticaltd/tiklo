@@ -36,18 +36,17 @@ export default function EventDetail() {
   }
 
   useEffect(() => {
-    if (!session) return
     async function load() {
-      const [{ data: ev }, { data: tt }, { orders: ord, count }] = await Promise.all([
+      const [{ data: ev }, { data: tt }, ordResult] = await Promise.all([
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id),
-        fetchOrders(0),
+        session ? fetchOrders(0) : Promise.resolve({ orders: [], count: 0 }),
       ])
       setEvent(ev)
       setTicketTypes(tt ?? [])
-      setOrders(ord ?? [])
+      setOrders(ordResult.orders ?? [])
       setOrderOffset(PAGE)
-      setHasMore((count ?? 0) > PAGE)
+      setHasMore((ordResult.count ?? 0) > PAGE)
       setLoading(false)
     }
     load()
