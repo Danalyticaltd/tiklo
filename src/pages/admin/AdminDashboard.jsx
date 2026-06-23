@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Users, TicketIcon, DollarSign, CalendarDays, CheckCircle, XCircle, Settings } from 'lucide-react'
+import { Users, TicketIcon, DollarSign, CalendarDays, CheckCircle, XCircle, Settings, CalendarSearch } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
@@ -77,6 +77,12 @@ export default function AdminDashboard() {
               className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-600 hover:border-primary hover:text-primary text-sm font-medium px-3 py-2 rounded-lg transition"
             >
               <Settings size={15} /> Settings
+            </Link>
+            <Link
+              to="/admin/events"
+              className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-600 hover:border-primary hover:text-primary text-sm font-medium px-3 py-2 rounded-lg transition"
+            >
+              <CalendarSearch size={15} /> Events
             </Link>
             <Link
               to="/admin/organizers"

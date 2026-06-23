@@ -24,7 +24,14 @@ export default function AdminOrganizers() {
   }, [])
 
   async function suspend(id) {
-    await supabase.from('profiles').update({ approved: false }).eq('id', id)
+    // Suspend organizer + draft all their published/pending events immediately
+    await Promise.all([
+      supabase.from('profiles').update({ approved: false }).eq('id', id),
+      supabase.from('events')
+        .update({ status: 'draft' })
+        .eq('organizer_id', id)
+        .in('status', ['published', 'pending']),
+    ])
     setOrganizers(prev => prev.map(o => o.id === id ? { ...o, approved: false } : o))
   }
 

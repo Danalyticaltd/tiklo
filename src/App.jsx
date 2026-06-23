@@ -29,6 +29,7 @@ import OrgProfile from './pages/dashboard/OrgProfile'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminOrganizers from './pages/admin/AdminOrganizers'
 import AdminSettings from './pages/admin/AdminSettings'
+import AdminEvents from './pages/admin/AdminEvents'
 
 function ProtectedRoute({ children, requiredRole }) {
   const { user, profile, loading } = useAuth()
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/organizers" element={<ProtectedRoute requiredRole="admin"><AdminOrganizers /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
+          <Route path="/admin/events" element={<ProtectedRoute requiredRole="admin"><AdminEvents /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
