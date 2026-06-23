@@ -25,13 +25,14 @@ export default function EventDetail() {
 
   useEffect(() => {
     async function load() {
-      const [{ data: ev }, { data: tt }, { data: ord, count }] = await Promise.all([
+      const [{ data: ev }, { data: tt }, { data: ord, count, error: ordErr }] = await Promise.all([
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id),
         supabase.from('orders').select('*, ticket_types(name)', { count: 'exact' })
-          .eq('event_id', id).in('status', ['paid', 'refunded', 'refund_requested'])
+          .eq('event_id', id)
           .order('created_at', { ascending: false }).range(0, PAGE - 1),
       ])
+      if (ordErr) console.error('[EventDetail] orders query error:', ordErr)
       setEvent(ev)
       setTicketTypes(tt ?? [])
       setOrders(ord ?? [])
@@ -45,7 +46,7 @@ export default function EventDetail() {
   async function loadMoreOrders() {
     setLoadingMore(true)
     const { data: more } = await supabase.from('orders').select('*, ticket_types(name)')
-      .eq('event_id', id).in('status', ['paid', 'refunded', 'refund_requested'])
+      .eq('event_id', id)
       .order('created_at', { ascending: false }).range(orderOffset, orderOffset + PAGE - 1)
     if (more?.length) {
       setOrders(prev => [...prev, ...more])
@@ -119,9 +120,9 @@ export default function EventDetail() {
     }
   }
 
-  const totalRevenue = orders.reduce((s, o) => s + Number(o.subtotal ?? 0), 0)
-  const totalSold = orders.reduce((s, o) => s + (o.quantity ?? 0), 0)
+  const totalRevenue = orders.filter(o => o.status === 'paid').reduce((s, o) => s + Number(o.subtotal ?? 0), 0)
   const totalSoldCount = ticketTypes.reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
+  const totalSold = totalSoldCount
 
   const chartData = ticketTypes.map(tt => ({
     name: tt.name,
