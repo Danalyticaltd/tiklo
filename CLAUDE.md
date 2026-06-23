@@ -187,9 +187,11 @@ created_at timestamptz default now()
 
 ### 5. Organizer Payout
 
-- Stripe Connect handles payouts directly to organizer bank
-- Platform fee (2.5% + $0.99/ticket) is captured via Stripe’s application fee
-- Organizer sees net revenue in their Stripe dashboard
+- All ticket revenue is collected into **Tiklo’s own Stripe account**
+- Tiklo deducts the platform fee (2.5% + $0.99/ticket) and pays the net to the organizer
+- Organizers receive payment via **Interac e-Transfer or bank transfer** from Tiklo’s bank account — manually initiated by Tiklo admin after each event
+- Organizers store their payout preference (Interac email or bank details) in their profile — Tiklo uses this to send the transfer
+- There is **no Stripe Connect, no organizer Stripe account, no application_fee_amount** in this flow
 
 -----
 
@@ -201,7 +203,7 @@ Paid events:         2.5% + $0.99 per ticket
 Organizer Pro:       $19.99/month → 1.5% + $0.49 per ticket
 ```
 
-**Implementation:** Use Stripe Connect `application_fee_amount` on each PaymentIntent.
+**Implementation:** Fee is calculated at checkout and stored in `orders.platform_fee`. Tiklo collects the full amount via its own Stripe account, then manually transfers the net (subtotal − fee) to the organizer via Interac or bank transfer after the event. No Stripe Connect.
 
 -----
 
@@ -242,15 +244,18 @@ VITE_APP_URL=http://localhost:5173
 - Creates order record, generates tickets with UUIDs as QR payloads
 - Triggers Resend email with QR codes
 
-### `GET /api/create-connect`
+### `POST /api/notify-admin-event`
 
-- Initiates Stripe Connect OAuth for organizer
-- Redirects to Stripe onboarding
+- Called when an organizer submits an event for approval
+- Sends notification email to Tiklo admin with event details, preview link, and organizer reply-to
 
-### `GET /api/connect-callback`
+### `POST /api/refund`
 
-- Handles Stripe Connect OAuth callback
-- Saves `stripe_account_id` to organizer profile
+- Organizer-initiated: marks order as `refund_requested`, emails Tiklo admin to process manually
+
+### `GET /api/event-orders`
+
+- Returns paginated orders for an event (bypasses RLS, verifies organizer ownership via JWT)
 
 -----
 
@@ -267,7 +272,7 @@ VITE_APP_URL=http://localhost:5173
 |`/dashboard`           |Organizer home                 |Organizer|
 |`/dashboard/events/new`|Create event                   |Organizer|
 |`/dashboard/events/:id`|Event stats + attendees        |Organizer|
-|`/dashboard/connect`   |Stripe Connect onboarding      |Organizer|
+|`/dashboard/profile`   |Profile, payout info, settings |Organizer|
 |`/checkin/:eventId`    |QR scanner                     |Organizer|
 |`/admin`               |Admin dashboard                |Admin    |
 |`/admin/organizers`    |Approve organizers             |Admin    |

@@ -23,7 +23,6 @@ import CreateEvent from './pages/dashboard/CreateEvent'
 import EventDetail from './pages/dashboard/EventDetail'
 import EditEvent from './pages/dashboard/EditEvent'
 import CheckIn from './pages/dashboard/CheckIn'
-import Connect from './pages/dashboard/Connect'
 import OrgProfile from './pages/dashboard/OrgProfile'
 
 // Admin
@@ -62,7 +61,7 @@ export default function App() {
           <Route path="/dashboard/events/new" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
           <Route path="/dashboard/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
           <Route path="/dashboard/events/:id/edit" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
-          <Route path="/dashboard/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
+          <Route path="/dashboard/connect" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard/profile" element={<ProtectedRoute><OrgProfile /></ProtectedRoute>} />
           <Route path="/checkin/:eventId" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
 

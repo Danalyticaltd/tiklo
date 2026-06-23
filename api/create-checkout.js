@@ -221,27 +221,13 @@ export default async function handler(req, res) {
     }
 
     // ── Paid tickets: create Stripe PaymentIntent ──
-    // Fetch organizer's Stripe Connect account to route funds + capture platform fee
-    const { data: orgProfile } = await supabase
-      .from('profiles')
-      .select('stripe_account_id, stripe_onboarded')
-      .eq('id', ev.organizer_id)
-      .single()
-
-    const stripeAccountId = orgProfile?.stripe_onboarded ? orgProfile.stripe_account_id : null
-
-    const intentParams = {
+    // All funds collect to Tiklo's Stripe account. Tiklo pays organizers manually
+    // via Interac or bank transfer after each event.
+    const paymentIntent = await stripe.paymentIntents.create({
       amount: unitAmount * quantity,
       currency: 'cad',
       metadata: { order_id: order.id, buyer_name: buyer_name.trim(), buyer_email: buyer_email.trim() },
-    }
-
-    if (stripeAccountId && platformFeeCents > 0) {
-      intentParams.application_fee_amount = platformFeeCents
-      intentParams.transfer_data = { destination: stripeAccountId }
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create(intentParams)
+    })
 
     await supabase.from('orders').update({
       stripe_payment_intent: paymentIntent.id,
