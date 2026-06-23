@@ -4,12 +4,14 @@ import { format } from 'date-fns'
 import { ArrowLeft, Download, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 
 export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { session } = useAuth()
   const [event, setEvent] = useState(null)
   const [ticketTypes, setTicketTypes] = useState([])
   const [orders, setOrders] = useState([])
@@ -23,16 +25,24 @@ export default function EventDetail() {
   const [loadingMore, setLoadingMore] = useState(false)
   const PAGE = 50
 
+  async function fetchOrders(offset = 0) {
+    const token = session?.access_token
+    if (!token) return { orders: [], count: 0 }
+    const res = await fetch(`/api/event-orders?event_id=${id}&limit=${PAGE}&offset=${offset}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) { console.error('[EventDetail] event-orders error', res.status); return { orders: [], count: 0 } }
+    return res.json()
+  }
+
   useEffect(() => {
+    if (!session) return
     async function load() {
-      const [{ data: ev }, { data: tt }, { data: ord, count, error: ordErr }] = await Promise.all([
+      const [{ data: ev }, { data: tt }, { orders: ord, count }] = await Promise.all([
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id),
-        supabase.from('orders').select('*, ticket_types(name)', { count: 'exact' })
-          .eq('event_id', id)
-          .order('created_at', { ascending: false }).range(0, PAGE - 1),
+        fetchOrders(0),
       ])
-      if (ordErr) console.error('[EventDetail] orders query error:', ordErr)
       setEvent(ev)
       setTicketTypes(tt ?? [])
       setOrders(ord ?? [])
@@ -41,17 +51,15 @@ export default function EventDetail() {
       setLoading(false)
     }
     load()
-  }, [id])
+  }, [id, session])
 
   async function loadMoreOrders() {
     setLoadingMore(true)
-    const { data: more } = await supabase.from('orders').select('*, ticket_types(name)')
-      .eq('event_id', id)
-      .order('created_at', { ascending: false }).range(orderOffset, orderOffset + PAGE - 1)
+    const { orders: more, count } = await fetchOrders(orderOffset)
     if (more?.length) {
       setOrders(prev => [...prev, ...more])
       setOrderOffset(o => o + PAGE)
-      setHasMore(more.length === PAGE)
+      setHasMore(orderOffset + more.length < count)
     } else {
       setHasMore(false)
     }
