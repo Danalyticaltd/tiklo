@@ -1,6 +1,18 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
+// Supabase appends the recovery token as a URL hash — detect it early so we
+// can redirect before the rest of the app renders on the wrong page.
+;(function handleRecoveryHash() {
+  if (typeof window === 'undefined') return
+  const hash = window.location.hash
+  if (hash.includes('type=recovery') || hash.includes('type=magiclink')) {
+    if (!window.location.pathname.startsWith('/reset-password')) {
+      window.location.replace('/reset-password' + hash)
+    }
+  }
+})()
+
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
