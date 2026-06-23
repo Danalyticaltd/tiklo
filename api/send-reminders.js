@@ -46,6 +46,10 @@ async function send7DayReminders() {
   for (const order of orders) {
     const event = order.events
     if (!event || !order.buyer_email) continue
+    // Atomic claim: only proceed if this instance wins the update race
+    const { data: claimed } = await supabase.from('orders').update({ reminder_7day_sent: true })
+      .eq('id', order.id).eq('reminder_7day_sent', false).select('id')
+    if (!claimed?.length) continue
     try {
       await resend.emails.send({
         from: 'Tiklo <tickets@tiklo.ca>',
@@ -58,9 +62,8 @@ async function send7DayReminders() {
           <a href="https://tiklo.ca" style="display:inline-block;margin-top:8px;background:#635BFF;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Browse more events</a>
         `),
       })
-      await supabase.from('orders').update({ reminder_7day_sent: true }).eq('id', order.id)
       sent++
-    } catch (err) { console.error('[send-reminders]', err.message) }
+    } catch (err) { console.error('[send-reminders] 7day email failed', order.id, err.message) }
   }
   return sent
 }
@@ -83,6 +86,9 @@ async function send1DayReminders() {
   for (const order of orders) {
     const event = order.events
     if (!event || !order.buyer_email) continue
+    const { data: claimed } = await supabase.from('orders').update({ reminder_1day_sent: true })
+      .eq('id', order.id).eq('reminder_1day_sent', false).select('id')
+    if (!claimed?.length) continue
     try {
       await resend.emails.send({
         from: 'Tiklo <tickets@tiklo.ca>',
@@ -101,9 +107,8 @@ async function send1DayReminders() {
           <p style="font-size:14px;color:#374151;">Can't find your ticket? Check your original confirmation email or reply here and we'll help.</p>
         `),
       })
-      await supabase.from('orders').update({ reminder_1day_sent: true }).eq('id', order.id)
       sent++
-    } catch (err) { console.error('[send-reminders]', err.message) }
+    } catch (err) { console.error('[send-reminders] 1day email failed', order.id, err.message) }
   }
   return sent
 }
@@ -127,6 +132,9 @@ async function sendThankYouEmails() {
   for (const order of orders) {
     const event = order.events
     if (!event || !order.buyer_email) continue
+    const { data: claimed } = await supabase.from('orders').update({ thankyou_sent: true })
+      .eq('id', order.id).eq('thankyou_sent', false).select('id')
+    if (!claimed?.length) continue
     try {
       await resend.emails.send({
         from: 'Tiklo <tickets@tiklo.ca>',
@@ -140,9 +148,8 @@ async function sendThankYouEmails() {
           <a href="https://tiklo.ca" style="display:inline-block;background:#635BFF;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Browse upcoming events</a>
         `),
       })
-      await supabase.from('orders').update({ thankyou_sent: true }).eq('id', order.id)
       sent++
-    } catch (err) { console.error('[send-reminders]', err.message) }
+    } catch (err) { console.error('[send-reminders] thankyou email failed', order.id, err.message) }
   }
   return sent
 }

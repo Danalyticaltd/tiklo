@@ -92,15 +92,19 @@ export default async function handler(req, res) {
         .insert(tickets)
         .select()
 
-      // Send buyer ticket email + organizer sale notification
-      await Promise.all([
-        sendTicketEmail(order, createdTickets),
-        sendOrganizerNotification(order),
-      ])
+      // Emails are best-effort — a failure must not cause a 500 (Stripe would retry and create duplicate tickets)
+      try {
+        await Promise.all([
+          sendTicketEmail(order, createdTickets),
+          sendOrganizerNotification(order),
+        ])
+      } catch (emailErr) {
+        console.error('[webhook] email failed for order', orderId, emailErr.message)
+      }
 
     } catch (err) {
       console.error('Webhook processing error:', err)
-      return res.status(500).json({ error: err.message })
+      return res.status(500).json({ error: 'Internal server error' })
     }
   }
 

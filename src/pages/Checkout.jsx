@@ -164,10 +164,15 @@ export default function Checkout() {
           </div>
         ) : clientSecret ? (
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900 mb-4">Payment</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading font-bold text-gray-900">Payment</h2>
+              <button onClick={() => setStep('info')} className="text-sm text-muted hover:text-gray-900 transition">
+                ← Change details
+              </button>
+            </div>
             <Elements
               stripe={stripePromise}
-              options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#DC5E3D' } }, defaultValues: { billingDetails: { address: { country: 'CA' } } } }}
+              options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#635BFF' } }, defaultValues: { billingDetails: { address: { country: 'CA' } } } }}
             >
               <CheckoutForm orderId={orderId} buyerEmail={buyerEmail} />
             </Elements>

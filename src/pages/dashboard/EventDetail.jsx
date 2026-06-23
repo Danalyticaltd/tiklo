@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, Download, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/Navbar'
@@ -18,21 +18,44 @@ export default function EventDetail() {
   const [deleting, setDeleting] = useState(false)
   const [refundingId, setRefundingId] = useState(null)
   const [confirmRefundId, setConfirmRefundId] = useState(null)
+  const [orderOffset, setOrderOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const PAGE = 50
 
   useEffect(() => {
     async function load() {
-      const [{ data: ev }, { data: tt }, { data: ord }] = await Promise.all([
+      const [{ data: ev }, { data: tt }, { data: ord, count }] = await Promise.all([
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id),
-        supabase.from('orders').select('*, ticket_types(name)').eq('event_id', id).in('status', ['paid', 'refunded', 'refund_requested']).order('created_at', { ascending: false }),
+        supabase.from('orders').select('*, ticket_types(name)', { count: 'exact' })
+          .eq('event_id', id).in('status', ['paid', 'refunded', 'refund_requested'])
+          .order('created_at', { ascending: false }).range(0, PAGE - 1),
       ])
       setEvent(ev)
       setTicketTypes(tt ?? [])
       setOrders(ord ?? [])
+      setOrderOffset(PAGE)
+      setHasMore((count ?? 0) > PAGE)
       setLoading(false)
     }
     load()
   }, [id])
+
+  async function loadMoreOrders() {
+    setLoadingMore(true)
+    const { data: more } = await supabase.from('orders').select('*, ticket_types(name)')
+      .eq('event_id', id).in('status', ['paid', 'refunded', 'refund_requested'])
+      .order('created_at', { ascending: false }).range(orderOffset, orderOffset + PAGE - 1)
+    if (more?.length) {
+      setOrders(prev => [...prev, ...more])
+      setOrderOffset(o => o + PAGE)
+      setHasMore(more.length === PAGE)
+    } else {
+      setHasMore(false)
+    }
+    setLoadingMore(false)
+  }
 
   function exportCsv() {
     const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
@@ -175,20 +198,19 @@ export default function EventDetail() {
             <h1 className="font-heading text-2xl font-bold text-gray-900">{event?.title}</h1>
             <p className="text-muted text-sm mt-1">{event?.event_date && format(new Date(event.event_date), 'EEE, MMM d, yyyy · h:mm a')} · {event?.city}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to={`/events/${id}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary">View page ↗</Button>
+          <div className="flex items-center gap-1.5">
+            <Link to={`/events/${id}`} target="_blank" rel="noopener noreferrer" title="View public event page" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
+              <ExternalLink size={16} />
             </Link>
-            <Link to={`/dashboard/events/${id}/edit`}>
-              <Button variant="secondary"><Pencil size={14} className="mr-1.5" />Edit</Button>
+            <Link to={`/dashboard/events/${id}/edit`} title="Edit event" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:border-primary hover:text-primary transition font-medium">
+              <Pencil size={14} />Edit
             </Link>
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:border-red-400 hover:text-red-500 transition font-medium"
-            >
-              <Trash2 size={14} />Delete
+            <button onClick={exportCsv} title="Export attendees as CSV" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
+              <Download size={16} />
             </button>
-            <Button variant="secondary" onClick={exportCsv}><Download size={14} className="mr-1.5" />Export CSV</Button>
+            <button onClick={() => setConfirmDelete(true)} title="Delete event" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-red-400 hover:text-red-500 transition">
+              <Trash2 size={16} />
+            </button>
           </div>
         </div>
 
@@ -261,6 +283,13 @@ export default function EventDetail() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          {hasMore && (
+            <div className="px-5 py-4 border-t border-gray-100 text-center">
+              <button onClick={loadMoreOrders} disabled={loadingMore} className="text-sm text-primary font-medium hover:underline disabled:opacity-50">
+                {loadingMore ? 'Loading…' : 'Load more orders'}
+              </button>
             </div>
           )}
         </div>

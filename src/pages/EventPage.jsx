@@ -198,10 +198,16 @@ export default function EventPage() {
         )}
 
         {/* Ticket selector */}
-        {ticketTypes.length > 0 && (
+        {ticketTypes.length > 0 && (() => {
+          const allSoldOut = ticketTypes.every(tt => (tt.quantity - tt.quantity_sold) <= 0)
+          return (
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900">Get tickets</h2>
-
+            <h2 className="font-heading font-bold text-gray-900">{allSoldOut ? 'Sold out' : 'Get tickets'}</h2>
+            {allSoldOut && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 font-medium">
+                All tickets for this event are sold out.
+              </p>
+            )}
             <div className="space-y-2">
               {ticketTypes.map(tt => {
                 const avail = tt.quantity - tt.quantity_sold
@@ -253,7 +259,8 @@ export default function EventPage() {
               </div>
             )}
           </div>
-        )}
+          )
+        })()}
       </div>
       <Footer />
     </div>
