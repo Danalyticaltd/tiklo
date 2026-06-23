@@ -126,7 +126,7 @@ export default function OrgProfile() {
 
   async function sendPasswordReset() {
     setResetLoading(true)
-    await supabase.auth.resetPasswordForEmail(user.email, { redirectTo: `${window.location.origin}/login` })
+    await supabase.auth.resetPasswordForEmail(user.email, { redirectTo: `${window.location.origin}/reset-password` })
     setResetSent(true)
     setResetLoading(false)
   }

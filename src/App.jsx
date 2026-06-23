@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Verify from './pages/Verify'
 import Onboarding from './pages/Onboarding'
+import ResetPassword from './pages/ResetPassword'
 
 // Organizer dashboard
 import Dashboard from './pages/dashboard/Dashboard'
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
           {/* Organizer */}
