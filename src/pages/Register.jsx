@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import TikloLogo from '../components/TikloLogo'
+import Footer from '../components/Footer'
 
 export default function Register() {
   const { register } = useAuth()
@@ -23,7 +24,6 @@ export default function Register() {
     } catch (err) {
       const msg = err.message ?? ''
       if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already been registered')) {
-        // Unconfirmed account — resend OTP and go to verify
         try {
           await supabase.auth.resend({ type: 'signup', email })
           navigate(`/verify?email=${encodeURIComponent(email)}`)
@@ -39,10 +39,15 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <Link to="/" className="block mb-8"><TikloLogo size={28} /></Link>
-        <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+        <div className="w-full max-w-sm">
+          <Link to="/" className="flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 transition mb-4">
+            ← Back to events
+          </Link>
+        </div>
+        <div className="w-full max-w-sm bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+          <Link to="/" className="block mb-6"><TikloLogo size={28} /></Link>
           <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">Create your account</h1>
           <p className="text-muted text-sm mb-6">Start selling tickets on Tiklo</p>
           {error && <p className="text-red-500 text-sm mb-4 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
@@ -73,7 +78,7 @@ export default function Register() {
             </div>
             <button
               type="submit" disabled={loading}
-              className="w-full bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
+              className="w-full bg-primary hover:bg-[#574BFF] text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
             >
               {loading ? 'Creating account...' : 'Continue'}
             </button>
@@ -83,6 +88,7 @@ export default function Register() {
           </p>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
