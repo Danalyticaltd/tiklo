@@ -25,7 +25,8 @@ export default function EditEvent() {
   const [bannerPreview, setBannerPreview] = useState(null)
   const [existingBanner, setExistingBanner] = useState(null)
   const [error, setError] = useState(null)
-  const [savedTTs, setSavedTTs] = useState([]) // ticket types as loaded from DB
+  const [savedTTs, setSavedTTs] = useState([])
+  const [eventStatus, setEventStatus] = useState(null)
 
   const locationInputRef = useRef(null)
 
@@ -45,6 +46,7 @@ export default function EditEvent() {
       ])
       if (!ev || ev.organizer_id !== user.id) { navigate('/dashboard'); return }
       setExistingBanner(ev.banner_url ?? null)
+      setEventStatus(ev.status)
       setSavedTTs(tts ?? [])
       reset({
         title: ev.title,
@@ -102,7 +104,20 @@ export default function EditEvent() {
     setBannerPreview(URL.createObjectURL(file))
   }
 
-  async function onSubmit(data) {
+  async function notifyAdmin() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch('/api/notify-admin-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ event_id: id }),
+      })
+    } catch (err) {
+      console.error('Admin notification failed:', err.message)
+    }
+  }
+
+  async function onSubmit(data, publish = false) {
     setError(null)
     setSaving(true)
     try {
@@ -114,6 +129,7 @@ export default function EditEvent() {
         community_tag: data.community_tag,
         event_type: data.event_type,
         event_date: data.event_date,
+        ...(publish ? { status: 'pending' } : {}),
       }).eq('id', id)
       if (evErr) throw evErr
 
@@ -169,6 +185,8 @@ export default function EditEvent() {
           })
         }
       }
+
+      if (publish) await notifyAdmin()
 
       navigate('/dashboard')
     } catch (err) {
@@ -362,11 +380,21 @@ export default function EditEvent() {
             </div>
           )}
 
-          <div className="flex gap-3 justify-end">
+          <div className="flex gap-3 justify-end flex-wrap">
             <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')}>Cancel</Button>
-            <Button type="button" disabled={saving} onClick={handleSubmit(onSubmit)}>
-              {saving ? 'Saving…' : 'Save changes'}
+            <Button type="button" variant="secondary" disabled={saving} onClick={handleSubmit(data => onSubmit(data, false))}>
+              {saving ? 'Saving…' : 'Save as draft'}
             </Button>
+            {(eventStatus === 'draft' || eventStatus === 'pending') && (
+              <Button type="button" disabled={saving} onClick={handleSubmit(data => onSubmit(data, true))}>
+                {saving ? 'Submitting…' : 'Submit for approval'}
+              </Button>
+            )}
+            {eventStatus === 'published' && (
+              <Button type="button" disabled={saving} onClick={handleSubmit(data => onSubmit(data, false))}>
+                {saving ? 'Saving…' : 'Save changes'}
+              </Button>
+            )}
           </div>
         </form>
       </div>

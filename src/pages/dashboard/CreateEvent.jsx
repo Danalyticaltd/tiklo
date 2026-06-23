@@ -94,6 +94,19 @@ export default function CreateEvent() {
     return data.publicUrl
   }
 
+  async function notifyAdmin(eventId) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch('/api/notify-admin-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ event_id: eventId }),
+      })
+    } catch (err) {
+      console.error('Admin notification failed:', err.message)
+    }
+  }
+
   async function onSubmit(data, publish = false) {
     setError(null)
     setSaving(true)
@@ -124,6 +137,8 @@ export default function CreateEvent() {
       }))
       const { error: ttErr } = await supabase.from('ticket_types').insert(ticketInserts)
       if (ttErr) throw ttErr
+
+      if (publish) notifyAdmin(event.id)
 
       navigate('/dashboard')
     } catch (err) {
