@@ -19,16 +19,24 @@ function CheckoutForm({ orderId, buyerEmail, onSuccess }) {
     setError(null)
     setProcessing(true)
 
-    const { error: stripeError } = await stripe.confirmPayment({
+    const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/ticket/confirmed?order=${orderId}&email=${encodeURIComponent(buyerEmail)}`,
       },
+      // Cards that don't require 3DS complete inline — no redirect needed
+      redirect: 'if_required',
     })
 
     if (stripeError) {
       setError(stripeError.message)
       setProcessing(false)
+      return
+    }
+
+    // Inline completion (no redirect): navigate to confirmation ourselves
+    if (paymentIntent?.status === 'succeeded') {
+      onSuccess()
     }
   }
 
@@ -174,7 +182,11 @@ export default function Checkout() {
               stripe={stripePromise}
               options={{ clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#635BFF' } }, defaultValues: { billingDetails: { address: { country: 'CA' } } } }}
             >
-              <CheckoutForm orderId={orderId} buyerEmail={buyerEmail} />
+              <CheckoutForm
+                orderId={orderId}
+                buyerEmail={buyerEmail}
+                onSuccess={() => navigate(`/ticket/confirmed?order=${orderId}&email=${encodeURIComponent(buyerEmail)}`)}
+              />
             </Elements>
           </div>
         ) : null}
