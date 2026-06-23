@@ -11,7 +11,7 @@ import Button from '../../components/ui/Button'
 export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { session } = useAuth()
+  const { user } = useAuth()
   const [event, setEvent] = useState(null)
   const [ticketTypes, setTicketTypes] = useState([])
   const [orders, setOrders] = useState([])
@@ -26,6 +26,7 @@ export default function EventDetail() {
   const PAGE = 50
 
   async function fetchOrders(offset = 0) {
+    const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
     if (!token) return { orders: [], count: 0 }
     const res = await fetch(`/api/event-orders?event_id=${id}&limit=${PAGE}&offset=${offset}`, {
@@ -40,7 +41,7 @@ export default function EventDetail() {
       const [{ data: ev }, { data: tt }, ordResult] = await Promise.all([
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id),
-        session ? fetchOrders(0) : Promise.resolve({ orders: [], count: 0 }),
+        fetchOrders(0),
       ])
       setEvent(ev)
       setTicketTypes(tt ?? [])
@@ -50,7 +51,7 @@ export default function EventDetail() {
       setLoading(false)
     }
     load()
-  }, [id, session])
+  }, [id, user])
 
   async function loadMoreOrders() {
     setLoadingMore(true)
