@@ -203,7 +203,7 @@ Paid events:         2.5% + $0.99 per ticket
 Organizer Pro:       $19.99/month → 1.5% + $0.49 per ticket
 ```
 
-**Implementation:** Fee is calculated at checkout and stored in `orders.platform_fee`. Tiklo collects the full amount via its own Stripe account, then manually transfers the net (subtotal − fee) to the organizer via Interac or bank transfer after the event. No Stripe Connect.
+**Implementation:** Rates are stored in the `settings` table (`fee_percent`, `fee_flat_cents`). `api/create-checkout.js` fetches them live on every request — no redeploy needed to change rates. The calculated fee is stored in `orders.platform_fee`. Admin can update rates at `/admin/settings`.
 
 -----
 
@@ -276,6 +276,7 @@ VITE_APP_URL=http://localhost:5173
 |`/checkin/:eventId`    |QR scanner                     |Organizer|
 |`/admin`               |Admin dashboard                |Admin    |
 |`/admin/organizers`    |Approve organizers             |Admin    |
+|`/admin/settings`      |Platform fee rates             |Admin    |
 
 -----
 

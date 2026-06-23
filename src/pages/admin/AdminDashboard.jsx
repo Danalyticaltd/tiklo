@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Users, TicketIcon, DollarSign, CalendarDays, CheckCircle, XCircle } from 'lucide-react'
+import { Users, TicketIcon, DollarSign, CalendarDays, CheckCircle, XCircle, Settings } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
@@ -71,17 +71,25 @@ export default function AdminDashboard() {
             <h1 className="font-heading text-3xl font-bold text-gray-900">Admin</h1>
             <p className="text-muted text-sm mt-1">Platform overview — Danalytica Ltd</p>
           </div>
-          <Link
-            to="/admin/organizers"
-            className="relative inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-lg shadow-primary/20"
-          >
-            <Users size={15} /> Manage organizers
-            {stats?.pendingOrgCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {stats.pendingOrgCount}
-              </span>
-            )}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/admin/settings"
+              className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-600 hover:border-primary hover:text-primary text-sm font-medium px-3 py-2 rounded-lg transition"
+            >
+              <Settings size={15} /> Settings
+            </Link>
+            <Link
+              to="/admin/organizers"
+              className="relative inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-lg shadow-primary/20"
+            >
+              <Users size={15} /> Manage organizers
+              {stats?.pendingOrgCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {stats.pendingOrgCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
 
         {loading ? (

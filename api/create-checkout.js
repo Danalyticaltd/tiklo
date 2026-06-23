@@ -11,11 +11,22 @@ const supabase = createClient(
 )
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Fee structure: 2.5% + $0.99 per ticket
-function calcFee(price, quantity) {
+async function fetchFeeRates() {
+  const { data } = await supabase
+    .from('settings')
+    .select('key, value')
+    .in('key', ['fee_percent', 'fee_flat_cents'])
+  const map = Object.fromEntries((data ?? []).map(r => [r.key, r.value]))
+  return {
+    feePercent:   parseFloat(map.fee_percent    ?? '2.5'),
+    feeFlatCents: parseInt(map.fee_flat_cents ?? '99', 10),
+  }
+}
+
+function calcFee(price, quantity, feePercent, feeFlatCents) {
   if (price === 0) return 0
   const subtotal = price * quantity
-  return Math.round(subtotal * 0.025 * 100 + 99 * quantity) // in cents
+  return Math.round(subtotal * (feePercent / 100) * 100 + feeFlatCents * quantity)
 }
 
 // ── Free-ticket fulfilment (mirrors webhook logic) ──────────────────────────
@@ -135,12 +146,15 @@ export default async function handler(req, res) {
   if (!Number.isInteger(quantity) || quantity < 1) return res.status(400).json({ error: 'Quantity must be at least 1' })
 
   try {
-    // Fetch ticket type + event — always fresh, no cache
-    const { data: ticketType } = await supabase
-      .from('ticket_types')
-      .select('*, events(id, status, event_date, organizer_id, title, location, profiles!organizer_id(email, full_name))')
-      .eq('id', ticket_type_id)
-      .single()
+    // Fetch fee rates from DB (live — no cache) + ticket type + event in parallel
+    const [{ feePercent, feeFlatCents }, { data: ticketType }] = await Promise.all([
+      fetchFeeRates(),
+      supabase
+        .from('ticket_types')
+        .select('*, events(id, status, event_date, organizer_id, title, location, profiles!organizer_id(email, full_name))')
+        .eq('id', ticket_type_id)
+        .single(),
+    ])
 
     if (!ticketType) return res.status(404).json({ error: 'Ticket type not found' })
 
@@ -154,7 +168,7 @@ export default async function handler(req, res) {
 
     const unitAmount = Math.round(ticketType.price * 100) // cents
     const subtotal = ticketType.price * quantity
-    const platformFeeCents = calcFee(ticketType.price, quantity)
+    const platformFeeCents = calcFee(ticketType.price, quantity, feePercent, feeFlatCents)
 
     // Create the order first (pending), then atomically reserve tickets.
     const { data: order, error: orderErr } = await supabase.from('orders').insert({
