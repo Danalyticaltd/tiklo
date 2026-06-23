@@ -104,7 +104,10 @@ async function fulfilFreeOrder(order, tickets) {
     html: `
       <!DOCTYPE html><html>
       <body style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f2937;">
-        <h1 style="font-size:24px;font-weight:800;color:#DC5E3D;margin-bottom:4px;">Tiklo</h1>
+        <div style="display:table;margin-bottom:20px;">
+          <img src="https://tiklo.ca/favicon.svg" width="36" height="36" alt="" style="display:table-cell;vertical-align:middle;border-radius:10px;" />
+          <span style="display:table-cell;vertical-align:middle;padding-left:8px;font-size:26px;font-weight:800;color:#1a1a1a;letter-spacing:-0.5px;">Tikl<span style="color:#635BFF;">o</span></span>
+        </div>
         <p style="color:#6b7280;margin-bottom:24px;">You're registered — your tickets are below!</p>
         <div style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:24px;">
           <h2 style="margin:0 0 8px;font-size:18px;">${event.title}</h2>

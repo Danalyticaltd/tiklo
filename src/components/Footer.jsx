@@ -52,7 +52,7 @@ export default function Footer() {
           <ul className="space-y-2.5">
             {CITIES.map(c => (
               <li key={c}>
-                <Link to={`/events/city/${c.toLowerCase()}`} className="text-sm text-white/45 hover:text-white/80 transition">
+                <Link to={`/?city=${encodeURIComponent(c)}`} className="text-sm text-white/45 hover:text-white/80 transition">
                   Events in {c}
                 </Link>
               </li>

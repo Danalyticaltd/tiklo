@@ -249,7 +249,16 @@ async function sendTicketEmail(order, tickets) {
 
 async function sendOrganizerNotification(order) {
   const event = order.events
-  const organizer = event?.profiles
+  if (!event?.organizer_id) return
+
+  // Direct lookup — the join via profiles!organizer_id can silently return null
+  // if the FK relationship isn't resolved by PostgREST at query time
+  const { data: organizer } = await supabase
+    .from('profiles')
+    .select('email, full_name')
+    .eq('id', event.organizer_id)
+    .single()
+
   if (!organizer?.email) return
 
   const ticketType = order.ticket_types

@@ -30,11 +30,14 @@ export default function Home() {
   const [dashStats, setDashStats] = useState({ ticketsSold: 0, activeEvents: 0 })
   const [dashEvents, setDashEvents] = useState([])
 
-  // Apply ?eventType= URL param whenever it changes (footer category links)
+  // Apply ?eventType= and ?city= URL params from footer links
   useEffect(() => {
     const type = searchParams.get('eventType')
-    if (type) {
-      setActiveType(type)
+    const cityParam = searchParams.get('city')
+    let changed = false
+    if (type) { setActiveType(type); changed = true }
+    if (cityParam) { setCity(cityParam); changed = true }
+    if (changed) {
       setTimeout(() => document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' }), 200)
     }
   }, [searchParams])

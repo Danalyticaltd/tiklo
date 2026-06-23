@@ -26,7 +26,13 @@ export default function EventDetail() {
   const PAGE = 50
 
   async function fetchOrders(offset = 0) {
-    const { data: { session } } = await supabase.auth.getSession()
+    let { data: { session } } = await supabase.auth.getSession()
+    // Supabase restores the session asynchronously on first load — retry once if null
+    if (!session?.access_token) {
+      await new Promise(r => setTimeout(r, 400))
+      const retry = await supabase.auth.getSession()
+      session = retry.data.session
+    }
     const token = session?.access_token
     if (!token) return { orders: [], count: 0 }
     const res = await fetch(`/api/event-orders?event_id=${id}&limit=${PAGE}&offset=${offset}`, {
