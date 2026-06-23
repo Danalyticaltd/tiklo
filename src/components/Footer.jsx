@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import TikloLogo from './TikloLogo'
 import { supabase } from '../lib/supabase'
 
-// All footer nav links use this — navigate then immediately scroll to top
+// All footer nav links use this — navigate then scroll to top.
+// requestAnimationFrame defers the scroll until after React has committed
+// the new route, which prevents iOS Safari from swallowing the call.
 function FooterNavLink({ to, children, className }) {
   const navigate = useNavigate()
   function handleClick(e) {
     e.preventDefault()
     navigate(to)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    requestAnimationFrame(() => window.scrollTo(0, 0))
   }
   return (
     <a href={to} onClick={handleClick} className={className ?? 'text-sm text-white/45 hover:text-white/80 transition'}>

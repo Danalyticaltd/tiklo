@@ -37,7 +37,7 @@ export default function Home() {
     let changed = false
     if (type) { setActiveType(type); changed = true }
     if (cityParam) { setCity(cityParam); changed = true }
-    if (changed) window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (changed) window.scrollTo(0, 0)
   }, [searchParams])
 
   // Fetch dashboard widget stats + real-time subscription
