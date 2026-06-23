@@ -5,6 +5,7 @@ import { CheckCircle } from 'lucide-react'
 import QRCode from 'qrcode'
 import { format } from 'date-fns'
 import { motion } from 'framer-motion'
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
@@ -84,7 +85,6 @@ export default function TicketConfirm() {
     if (!order || !tickets.length) return
     setPdfLoading(true)
     try {
-      const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib')
       const pdfDoc = await PDFDocument.create()
       const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
       const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica)
