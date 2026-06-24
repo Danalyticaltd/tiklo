@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, Download, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Download, FileSpreadsheet, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -75,24 +75,75 @@ export default function EventDetail() {
   function exportCsv() {
     const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
     const rows = [
-      ['Buyer Name', 'Buyer Email', 'Ticket Type', 'Quantity', 'Subtotal', 'Status', 'Date'],
+      ['Buyer Name', 'Buyer Email', 'Ticket Type', 'Quantity', 'Subtotal (CAD)', 'Status', 'Date'],
       ...orders.filter(o => o.status === 'paid').map(o => [
         esc(o.buyer_name),
         esc(o.buyer_email),
         esc(o.ticket_types?.name),
         o.quantity,
-        `$${Number(o.subtotal).toFixed(2)}`,
+        Number(o.subtotal).toFixed(2),
         o.status,
         format(new Date(o.created_at), 'yyyy-MM-dd HH:mm'),
       ])
     ]
     const csv = rows.map(r => r.join(',')).join('\n')
+    triggerDownload(csv, `${event?.title ?? 'event'}-attendees.csv`)
+  }
+
+  function exportSettlement() {
+    const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
+    const paid = orders.filter(o => o.status === 'paid')
+
+    const dataRows = paid.map(o => {
+      const subtotal    = Number(o.subtotal ?? 0)
+      const serviceFee  = Number(o.platform_fee ?? 0)        // combined buyer service fee (4.4% + $1.09)
+      const buyerTotal  = subtotal + serviceFee
+      const stripeFee   = Math.round((buyerTotal * 0.029 + 0.30) * 100) / 100  // estimated
+      const tikloNet    = Math.round((serviceFee - stripeFee) * 100) / 100
+      const orgPayout   = subtotal                            // organiser always gets full face value
+      return [
+        format(new Date(o.created_at), 'yyyy-MM-dd HH:mm'),
+        esc(o.buyer_name),
+        esc(o.buyer_email),
+        esc(o.ticket_types?.name),
+        o.quantity,
+        (subtotal / o.quantity).toFixed(2),
+        subtotal.toFixed(2),
+        serviceFee.toFixed(2),
+        stripeFee.toFixed(2),
+        tikloNet.toFixed(2),
+        orgPayout.toFixed(2),
+        buyerTotal.toFixed(2),
+      ]
+    })
+
+    // Summary totals row
+    const sum = (key, fn) => paid.reduce((s, o) => s + fn(o), 0)
+    const totSubtotal   = sum('', o => Number(o.subtotal ?? 0))
+    const totService    = sum('', o => Number(o.platform_fee ?? 0))
+    const totBuyer      = totSubtotal + totService
+    const totStripe     = Math.round((totBuyer * 0.029 + 0.30 * paid.length) * 100) / 100
+    const totTiklo      = Math.round((totService - totStripe) * 100) / 100
+    const totOrg        = totSubtotal
+
+    const header = ['Date', 'Buyer Name', 'Buyer Email', 'Ticket Type', 'Qty',
+      'Unit Price (CAD)', 'Ticket Revenue (CAD)', 'Service Fee – Buyer (CAD)',
+      'Stripe Fee est. (CAD)', 'Tiklo Net (CAD)', 'Organiser Payout (CAD)', 'Total Charged (CAD)']
+    const totals = ['TOTAL', '', '', '', paid.reduce((s,o)=>s+o.quantity,0),
+      '', totSubtotal.toFixed(2), totService.toFixed(2),
+      totStripe.toFixed(2), totTiklo.toFixed(2), totOrg.toFixed(2), totBuyer.toFixed(2)]
+
+    const rows = [header, ...dataRows, [], totals]
+    const csv = rows.map(r => r.join(',')).join('\n')
+    const slug = (event?.title ?? 'event').replace(/\s+/g, '-').toLowerCase()
+    triggerDownload(csv, `${slug}-settlement.csv`)
+  }
+
+  function triggerDownload(csv, filename) {
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url
-    a.download = `${event?.title ?? 'event'}-attendees.csv`
-    a.click()
+    a.href = url; a.download = filename; a.click()
     URL.revokeObjectURL(url)
   }
 
@@ -134,7 +185,9 @@ export default function EventDetail() {
     }
   }
 
-  const totalRevenue = orders.filter(o => o.status === 'paid').reduce((s, o) => s + Number(o.subtotal ?? 0), 0)
+  const paidOrders    = orders.filter(o => o.status === 'paid')
+  const totalRevenue  = paidOrders.reduce((s, o) => s + Number(o.subtotal ?? 0), 0)
+  const orgPayout     = totalRevenue  // organiser always receives full face value
   const totalSoldCount = ticketTypes.reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
   const totalSold = totalSoldCount
 
@@ -220,8 +273,11 @@ export default function EventDetail() {
             <Link to={`/dashboard/events/${id}/edit`} title="Edit event" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:border-primary hover:text-primary transition font-medium">
               <Pencil size={14} />Edit
             </Link>
-            <button onClick={exportCsv} title="Export attendees as CSV" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
+            <button onClick={exportCsv} title="Export attendees CSV" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
               <Download size={16} />
+            </button>
+            <button onClick={exportSettlement} title="Export settlement report CSV" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
+              <FileSpreadsheet size={16} />
             </button>
             <button onClick={() => setConfirmDelete(true)} title="Delete event" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-red-400 hover:text-red-500 transition">
               <Trash2 size={16} />
@@ -230,7 +286,7 @@ export default function EventDetail() {
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
             <p className="text-muted text-xs uppercase tracking-wider mb-1">Tickets sold</p>
             <p className="text-3xl font-bold text-gray-900">{totalSold}</p>
@@ -238,6 +294,11 @@ export default function EventDetail() {
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
             <p className="text-muted text-xs uppercase tracking-wider mb-1">Gross revenue</p>
             <p className="text-3xl font-bold text-primary">${totalRevenue.toFixed(2)}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <p className="text-muted text-xs uppercase tracking-wider mb-1">Your payout</p>
+            <p className="text-3xl font-bold text-emerald-600">${orgPayout.toFixed(2)}</p>
+            <p className="text-muted text-xs mt-1">Full face value</p>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
             <p className="text-muted text-xs uppercase tracking-wider mb-1">Orders</p>
