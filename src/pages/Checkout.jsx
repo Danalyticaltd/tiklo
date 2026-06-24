@@ -125,8 +125,8 @@ export default function Checkout() {
   )
 
   const total = ticketType.price * qty
-  // Service fee: 1.5% + $0.79/ticket (matches DB settings fee_percent + fee_flat_cents)
-  const serviceFee = total > 0 ? Math.round((total * 0.015 + 0.79 * qty) * 100) / 100 : 0
+  // Service fee: 4.4% + $1.09/ticket (combined Tiklo + Stripe coverage — matches DB settings)
+  const serviceFee = total > 0 ? Math.round((total * 0.044 + 1.09 * qty) * 100) / 100 : 0
   const grandTotal = total + serviceFee
 
   return (

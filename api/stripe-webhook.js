@@ -61,15 +61,16 @@ export default async function handler(req, res) {
         return res.status(200).end()
       }
 
-      // Guard against oversell: verify capacity hasn't been exceeded since checkout was created
+      // Guard against oversell: try_reserve_tickets already incremented quantity_sold at
+      // checkout time, so we compare the current value directly (no double-add).
       const { data: freshTT } = await supabase
         .from('ticket_types')
         .select('quantity, quantity_sold')
         .eq('id', order.ticket_type_id)
         .single()
 
-      if (freshTT && (freshTT.quantity_sold + order.quantity) > freshTT.quantity) {
-        console.warn(`Oversell prevented for order ${orderId}: would exceed capacity`)
+      if (freshTT && freshTT.quantity_sold > freshTT.quantity) {
+        console.warn(`Oversell detected for order ${orderId}: quantity_sold=${freshTT.quantity_sold} capacity=${freshTT.quantity}`)
         await stripe.refunds.create({ payment_intent: intent.id })
         await supabase.from('orders').update({ status: 'refunded' }).eq('id', orderId)
         return res.status(200).end()
@@ -82,23 +83,28 @@ export default async function handler(req, res) {
         ticket_type_id: order.ticket_type_id,
         buyer_name: order.buyer_name,
         buyer_email: order.buyer_email,
-        // qr_code defaults to gen_random_uuid() in DB, but we set it here for email
         qr_code: crypto.randomUUID(),
       }))
 
-      const { data: createdTickets } = await supabase
+      const { data: createdTickets, error: ticketInsertErr } = await supabase
         .from('tickets')
         .insert(tickets)
         .select()
 
-      // Emails are best-effort — a failure must not cause a 500 (Stripe would retry and create duplicate tickets)
+      if (ticketInsertErr || !createdTickets?.length) {
+        console.error('[webhook] ticket insert failed for order', orderId, ticketInsertErr?.message)
+        return res.status(500).json({ error: 'Ticket creation failed' })
+      }
+
+      // Emails are best-effort — failure must not cause 500 (Stripe would retry, creating duplicate tickets)
       try {
         await Promise.all([
           sendTicketEmail(order, createdTickets),
           sendOrganizerNotification(order),
         ])
+        console.log(`[webhook] emails sent for order ${orderId}`)
       } catch (emailErr) {
-        console.error('[webhook] email failed for order', orderId, emailErr.message)
+        console.error('[webhook] email failed for order', orderId, emailErr?.message ?? emailErr)
       }
 
     } catch (err) {
@@ -259,9 +265,11 @@ async function sendOrganizerNotification(order) {
   if (!organizer?.email) return
 
   const ticketType = order.ticket_types
+  // Organizer receives the full ticket subtotal — the service fee is paid by the buyer
+  // on top of the ticket price and collected by Tiklo separately.
   const subtotal = Number(order.subtotal ?? 0)
   const fee = Number(order.platform_fee ?? 0)
-  const net = subtotal - fee
+  const net = subtotal
   const totalCapacity = ticketType?.quantity ?? 0
   const sold = ticketType?.quantity_sold ?? 0
   const remaining = Math.max(0, totalCapacity - sold)
