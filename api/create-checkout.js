@@ -245,6 +245,7 @@ export default async function handler(req, res) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: unitAmount * quantity,
       currency: 'cad',
+      payment_method_types: ['card'],
       metadata: { order_id: order.id, buyer_name: buyer_name.trim(), buyer_email: buyer_email.trim() },
     })
 
