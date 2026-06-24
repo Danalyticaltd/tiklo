@@ -81,14 +81,31 @@ export default function Home() {
     async function fetchEvents() {
       setLoading(true)
       try {
+        const today = new Date(); today.setHours(0, 0, 0, 0)
         let query = supabase
-          .from('events').select('*, ticket_types(price, quantity_sold)')
+          .from('events').select('*, ticket_types(price, quantity, quantity_sold)')
           .eq('status', 'published').order('event_date', { ascending: true })
         if (city !== 'All Cities') query = query.eq('city', city)
         if (tag !== 'All Communities') query = query.eq('community_tag', tag)
-        const { data, error } = await query
+        const [{ data, error }, { data: todayOrders }] = await Promise.all([
+          query,
+          supabase.from('orders').select('event_id, quantity').eq('status', 'paid').gte('created_at', today.toISOString()),
+        ])
         if (error) throw error
-        setEvents(data ?? [])
+
+        // Per-event tickets sold today
+        const todaySold = {}
+        ;(todayOrders ?? []).forEach(o => { todaySold[o.event_id] = (todaySold[o.event_id] ?? 0) + (o.quantity ?? 1) })
+
+        // Attach isHot: 50%+ sold OR ≥50 tickets sold today
+        const enriched = (data ?? []).map(ev => {
+          const tts = ev.ticket_types ?? []
+          const cap = tts.reduce((s, t) => s + (t.quantity ?? 0), 0)
+          const sold = tts.reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
+          const isHot = (cap > 0 && sold / cap >= 0.5) || (todaySold[ev.id] ?? 0) >= 50
+          return { ...ev, isHot }
+        })
+        setEvents(enriched)
       } catch (err) {
         console.error('[fetchEvents]', err)
         setEvents([])
@@ -133,8 +150,8 @@ export default function Home() {
     return evts
   })()
 
-  const hotEvents = [...events]
-    .filter(e => (e.ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0) >= 1)
+  const hotEvents = events
+    .filter(e => e.isHot)
     .sort((a, b) => {
       const sa = (a.ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
       const sb = (b.ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
@@ -142,8 +159,8 @@ export default function Home() {
     }).slice(0, 6)
 
   const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip || activeType
-  const hotIds = new Set(hotEvents.map(e => e.id))
-  const belowFold = isFiltered ? visible : visible.filter(e => !hotIds.has(e.id))
+  // Events always stay in their category — hot section is additive, not exclusive
+  const belowFold = visible
   const distinctTypes = [...new Set(belowFold.map(e => e.event_type).filter(Boolean))]
   const orderedTypes = [
     ...EVENT_TYPE_CHIPS.filter(t => distinctTypes.includes(t)),

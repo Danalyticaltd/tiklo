@@ -5,18 +5,20 @@ import { motion } from 'framer-motion'
 import Badge from './ui/Badge'
 
 export default function EventCard({ event, featured = false }) {
-  const { id, title, event_date, location, city, community_tag, event_type, banner_url, status, ticket_types } = event
+  const { id, title, event_date, location, city, community_tag, event_type, banner_url, status, ticket_types, isHot } = event
+
+  const totalCapacity = (ticket_types ?? []).reduce((s, t) => s + (t.quantity ?? 0), 0)
+  const totalSold = (ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
+  const isSoldOut = totalCapacity > 0 && totalSold >= totalCapacity
 
   const minPrice = ticket_types?.length
     ? Math.min(...ticket_types.map(t => Number(t.price ?? 0)))
     : null
 
-  const priceLabel = minPrice === null ? null
+  const priceLabel = isSoldOut ? null
+    : minPrice === null ? null
     : minPrice === 0 ? 'Free'
     : `From $${minPrice.toFixed(2)}`
-
-  const totalSold = (ticket_types ?? []).reduce((s, t) => s + (t.quantity_sold ?? 0), 0)
-  const isHot = totalSold >= 10
 
   const date = new Date(event_date)
   const daysLeft = differenceInDays(date, new Date())
@@ -53,12 +55,20 @@ export default function EventCard({ event, featured = false }) {
           }
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-          {isHot && (
-            <div className="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow">
+          {isSoldOut && (
+            <>
+              <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow tracking-wide">
+                🚫 Sold Out
+              </div>
+            </>
+          )}
+          {isHot && !isSoldOut && (
+            <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow">
               🔥 Hot
             </div>
           )}
-          {status && status !== 'published' && !isHot && (
+          {status && status !== 'published' && !isHot && !isSoldOut && (
             <div className="absolute top-3 left-3"><Badge status={status} /></div>
           )}
 
