@@ -243,7 +243,7 @@ export default async function handler(req, res) {
     // All funds collect to Tiklo's Stripe account. Tiklo pays organizers manually
     // via Interac or bank transfer after each event.
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: unitAmount * quantity,
+      amount: unitAmount * quantity + platformFeeCents,
       currency: 'cad',
       payment_method_types: ['card'],
       metadata: { order_id: order.id, buyer_name: buyer_name.trim(), buyer_email: buyer_email.trim() },

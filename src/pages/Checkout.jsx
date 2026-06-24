@@ -125,6 +125,9 @@ export default function Checkout() {
   )
 
   const total = ticketType.price * qty
+  // Service fee: 1.5% + $0.79/ticket (matches DB settings fee_percent + fee_flat_cents)
+  const serviceFee = total > 0 ? Math.round((total * 0.015 + 0.79 * qty) * 100) / 100 : 0
+  const grandTotal = total + serviceFee
 
   return (
     <div className="min-h-screen bg-bg">
@@ -136,13 +139,19 @@ export default function Checkout() {
           <h2 className="font-heading font-bold text-gray-900 text-lg">{event.title}</h2>
           <div className="flex justify-between items-center mt-3 text-sm">
             <span className="text-muted">{ticketType.name} × {qty}</span>
-            <span className="text-gray-900 font-semibold">{total === 0 ? 'Free' : `$${total.toFixed(2)} CAD`}</span>
+            <span className="text-gray-900">{total === 0 ? 'Free' : `$${total.toFixed(2)}`}</span>
           </div>
           {total > 0 && (
-            <div className="flex justify-between items-center mt-1 text-xs text-muted">
-              <span>Platform fee</span>
-              <span>${((total * 0.025) + (0.99 * qty)).toFixed(2)}</span>
-            </div>
+            <>
+              <div className="flex justify-between items-center mt-1 text-xs text-muted">
+                <span>Service fee</span>
+                <span>${serviceFee.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 text-sm font-semibold text-gray-900">
+                <span>Total</span>
+                <span>${grandTotal.toFixed(2)} CAD</span>
+              </div>
+            </>
           )}
         </div>
 
