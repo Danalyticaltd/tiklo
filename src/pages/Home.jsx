@@ -256,6 +256,15 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── PRICING CALLOUT ── */}
+      <div className="bg-primary/[0.06] border-b border-primary/10 py-3 px-4 text-center">
+        <p className="text-sm text-navy font-medium">
+          🎉 Only pay when you sell tickets —{' '}
+          <span className="text-primary font-bold">no monthly subscription</span>
+          <span className="text-muted font-normal"> · 1.5% + $0.79 service fee per ticket, paid by the buyer</span>
+        </p>
+      </div>
+
       {/* ── SEARCH + FILTERS ── */}
       <section id="search-section" className="scroll-mt-20 bg-white border-b border-[#E3E8EE] px-4 py-6">
         <div className="max-w-6xl mx-auto space-y-4">

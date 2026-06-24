@@ -1,4 +1,4 @@
-import { Ticket, ScanLine, CreditCard, BellRing, BarChart3 } from 'lucide-react'
+import { Ticket, ScanLine, CreditCard, BellRing, BarChart3, BadgeDollarSign } from 'lucide-react'
 
 const FEATURES = [
   {
@@ -36,6 +36,13 @@ const FEATURES = [
     desc: 'Watch ticket sales, revenue, and attendance update live from your dashboard.',
     color: 'bg-rose-50 text-rose-600 border-rose-100',
   },
+  {
+    icon: BadgeDollarSign,
+    emoji: '💸',
+    label: 'No Monthly Fee',
+    desc: 'Only pay when you sell tickets — no subscription, no setup cost. Free events are always free.',
+    color: 'bg-green-50 text-green-600 border-green-100',
+  },
 ]
 
 export default function WhyTiklo() {
@@ -54,7 +61,7 @@ export default function WhyTiklo() {
         </div>
 
         {/* Icon strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {FEATURES.map(({ icon: Icon, label, desc, color }) => (
             <div
               key={label}
