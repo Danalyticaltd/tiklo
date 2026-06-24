@@ -42,12 +42,9 @@ export default async function handler(req, res) {
     if (!orderId) return res.status(200).end()
 
     try {
-      // Mark order as paid — payment_intent_id stored separately to avoid breaking if column not yet migrated
-      await supabase.from('orders').update({ payment_intent_id: intent.id }).eq('id', orderId)
-
       const { data: order } = await supabase
         .from('orders')
-        .update({ status: 'paid' })
+        .update({ status: 'paid', stripe_payment_intent: intent.id })
         .eq('id', orderId)
         .select('*, ticket_types(name, price, quantity, quantity_sold), events(title, event_date, location, organizer_id, profiles!organizer_id(email, full_name))')
         .single()
