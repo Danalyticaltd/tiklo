@@ -261,7 +261,6 @@ export default function Home() {
         <p className="text-sm text-navy font-medium">
           🎉 Only pay when you sell tickets —{' '}
           <span className="text-primary font-bold">no monthly subscription</span>
-          <span className="text-muted font-normal"> · 1.5% + $0.79 service fee per ticket, paid by the buyer</span>
         </p>
       </div>
 
