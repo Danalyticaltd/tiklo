@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { check } from './_lib/rateLimit.js'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -18,6 +19,9 @@ export default async function handler(req, res) {
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
   if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' })
+
+  const { allowed } = check(`notify:${user.id}`, 5, 60 * 60_000)
+  if (!allowed) return res.status(429).json({ error: 'Too many submissions. Please wait before resubmitting.' })
 
   const { event_id } = req.body
   if (!event_id) return res.status(400).json({ error: 'event_id required' })

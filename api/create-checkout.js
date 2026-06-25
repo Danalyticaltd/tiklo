@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import QRCode from 'qrcode'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { check, getIp } from './_lib/rateLimit.js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const supabase = createClient(
@@ -137,6 +138,10 @@ async function fulfilFreeOrder(order, tickets) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
+
+  const ip = getIp(req)
+  const { allowed } = check(`checkout:${ip}`, 10, 60_000)
+  if (!allowed) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' })
 
   const { event_id, ticket_type_id, quantity, buyer_name, buyer_email } = req.body
 

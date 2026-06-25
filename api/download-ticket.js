@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import QRCode from 'qrcode'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { check, getIp } from './_lib/rateLimit.js'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -66,6 +67,10 @@ async function generateTicketPdf(order, tickets) {
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end()
+
+  const ip = getIp(req)
+  const { allowed } = check(`pdf:${ip}`, 20, 60_000)
+  if (!allowed) return res.status(429).json({ error: 'Too many requests.' })
 
   const { order_id } = req.query
   if (!order_id) return res.status(400).json({ error: 'order_id required' })
