@@ -10,7 +10,15 @@ export default defineConfig({
       manifest: false, // use our existing public/manifest.json
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+        // Never serve index.html as fallback for JS/CSS/API requests
+        navigateFallbackDenylist: [/^\/api\//, /\/assets\//],
         runtimeCaching: [
+          {
+            // JS/CSS assets have hashed filenames — always fetch fresh on cache miss
+            urlPattern: /\/assets\/.*\.(js|css)$/i,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'assets', networkTimeoutSeconds: 5 },
+          },
           {
             urlPattern: /^https:\/\/eeltgjgfmdvmtghtssyz\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
