@@ -336,11 +336,42 @@ export default function Home() {
             {[...Array(6)].map((_, i) => <div key={i} className="bg-surface rounded-2xl h-64 animate-pulse border border-[#E3E8EE]" />)}
           </div>
         ) : visible.length === 0 ? (
-          <div className="text-center py-24">
-            <p className="text-4xl mb-4">🎟</p>
-            <p className="text-muted text-lg">No events found.</p>
-            <p className="text-muted/60 text-sm mt-1">Try a different search or filter.</p>
-          </div>
+          isFiltered ? (
+            <div className="text-center py-24">
+              <p className="text-4xl mb-4">🎟</p>
+              <p className="text-muted text-lg">No events found.</p>
+              <p className="text-muted/60 text-sm mt-1">Try a different search or filter.</p>
+            </div>
+          ) : profile?.role === 'organizer' ? (
+            <div className="text-center py-24 max-w-md mx-auto">
+              <p className="text-5xl mb-5">🎉</p>
+              <h2 className="font-heading text-2xl font-bold text-navy mb-3">Be the first to host an event</h2>
+              <p className="text-muted text-sm mb-8 leading-relaxed">
+                No events yet on Tiklo. Create yours in minutes — set your ticket types, pricing, and start selling.
+              </p>
+              <Link
+                to="/dashboard/events/new"
+                className="inline-flex items-center gap-2 bg-primary hover:bg-[#574BFF] text-white font-semibold px-6 py-3 rounded-xl transition shadow-sm shadow-primary/20 text-sm"
+              >
+                Create your first event →
+              </Link>
+              <p className="text-muted/60 text-xs mt-4">Free to create · No monthly fee</p>
+            </div>
+          ) : (
+            <div className="text-center py-24 max-w-md mx-auto">
+              <p className="text-5xl mb-5">🍁</p>
+              <h2 className="font-heading text-2xl font-bold text-navy mb-3">Events coming soon</h2>
+              <p className="text-muted text-sm mb-8 leading-relaxed">
+                We're just getting started. Check back soon for events near you across Canada.
+              </p>
+              <Link
+                to="/how-it-works"
+                className="inline-flex items-center gap-2 border border-gray-200 text-navy hover:border-primary hover:text-primary font-medium px-5 py-2.5 rounded-xl transition text-sm"
+              >
+                Learn how Tiklo works
+              </Link>
+            </div>
+          )
         ) : isFiltered ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-4">
             {visible.map(event => <EventCard key={event.id} event={event} />)}
