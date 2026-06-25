@@ -23,8 +23,8 @@ export default function TicketTypeRow({ index, register, errors, onRemove, canRe
             type="number" min="0" step="0.01" placeholder="0.00"
             {...register(`ticket_types.${index}.price`, {
               required: 'Required',
-              min: { value: 0, message: 'Must be $0 or more' },
               valueAsNumber: true,
+              validate: v => v === 0 || v >= 5 || 'Price must be $0 (free) or at least $5.00',
             })}
             className={`w-full bg-white border ${priceErr ? 'border-red-400' : 'border-gray-300'} rounded-lg pl-7 pr-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition`}
           />
