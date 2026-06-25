@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, Download, FileSpreadsheet, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Download, FileSpreadsheet, Pencil, Trash2, ExternalLink, QrCode } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -17,6 +17,7 @@ export default function EventDetail() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [qrGenerating, setQrGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [refundingId, setRefundingId] = useState(null)
   const [confirmRefundId, setConfirmRefundId] = useState(null)
@@ -137,6 +138,91 @@ export default function EventDetail() {
     const csv = rows.map(r => r.join(',')).join('\n')
     const slug = (event?.title ?? 'event').replace(/\s+/g, '-').toLowerCase()
     triggerDownload(csv, `${slug}-settlement.csv`)
+  }
+
+  async function downloadQrPoster() {
+    setQrGenerating(true)
+    try {
+      const eventUrl = `${window.location.origin}/events/${id}`
+      const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(eventUrl)}&margin=2`
+
+      const qrImg = await new Promise((resolve, reject) => {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => resolve(img)
+        img.onerror = reject
+        img.src = qrSrc
+      })
+
+      const W = 600, H = 920
+      const canvas = document.createElement('canvas')
+      canvas.width = W; canvas.height = H
+      const ctx = canvas.getContext('2d')
+
+      // Purple background
+      ctx.fillStyle = '#635BFF'
+      ctx.fillRect(0, 0, W, H)
+
+      // White card
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.roundRect(36, 90, W - 72, H - 150, 20)
+      ctx.fill()
+
+      // Wordmark
+      ctx.textAlign = 'center'
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 38px system-ui, sans-serif'
+      ctx.fillText('Tiklo', W / 2, 58)
+
+      // Event title (wrap at ~38 chars)
+      ctx.fillStyle = '#111827'
+      ctx.font = 'bold 26px system-ui, sans-serif'
+      const words = (event.title ?? '').split(' ')
+      let line = '', y = 160
+      for (const word of words) {
+        const test = line ? line + ' ' + word : word
+        if (ctx.measureText(test).width > W - 100) {
+          ctx.fillText(line, W / 2, y); y += 36; line = word
+        } else { line = test }
+      }
+      if (line) { ctx.fillText(line, W / 2, y); y += 36 }
+
+      // Date
+      ctx.fillStyle = '#6b7280'
+      ctx.font = '17px system-ui, sans-serif'
+      ctx.fillText(format(new Date(event.event_date), 'EEE, MMM d, yyyy · h:mm a'), W / 2, y + 16)
+
+      // Location
+      if (event.location) {
+        ctx.fillText(`📍 ${event.location}`, W / 2, y + 44)
+      }
+
+      // QR code
+      const qrSize = 280, qrX = (W - qrSize) / 2, qrY = 340
+      ctx.fillStyle = '#f3f4f6'
+      ctx.beginPath(); ctx.roundRect(qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 12); ctx.fill()
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize)
+
+      // CTA
+      ctx.fillStyle = '#635BFF'
+      ctx.font = 'bold 22px system-ui, sans-serif'
+      ctx.fillText('Scan to buy tickets', W / 2, qrY + qrSize + 56)
+
+      ctx.fillStyle = '#9ca3af'
+      ctx.font = '15px system-ui, sans-serif'
+      ctx.fillText('tiklo.ca', W / 2, H - 28)
+
+      const slug = (event.title ?? 'event').replace(/\s+/g, '-').toLowerCase()
+      const a = document.createElement('a')
+      a.href = canvas.toDataURL('image/png')
+      a.download = `${slug}-door-qr.png`
+      a.click()
+    } catch (err) {
+      alert('Could not generate QR poster: ' + err.message)
+    } finally {
+      setQrGenerating(false)
+    }
   }
 
   function triggerDownload(csv, filename) {
@@ -273,6 +359,9 @@ export default function EventDetail() {
             <Link to={`/dashboard/events/${id}/edit`} title="Edit event" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:border-primary hover:text-primary transition font-medium">
               <Pencil size={14} />Edit
             </Link>
+            <button onClick={downloadQrPoster} disabled={qrGenerating} title="Download door QR poster" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition disabled:opacity-50">
+              <QrCode size={16} />
+            </button>
             <button onClick={exportCsv} title="Export attendees CSV" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
               <Download size={16} />
             </button>
