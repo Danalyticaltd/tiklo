@@ -17,6 +17,7 @@ import ResetPassword from './pages/ResetPassword'
 import ForgotPassword from './pages/ForgotPassword'
 import MyTickets from './pages/MyTickets'
 import NotFound from './pages/NotFound'
+import HowItWorks from './pages/HowItWorks'
 
 // Organizer dashboard
 import Dashboard from './pages/dashboard/Dashboard'
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/my-tickets" element={<MyTickets />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
           {/* Organizer */}

@@ -29,6 +29,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             <Link to="/#events" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">Browse Events</Link>
             <Link to={user ? "/dashboard" : "/register"} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">For Organizers</Link>
+            <Link to="/how-it-works" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">How it works</Link>
           </div>
         </div>
 
