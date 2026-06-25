@@ -12,7 +12,7 @@ const STEPS = [
   {
     icon: UserPlus,
     title: 'Create your account',
-    desc: 'Sign up with your email, Google, or Apple — no approval needed. Your organiser account is ready immediately.',
+    desc: 'Sign up with your email and create a password — no approval needed. Your organiser account is ready immediately.',
     color: 'bg-primary/10 text-primary',
   },
   {

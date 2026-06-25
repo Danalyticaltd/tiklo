@@ -52,15 +52,23 @@ export default function AdminDashboard() {
     return () => supabase.removeChannel(channel)
   }, [])
 
-  async function approveEvent(id) {
-    await supabase.from('events').update({ status: 'published' }).eq('id', id)
+  async function callAction(eventId, action) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/admin-event-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ eventId, action }),
+    })
+    if (!res.ok) {
+      const json = await res.json()
+      alert('Failed: ' + (json.error ?? 'Unknown error'))
+      return
+    }
     await load()
   }
 
-  async function rejectEvent(id) {
-    await supabase.from('events').update({ status: 'draft' }).eq('id', id)
-    await load()
-  }
+  async function approveEvent(id) { await callAction(id, 'approve') }
+  async function rejectEvent(id)  { await callAction(id, 'reject') }
 
   return (
     <div className="min-h-screen bg-bg">
