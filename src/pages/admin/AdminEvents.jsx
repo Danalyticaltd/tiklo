@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { ArrowLeft, ExternalLink, EyeOff, XCircle, Trash2 } from 'lucide-react'
+import { ArrowLeft, ExternalLink, EyeOff, XCircle, Trash2, FileSpreadsheet } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/Navbar'
 
@@ -18,6 +18,7 @@ export default function AdminEvents() {
   const [filter, setFilter]       = useState('published')
   const [confirmDelete, setConfirmDelete] = useState(null) // event object
   const [acting, setActing]       = useState(null) // eventId being acted on
+  const [settling, setSettling]   = useState(null) // eventId generating settlement CSV
 
   async function load() {
     const { data } = await supabase
@@ -52,6 +53,69 @@ export default function AdminEvents() {
     } finally {
       setActing(null)
       setConfirmDelete(null)
+    }
+  }
+
+  async function downloadSettlement(ev) {
+    setSettling(ev.id)
+    try {
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('*, ticket_types(name)')
+        .eq('event_id', ev.id)
+        .eq('status', 'paid')
+        .order('created_at', { ascending: true })
+
+      if (!orders?.length) { alert('No paid orders for this event.'); return }
+
+      const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
+      const rows = orders.map(o => {
+        const subtotal   = Number(o.subtotal ?? 0)
+        const serviceFee = Number(o.platform_fee ?? 0)
+        const buyerTotal = subtotal + serviceFee
+        const stripeFee  = Math.round((buyerTotal * 0.029 + 0.30) * 100) / 100
+        const tikloNet   = Math.round((serviceFee - stripeFee) * 100) / 100
+        return [
+          format(new Date(o.created_at), 'yyyy-MM-dd HH:mm'),
+          esc(o.buyer_name),
+          esc(o.buyer_email),
+          esc(o.ticket_types?.name),
+          o.quantity,
+          (subtotal / o.quantity).toFixed(2),
+          subtotal.toFixed(2),
+          serviceFee.toFixed(2),
+          stripeFee.toFixed(2),
+          tikloNet.toFixed(2),
+          subtotal.toFixed(2),  // organiser payout = full face value
+          buyerTotal.toFixed(2),
+        ]
+      })
+
+      const totSubtotal  = orders.reduce((s, o) => s + Number(o.subtotal ?? 0), 0)
+      const totService   = orders.reduce((s, o) => s + Number(o.platform_fee ?? 0), 0)
+      const totBuyer     = totSubtotal + totService
+      const totStripe    = Math.round((totBuyer * 0.029 + 0.30 * orders.length) * 100) / 100
+      const totTiklo     = Math.round((totService - totStripe) * 100) / 100
+      const totQty       = orders.reduce((s, o) => s + o.quantity, 0)
+
+      const header = ['Date','Buyer Name','Buyer Email','Ticket Type','Qty',
+        'Unit Price (CAD)','Ticket Revenue (CAD)','Service Fee – Buyer (CAD)',
+        'Stripe Fee est. (CAD)','Tiklo Net (CAD)','Organiser Payout (CAD)','Total Charged (CAD)']
+      const totals = ['TOTAL','','','',totQty,'',
+        totSubtotal.toFixed(2), totService.toFixed(2),
+        totStripe.toFixed(2), totTiklo.toFixed(2), totSubtotal.toFixed(2), totBuyer.toFixed(2)]
+
+      const csv = [header, ...rows, [], totals].map(r => r.join(',')).join('\n')
+      const slug = ev.title.replace(/\s+/g, '-').toLowerCase()
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = `${slug}-settlement.csv`; a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      alert('Failed: ' + err.message)
+    } finally {
+      setSettling(null)
     }
   }
 
@@ -156,6 +220,14 @@ export default function AdminEvents() {
                       title="Preview event">
                       <ExternalLink size={14} />
                     </Link>
+                    <button
+                      onClick={() => downloadSettlement(ev)}
+                      disabled={settling === ev.id}
+                      title="Download settlement CSV"
+                      className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-primary hover:border-primary transition disabled:opacity-40"
+                    >
+                      <FileSpreadsheet size={14} />
+                    </button>
 
                     {ev.status === 'published' && (
                       <button
