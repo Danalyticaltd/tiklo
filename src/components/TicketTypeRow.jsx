@@ -4,7 +4,6 @@ export default function TicketTypeRow({ index, register, errors, onRemove, canRe
   const nameErr        = errors?.ticket_types?.[index]?.name
   const priceErr       = errors?.ticket_types?.[index]?.price
   const quantityErr    = errors?.ticket_types?.[index]?.quantity
-  const maxPerOrderErr = errors?.ticket_types?.[index]?.max_per_order
 
   return (
     <div className="flex gap-3 items-start bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -46,20 +45,7 @@ export default function TicketTypeRow({ index, register, errors, onRemove, canRe
         {quantityErr && <p className="text-red-500 text-xs mt-1">{quantityErr.message}</p>}
       </div>
 
-      <div className="w-20" title="Max tickets one buyer can purchase at once">
-        <input
-          type="number" min="1" placeholder="Max/order"
-          {...register(`ticket_types.${index}.max_per_order`, {
-            required: 'Required',
-            min: { value: 1, message: 'Min 1' },
-            valueAsNumber: true,
-          })}
-          className={`w-full bg-white border ${maxPerOrderErr ? 'border-red-400' : 'border-gray-300'} rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition`}
-        />
-        {maxPerOrderErr && <p className="text-red-500 text-xs mt-1">{maxPerOrderErr.message}</p>}
-      </div>
-
-      <button
+<button
         type="button" onClick={onRemove} disabled={!canRemove}
         className="mt-1.5 text-gray-400 hover:text-red-500 disabled:opacity-20 transition"
         aria-label="Remove ticket type"
