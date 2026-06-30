@@ -234,19 +234,15 @@
   "myTickets": {
     "back": "← Retour aux événements",
     "title": "Trouver mes billets",
-    "subtitle": "Entrez votre courriel et l'identifiant de commande figurant dans votre courriel de confirmation.",
+    "subtitle": "Entrez le courriel utilisé lors de l'achat pour retrouver tous vos billets.",
     "emailLabel": "Courriel utilisé lors de l'achat",
-    "orderIdLabel": "Identifiant de commande",
-    "orderIdHint": "(les 8 premiers caractères de votre courriel)",
-    "orderIdPlaceholder": "ex. : 334EB999",
     "searching": "Recherche en cours…",
     "submit": "Trouver mes billets",
-    "event": "Événement",
     "ticketOf": "Billet {{i}} sur {{total}}",
     "scanAtDoor": "Scanner à l'entrée — usage unique",
     "stillGenerating": "Les billets sont encore en cours de génération. Revenez dans un instant.",
     "needHelp": "Besoin d'aide ?",
-    "notFound": "Aucun billet trouvé avec ce courriel et cet identifiant de commande. Vérifiez votre courriel de confirmation et réessayez."
+    "notFound": "Aucun billet trouvé pour ce courriel. Assurez-vous d'utiliser l'adresse courriel avec laquelle vous avez effectué l'achat."
   },
   "cityEvents": {
     "allCities": "← Toutes les villes",

@@ -56,7 +56,8 @@ export default function Footer() {
 
         <div className="lg:col-span-1">
           <div className="mb-4"><TikloLogo size={26} light /></div>
-          <p className="text-sm text-white/40 leading-relaxed max-w-xs">{t('footer.tagline')}</p>
+          <p className="text-sm text-white/40 leading-relaxed max-w-xs mb-4">{t('footer.tagline')}</p>
+          <FooterNavLink to={lp('/my-tickets')}>{t('footer.findTickets')}</FooterNavLink>
         </div>
 
         <div>
@@ -99,10 +100,7 @@ export default function Footer() {
       <div className="border-t border-white/[0.07]">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="text-xs text-white/25">{t('footer.allRights', { year: new Date().getFullYear() })}</span>
-          <div className="flex items-center gap-4">
-            <FooterNavLink to={lp('/my-tickets')} className="text-xs text-white/30 hover:text-white/60 transition">{t('footer.findTickets')}</FooterNavLink>
-            <span className="text-xs text-white/25">{t('footer.madeWith')} <a href="https://www.danalytica.ca" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition underline underline-offset-2">Danalytica Ltd</a></span>
-          </div>
+          <span className="text-xs text-white/25">{t('footer.madeWith')} <a href="https://www.danalytica.ca" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition underline underline-offset-2">Danalytica Ltd</a></span>
         </div>
       </div>
     </footer>

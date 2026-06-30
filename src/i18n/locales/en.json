@@ -234,19 +234,15 @@
   "myTickets": {
     "back": "← Back to events",
     "title": "Find my tickets",
-    "subtitle": "Enter your email and the order ID from your confirmation email.",
+    "subtitle": "Enter the email you used at checkout to retrieve all your tickets.",
     "emailLabel": "Email used at checkout",
-    "orderIdLabel": "Order ID",
-    "orderIdHint": "(first 8 characters from your email)",
-    "orderIdPlaceholder": "e.g. 334EB999",
     "searching": "Looking up…",
     "submit": "Find my tickets",
-    "event": "Event",
     "ticketOf": "Ticket {{i}} of {{total}}",
     "scanAtDoor": "Scan at the door — single use",
     "stillGenerating": "Tickets are still being generated. Check back in a minute.",
     "needHelp": "Need help?",
-    "notFound": "No ticket found with that email and order ID. Check your confirmation email and try again."
+    "notFound": "No tickets found for that email. Make sure you use the email address you checked out with."
   },
   "cityEvents": {
     "allCities": "← All cities",
