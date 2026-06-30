@@ -348,7 +348,7 @@
     "dateRequired": "Date is required",
     "dateFuture": "Event date must be in the future",
     "datePast": "Event date cannot be more than 1 day in the past",
-    "city": "City *",
+    "city": "City",
     "venue": "Venue / location",
     "venuePlaceholder": "e.g. Shaw Centre, 55 Colonel By",
     "community": "Community",

@@ -251,6 +251,19 @@ export default function EditEvent() {
               />
             </div>
 
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-muted">{t('eventForm.dateTime')}</label>
+              <input
+                type="datetime-local"
+                {...register('event_date', {
+                  required: t('eventForm.dateRequired'),
+                  validate: v => !v || new Date(v) > new Date(Date.now() - 86400000) || t('eventForm.datePast'),
+                })}
+                className={`bg-white border ${errors.event_date ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]`}
+              />
+              {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
+            </div>
+
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -266,19 +279,6 @@ export default function EditEvent() {
               />
               <span className="text-sm text-gray-700">{t('eventForm.onlineEvent')}</span>
             </label>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-muted">{t('eventForm.dateTime')}</label>
-              <input
-                type="datetime-local"
-                {...register('event_date', {
-                  required: t('eventForm.dateRequired'),
-                  validate: v => !v || new Date(v) > new Date(Date.now() - 86400000) || t('eventForm.datePast'),
-                })}
-                className={`bg-white border ${errors.event_date ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]`}
-              />
-              {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
-            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">

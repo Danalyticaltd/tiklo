@@ -348,7 +348,7 @@
     "dateRequired": "La date est obligatoire",
     "dateFuture": "La date de l'événement doit être dans le futur",
     "datePast": "La date de l'événement ne peut pas être antérieure de plus d'un jour",
-    "city": "Ville *",
+    "city": "Ville",
     "venue": "Lieu / adresse",
     "venuePlaceholder": "ex. : Centre Shaw, 55 Colonel By",
     "community": "Communauté",
