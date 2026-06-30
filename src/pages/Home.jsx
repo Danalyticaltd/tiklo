@@ -11,7 +11,6 @@ import EventCarousel from '../components/EventCarousel'
 import WhyTiklo from '../components/WhyTiklo'
 import Footer from '../components/Footer'
 
-const CITIES = ['All Cities', 'Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
 const EVENT_TYPE_CHIPS = ['Cultural show', 'Community event', 'Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sport Event', 'Networking']
 const DOT_COLORS = ['bg-primary', 'bg-[#00D4FF]', 'bg-success']
 
@@ -29,6 +28,7 @@ export default function Home() {
   const [activeChip, setActiveChip] = useState(null)
   const [activeType, setActiveType] = useState(null)
   const [communityChips, setCommunityChips] = useState([])
+  const [cities, setCities] = useState([])
 
   const [dashStats, setDashStats] = useState({ ticketsSold: 0, activeEvents: 0 })
   const [dashEvents, setDashEvents] = useState([])
@@ -75,7 +75,15 @@ export default function Home() {
       data.forEach(e => { if (e.community_tag) counts[e.community_tag] = (counts[e.community_tag] || 0) + 1 })
       setCommunityChips(Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([t]) => t).slice(0, 8))
     }
+    async function fetchCities() {
+      const { data } = await supabase
+        .from('events').select('city').eq('status', 'published').not('city', 'is', null)
+      if (!data) return
+      const unique = [...new Set(data.map(e => e.city).filter(Boolean))].sort()
+      setCities(unique)
+    }
     fetchCommunities()
+    fetchCities()
   }, [])
 
   useEffect(() => {
@@ -270,10 +278,15 @@ export default function Home() {
                 className="flex-1 py-3.5 text-sm text-navy placeholder-muted bg-transparent outline-none"
               />
             </div>
-            <div className="w-px bg-[#E3E8EE] my-2.5" />
-            <select value={city} onChange={e => setCity(e.target.value)} className="px-3 py-3.5 text-sm text-muted bg-transparent outline-none border-none">
-              {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            {cities.length > 0 && (
+              <>
+                <div className="w-px bg-[#E3E8EE] my-2.5" />
+                <select value={city} onChange={e => setCity(e.target.value)} className="px-3 py-3.5 text-sm text-muted bg-transparent outline-none border-none">
+                  <option value="All Cities">{t('home.allCities')}</option>
+                  {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </>
+            )}
             <button className="bg-primary hover:bg-[#574BFF] text-white font-semibold text-sm px-4 sm:px-6 transition shrink-0 flex items-center gap-1.5">
               <Search size={15} className="shrink-0" />
               <span className="hidden sm:inline">{t('home.search')}</span>
