@@ -9,6 +9,7 @@ import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
+import Select from '../../components/ui/Select'
 import TicketTypeRow from '../../components/TicketTypeRow'
 import CommunityInput from '../../components/CommunityInput'
 

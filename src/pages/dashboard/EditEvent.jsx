@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
+import Select from '../../components/ui/Select'
 import Input from '../../components/ui/Input'
 import CommunityInput from '../../components/CommunityInput'
 
