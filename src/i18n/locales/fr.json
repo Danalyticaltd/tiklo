@@ -245,6 +245,7 @@
     "invalidToken": "Ce lien est invalide ou a déjà été utilisé.",
     "expiredToken": "Ce lien a expiré.",
     "requestNew": "Demander un nouveau lien →",
+    "downloadPdf": "Télécharger le PDF",
     "ticketOf": "Billet {{i}} sur {{total}}",
     "scanAtDoor": "Scanner à l'entrée — usage unique",
     "stillGenerating": "Les billets sont encore en cours de génération. Revenez dans un instant.",

@@ -118,6 +118,13 @@ export default function MyTickets() {
                       {order.events?.location ? ` · ${order.events.location}` : ''}
                     </p>
                   </div>
+                  <a
+                    href={`/api/download-ticket?order_id=${ord.id}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#574BFF] font-medium mb-4 transition"
+                  >
+                    ↓ {t('myTickets.downloadPdf')}
+                  </a>
                   {tickets.length === 0 ? (
                     <p className="text-center text-muted py-4 text-sm">{t('myTickets.stillGenerating')}</p>
                   ) : (
