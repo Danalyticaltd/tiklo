@@ -1,10 +1,40 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { useLangPath } from '../hooks/useLangPath'
 import TikloLogo from './TikloLogo'
+
+function LangSwitcher() {
+  const { i18n } = useTranslation()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  function switchTo(lang) {
+    const path = location.pathname
+    if (lang === 'fr' && !path.startsWith('/fr')) {
+      navigate('/fr' + (path === '/' ? '' : path))
+    } else if (lang === 'en' && path.startsWith('/fr')) {
+      navigate(path.slice(3) || '/')
+    }
+  }
+
+  const active = 'text-primary font-bold'
+  const inactive = 'text-muted hover:text-navy'
+
+  return (
+    <div className="flex items-center gap-0.5 text-xs font-semibold">
+      <button onClick={() => switchTo('en')} className={`px-1.5 py-0.5 rounded transition ${i18n.language === 'en' ? active : inactive}`}>EN</button>
+      <span className="text-muted/40">|</span>
+      <button onClick={() => switchTo('fr')} className={`px-1.5 py-0.5 rounded transition ${i18n.language === 'fr' ? active : inactive}`}>FR</button>
+    </div>
+  )
+}
 
 export default function Navbar() {
   const { user, profile, logout } = useAuth()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -25,23 +55,24 @@ export default function Navbar() {
     <nav className="border-b border-[#E3E8EE] bg-white sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 h-[62px] flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link to="/"><TikloLogo size={28} /></Link>
+          <Link to={lp('/')}><TikloLogo size={28} /></Link>
           <div className="hidden md:flex items-center gap-1">
-            <Link to="/#events" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">Browse Events</Link>
-            <Link to={user ? "/dashboard" : "/register"} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">For Organizers</Link>
-            <Link to="/how-it-works" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">How it works</Link>
+            <Link to={lp('/#events')} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">{t('nav.browse')}</Link>
+            <Link to={lp(user ? '/dashboard' : '/register')} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">{t('nav.forOrganizers')}</Link>
+            <Link to={lp('/how-it-works')} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 rounded-lg hover:bg-surface transition">{t('nav.howItWorks')}</Link>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          <LangSwitcher />
+
           {user ? (
             <>
               {profile?.role === 'admin' && (
-                <Link to="/admin" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 transition">Admin</Link>
+                <Link to="/admin" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 transition">{t('nav.admin')}</Link>
               )}
-              <Link to="/dashboard" className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 transition">Dashboard</Link>
+              <Link to={lp('/dashboard')} className="text-sm font-medium text-muted hover:text-navy px-3 py-1.5 transition">{t('nav.dashboard')}</Link>
 
-              {/* Avatar + dropdown */}
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen(o => !o)}
@@ -61,25 +92,25 @@ export default function Navbar() {
                       <p className="text-[11px] text-muted truncate">{user.email}</p>
                     </div>
                     <Link
-                      to="/dashboard/profile"
+                      to={lp('/dashboard/profile')}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center px-3 py-2 text-sm text-navy hover:bg-surface transition"
                     >
-                      Profile &amp; settings
+                      {t('nav.profile')}
                     </Link>
                     <Link
-                      to="/dashboard"
+                      to={lp('/dashboard')}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center px-3 py-2 text-sm text-navy hover:bg-surface transition"
                     >
-                      Dashboard
+                      {t('nav.dashboard')}
                     </Link>
                     <div className="border-t border-[#E3E8EE] mt-1 pt-1">
                       <button
                         onClick={() => { setMenuOpen(false); logout() }}
                         className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition"
                       >
-                        Sign out
+                        {t('nav.signOut')}
                       </button>
                     </div>
                   </div>
@@ -88,12 +119,12 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-medium text-navy px-3 py-1.5 transition hover:text-primary">Sign in</Link>
+              <Link to={lp('/login')} className="text-sm font-medium text-navy px-3 py-1.5 transition hover:text-primary">{t('nav.signIn')}</Link>
               <Link
-                to="/register"
+                to={lp('/register')}
                 className="text-sm font-semibold bg-primary hover:bg-[#574BFF] text-white px-5 py-2 rounded-xl transition shadow-sm shadow-primary/20"
               >
-                Sign up free
+                {t('nav.signUpFree')}
               </Link>
             </>
           )}

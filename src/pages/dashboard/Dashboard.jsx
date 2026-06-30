@@ -1,15 +1,19 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { Plus, QrCode, BarChart2, RefreshCw, Pencil, Trash2, Send, UserCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 
 export default function Dashboard() {
   const { user, profile } = useAuth()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -76,8 +80,6 @@ export default function Dashboard() {
       if (e3) throw new Error('Could not delete ticket types: ' + e3.message)
       const { error: e4 } = await supabase.from('events').delete().eq('id', event.id)
       if (e4) throw new Error('Could not delete event: ' + e4.message)
-
-      // Re-fetch to confirm deletion was persisted
       await fetchEvents()
       setConfirmDelete(null)
     } catch (err) {
@@ -93,37 +95,36 @@ export default function Dashboard() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-gray-900">My Events</h1>
-            <p className="text-muted text-sm mt-1">Welcome back, {profile?.full_name ?? 'Organizer'}</p>
+            <h1 className="font-heading text-3xl font-bold text-gray-900">{t('dashboard.title')}</h1>
+            <p className="text-muted text-sm mt-1">{t('dashboard.welcome', { name: profile?.full_name ?? 'Organizer' })}</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={handleRefresh} title="Refresh stats" className="p-2 rounded-lg text-muted hover:text-gray-900 hover:bg-gray-100 transition">
               <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
             </button>
-            <Link to="/dashboard/events/new">
-              <Button><Plus size={16} className="inline mr-1.5" />New event</Button>
+            <Link to={lp('/dashboard/events/new')}>
+              <Button><Plus size={16} className="inline mr-1.5" />{t('dashboard.newEvent')}</Button>
             </Link>
           </div>
         </div>
 
-        {/* Delete confirmation modal */}
         {confirmDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
             <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-              <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Delete event?</h3>
+              <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">{t('dashboard.deleteTitle')}</h3>
               <p className="text-muted text-sm mb-2">
-                <span className="font-semibold text-gray-800">{confirmDelete.title}</span> will be permanently deleted.
+                <span className="font-semibold text-gray-800">{confirmDelete.title}</span> {t('dashboard.deleteConfirm', { title: '' }).trim()}
               </p>
               {totalSold(confirmDelete) > 0 && (
                 <p className="text-amber-700 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
-                  Warning: {totalSold(confirmDelete)} ticket{totalSold(confirmDelete) !== 1 ? 's' : ''} have already been sold. Deleting will not automatically refund buyers.
+                  {t('dashboard.deleteWarning', { count: totalSold(confirmDelete) })}
                 </p>
               )}
               <div className="flex gap-3 justify-end mt-4">
-                <Button variant="secondary" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+                <Button variant="secondary" onClick={() => setConfirmDelete(null)}>{t('dashboard.cancel')}</Button>
                 <button onClick={() => handleDelete(confirmDelete)} disabled={deleting}
                   className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition disabled:opacity-60">
-                  {deleting ? 'Deleting…' : 'Delete'}
+                  {deleting ? t('dashboard.deleting') : t('dashboard.delete')}
                 </button>
               </div>
             </div>
@@ -136,9 +137,9 @@ export default function Dashboard() {
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-24 border border-dashed border-gray-200 rounded-2xl">
-            <p className="text-muted text-lg">No events yet.</p>
-            <Link to="/dashboard/events/new" className="inline-block mt-4">
-              <Button><Plus size={16} className="inline mr-1.5" />Create your first event</Button>
+            <p className="text-muted text-lg">{t('dashboard.noEvents')}</p>
+            <Link to={lp('/dashboard/events/new')} className="inline-block mt-4">
+              <Button><Plus size={16} className="inline mr-1.5" />{t('dashboard.createFirst')}</Button>
             </Link>
           </div>
         ) : (
@@ -155,44 +156,41 @@ export default function Dashboard() {
                 </div>
 
                 <div className="text-sm text-muted shrink-0 text-right">
-                  <p><span className="text-gray-900 font-semibold">{totalSold(event)}</span> sold</p>
-                  <p><span className="text-green-600 font-semibold">{totalCheckedIn(event)}</span> checked in</p>
+                  <p><span className="text-gray-900 font-semibold">{totalSold(event)}</span> {t('dashboard.sold')}</p>
+                  <p><span className="text-green-600 font-semibold">{totalCheckedIn(event)}</span> {t('dashboard.checkedIn')}</p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Status action button */}
                   {event.status === 'draft' && (
                     <button
                       onClick={() => submitForApproval(event)}
                       disabled={!profile?.approved}
-                      title="Submit for approval"
                       className="text-xs px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium flex items-center gap-1"
                     >
-                      <Send size={11} /> Submit
+                      <Send size={11} /> {t('dashboard.submit')}
                     </button>
                   )}
                   {event.status === 'pending' && (
                     <span className="text-xs px-3 py-1.5 rounded-lg border border-amber-300 text-amber-600 bg-amber-50 font-medium">
-                      Under review
+                      {t('dashboard.underReview')}
                     </span>
                   )}
                   {event.status === 'published' && (
                     <button
                       onClick={() => unpublish(event)}
-                      title="Unpublish"
                       className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-muted hover:border-red-400 hover:text-red-500 transition font-medium"
                     >
-                      Unpublish
+                      {t('dashboard.unpublish')}
                     </button>
                   )}
 
-                  <Link to={`/dashboard/events/${event.id}/edit`} title="Edit event">
+                  <Link to={lp(`/dashboard/events/${event.id}/edit`)} title="Edit event">
                     <Button variant="secondary" size="sm"><Pencil size={14} /></Button>
                   </Link>
-                  <Link to={`/checkin/${event.id}`} title="Check-in scanner">
+                  <Link to={lp(`/checkin/${event.id}`)} title="Check-in scanner">
                     <Button variant="secondary" size="sm"><QrCode size={14} /></Button>
                   </Link>
-                  <Link to={`/dashboard/events/${event.id}`} title="View stats">
+                  <Link to={lp(`/dashboard/events/${event.id}`)} title="View stats">
                     <Button variant="secondary" size="sm"><BarChart2 size={14} /></Button>
                   </Link>
                   <button onClick={() => setConfirmDelete(event)} title="Delete event"

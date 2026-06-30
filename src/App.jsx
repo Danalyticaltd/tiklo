@@ -1,4 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import PageLoader from './components/PageLoader'
@@ -27,7 +29,7 @@ import EditEvent from './pages/dashboard/EditEvent'
 import CheckIn from './pages/dashboard/CheckIn'
 import OrgProfile from './pages/dashboard/OrgProfile'
 
-// Admin
+// Admin (English only)
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminOrganizers from './pages/admin/AdminOrganizers'
 import AdminSettings from './pages/admin/AdminSettings'
@@ -41,42 +43,59 @@ function ProtectedRoute({ children, requiredRole }) {
   return children
 }
 
+function LangWrapper({ lang }) {
+  const { i18n } = useTranslation()
+  useEffect(() => { i18n.changeLanguage(lang) }, [lang, i18n])
+  return <Outlet />
+}
+
+// Routes are relative inside the parent match — no /fr prefix needed here
+function AppRoutes({ lang }) {
+  return (
+    <Routes>
+      <Route element={<LangWrapper lang={lang} />}>
+        <Route index element={<Home />} />
+        <Route path="events/city/:city" element={<CityEvents />} />
+        <Route path="events/:slug" element={<EventPage />} />
+        <Route path="checkout/:orderId" element={<Checkout />} />
+        <Route path="ticket/confirmed" element={<TicketConfirm />} />
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route path="verify" element={<Verify />} />
+        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="my-tickets" element={<MyTickets />} />
+        <Route path="how-it-works" element={<HowItWorks />} />
+        <Route path="onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+        <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="dashboard/events/new" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+        <Route path="dashboard/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
+        <Route path="dashboard/events/:id/edit" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
+        <Route path="dashboard/connect" element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard/profile" element={<ProtectedRoute><OrgProfile /></ProtectedRoute>} />
+        <Route path="checkin/:eventId" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+      </Route>
+
+      {/* Admin — English only, handled at top level */}
+      {lang === 'en' && <>
+        <Route path="admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="admin/organizers" element={<ProtectedRoute requiredRole="admin"><AdminOrganizers /></ProtectedRoute>} />
+        <Route path="admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
+        <Route path="admin/events" element={<ProtectedRoute requiredRole="admin"><AdminEvents /></ProtectedRoute>} />
+      </>}
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  )
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public */}
-          <Route path="/" element={<Home />} />
-          <Route path="/events/city/:city" element={<CityEvents />} />
-          <Route path="/events/:slug" element={<EventPage />} />
-          <Route path="/checkout/:orderId" element={<Checkout />} />
-          <Route path="/ticket/confirmed" element={<TicketConfirm />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/verify" element={<Verify />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/my-tickets" element={<MyTickets />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-
-          {/* Organizer */}
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/dashboard/events/new" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
-          <Route path="/dashboard/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
-          <Route path="/dashboard/events/:id/edit" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
-          <Route path="/dashboard/connect" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard/profile" element={<ProtectedRoute><OrgProfile /></ProtectedRoute>} />
-          <Route path="/checkin/:eventId" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-
-          {/* Admin */}
-          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/organizers" element={<ProtectedRoute requiredRole="admin"><AdminOrganizers /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
-          <Route path="/admin/events" element={<ProtectedRoute requiredRole="admin"><AdminEvents /></ProtectedRoute>} />
-
-          <Route path="*" element={<NotFound />} />
+          <Route path="/fr/*" element={<AppRoutes lang="fr" />} />
+          <Route path="/*" element={<AppRoutes lang="en" />} />
         </Routes>
       </BrowserRouter>
       <Analytics />

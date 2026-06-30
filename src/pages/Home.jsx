@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Search, Flame, ChevronLeft, QrCode } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLangPath } from '../hooks/useLangPath'
 import Navbar from '../components/Navbar'
 import EventCard from '../components/EventCard'
 import EventCarousel from '../components/EventCarousel'
@@ -14,7 +16,9 @@ const EVENT_TYPE_CHIPS = ['Cultural show', 'Community event', 'Concert', 'Meetup
 const DOT_COLORS = ['bg-primary', 'bg-[#00D4FF]', 'bg-success']
 
 export default function Home() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [events, setEvents] = useState([])
@@ -26,11 +30,9 @@ export default function Home() {
   const [activeType, setActiveType] = useState(null)
   const [communityChips, setCommunityChips] = useState([])
 
-  // Dashboard widget — real data
   const [dashStats, setDashStats] = useState({ ticketsSold: 0, activeEvents: 0 })
   const [dashEvents, setDashEvents] = useState([])
 
-  // Apply ?eventType= and ?city= URL params from footer links
   useEffect(() => {
     const type = searchParams.get('eventType')
     const cityParam = searchParams.get('city')
@@ -40,7 +42,6 @@ export default function Home() {
     if (changed) window.scrollTo(0, 0)
   }, [searchParams])
 
-  // Fetch dashboard widget stats + real-time subscription
   useEffect(() => {
     async function fetchDashStats() {
       try {
@@ -93,11 +94,9 @@ export default function Home() {
         ])
         if (error) throw error
 
-        // Per-event tickets sold today
         const todaySold = {}
         ;(todayOrders ?? []).forEach(o => { todaySold[o.event_id] = (todaySold[o.event_id] ?? 0) + (o.quantity ?? 1) })
 
-        // Attach isHot: 50%+ sold OR ≥50 tickets sold today
         const enriched = (data ?? []).map(ev => {
           const tts = ev.ticket_types ?? []
           const cap = tts.reduce((s, t) => s + (t.quantity ?? 0), 0)
@@ -119,12 +118,12 @@ export default function Home() {
   function handleChip(chip) {
     if (activeChip === chip) { setActiveChip(null); setTag('All Communities'); return }
     setActiveChip(chip)
-    if (chip !== 'Free events' && chip !== 'This weekend') setTag(chip)
+    if (chip !== t('home.freeEvents') && chip !== t('home.thisWeekend')) setTag(chip)
     else setTag('All Communities')
   }
 
   function handleTypeChip(type) {
-    setActiveType(t => t === type ? null : type)
+    setActiveType(tp => tp === type ? null : type)
   }
 
   function clearFilters() {
@@ -139,8 +138,8 @@ export default function Home() {
       e.title.toLowerCase().includes(search.toLowerCase()) ||
       (e.description ?? '').toLowerCase().includes(search.toLowerCase())
     )
-    if (activeChip === 'Free events') evts = evts.filter(e => (e.ticket_types ?? []).some(t => Number(t.price) === 0))
-    if (activeChip === 'This weekend') {
+    if (activeChip === t('home.freeEvents')) evts = evts.filter(e => (e.ticket_types ?? []).some(t => Number(t.price) === 0))
+    if (activeChip === t('home.thisWeekend')) {
       const now = new Date()
       const friday = new Date(now); friday.setDate(now.getDate() + (5 - now.getDay() + 7) % 7)
       const sunday = new Date(friday); sunday.setDate(friday.getDate() + 2); sunday.setHours(23, 59, 59)
@@ -159,23 +158,22 @@ export default function Home() {
     }).slice(0, 6)
 
   const isFiltered = city !== 'All Cities' || tag !== 'All Communities' || search.trim() || activeChip || activeType
-  // Events always stay in their category — hot section is additive, not exclusive
   const belowFold = visible
   const distinctTypes = [...new Set(belowFold.map(e => e.event_type).filter(Boolean))]
   const orderedTypes = [
-    ...EVENT_TYPE_CHIPS.filter(t => distinctTypes.includes(t)),
-    ...distinctTypes.filter(t => !EVENT_TYPE_CHIPS.includes(t)),
+    ...EVENT_TYPE_CHIPS.filter(tp => distinctTypes.includes(tp)),
+    ...distinctTypes.filter(tp => !EVENT_TYPE_CHIPS.includes(tp)),
   ]
   const byType = orderedTypes.map(type => ({ type, events: belowFold.filter(e => e.event_type === type) })).filter(g => g.events.length > 0)
   const uncategorised = belowFold.filter(e => !e.event_type)
 
-  const ctaTarget = user ? '/dashboard' : '/register'
+  const ctaTarget = lp(user ? '/dashboard' : '/register')
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* ── HERO ── */}
+      {/* HERO */}
       <section
         className="relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #635BFF 0%, #7C4DFF 55%, #00D4FF 100%)' }}
@@ -184,70 +182,66 @@ export default function Home() {
         <div className="absolute bottom-0 left-1/4 w-64 h-64 rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, white, transparent 70%)', transform: 'translateY(40%)' }} />
 
         <div className="max-w-6xl mx-auto px-4 py-16 md:py-20 flex flex-col lg:flex-row items-center gap-12">
-
-          {/* Left */}
           <div className="flex-1 relative z-10">
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] inline-block shrink-0" />
-              <span className="text-white/80 text-xs font-semibold">Canada's Event Ticketing Platform</span>
+              <span className="text-white/80 text-xs font-semibold">{t('home.badge')}</span>
             </div>
             <h1 className="font-heading text-4xl md:text-5xl font-bold text-white leading-[1.08] tracking-tight mb-4">
-              Sell Event Tickets<br />Online in Minutes.
+              {t('home.heroTitle')}
             </h1>
-            <p className="text-white/65 text-base leading-relaxed max-w-sm mb-8">
-              Create your event, set pricing, and start collecting payments — no setup fees, no monthly cost.
-            </p>
+            <p className="text-white/65 text-base leading-relaxed max-w-sm mb-8">{t('home.heroDesc')}</p>
             <div className="flex flex-wrap gap-3 mb-10">
               <Link to={ctaTarget} className="bg-white text-primary font-bold px-6 py-3 rounded-xl text-sm hover:bg-white/90 transition shadow-sm">
-                {user ? 'Go to dashboard →' : 'Create your event →'}
+                {user ? t('home.ctaDashboard') : t('home.ctaCreate')}
               </Link>
               <a href="#search-section" className="bg-white/10 text-white border border-white/25 font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/20 transition">
-                Browse events
+                {t('home.browseEvents')}
               </a>
             </div>
             <div className="flex gap-8 pt-6 border-t border-white/10">
-              <div><p className="text-xl font-bold text-white">0%</p><p className="text-white/45 text-xs mt-0.5">Setup fee</p></div>
-              <div><p className="text-xl font-bold text-white">5 min</p><p className="text-white/45 text-xs mt-0.5">To go live</p></div>
-              <div><p className="text-xl font-bold text-white">🍁 CA</p><p className="text-white/45 text-xs mt-0.5">Canada-first</p></div>
+              <div><p className="text-xl font-bold text-white">0%</p><p className="text-white/45 text-xs mt-0.5">{t('home.setupFee')}</p></div>
+              <div><p className="text-xl font-bold text-white">5 min</p><p className="text-white/45 text-xs mt-0.5">{t('home.toGoLive')}</p></div>
+              <div><p className="text-xl font-bold text-white">🍁 CA</p><p className="text-white/45 text-xs mt-0.5">{t('home.canadaFirst')}</p></div>
             </div>
           </div>
 
-          {/* Right — live dashboard widget */}
+          {/* Live dashboard widget */}
           <div className="hidden lg:block flex-shrink-0 w-72 relative z-10">
             <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
               <div className="p-5">
-                <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-3">Live Platform Stats</p>
+                <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-3">{t('home.livePlatformStats')}</p>
                 <div className={`grid gap-2 mb-4 ${dashStats.ticketsSold >= 1000 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <div className="bg-surface rounded-xl p-3 text-center">
                     <p className="text-xl font-bold text-navy">{dashStats.activeEvents}</p>
-                    <p className="text-[10px] text-muted mt-0.5">Events live</p>
+                    <p className="text-[10px] text-muted mt-0.5">{t('home.eventsLive')}</p>
                   </div>
                   {dashStats.ticketsSold >= 1000 && (
                     <div className="bg-surface rounded-xl p-3 text-center">
                       <p className="text-xl font-bold text-primary">{dashStats.ticketsSold.toLocaleString()}</p>
-                      <p className="text-[10px] text-muted mt-0.5">Tickets sold</p>
+                      <p className="text-[10px] text-muted mt-0.5">{t('home.ticketsSold')}</p>
                     </div>
                   )}
                 </div>
                 {dashEvents.length > 0 ? dashEvents.map((ev, i) => (
-                  <Link key={ev.id} to={`/events/${ev.id}`} className="flex items-center gap-2.5 py-2 border-b border-[#E3E8EE] last:border-0 hover:bg-surface rounded-lg px-1 -mx-1 transition">
+                  <Link key={ev.id} to={lp(`/events/${ev.id}`)} className="flex items-center gap-2.5 py-2 border-b border-[#E3E8EE] last:border-0 hover:bg-surface rounded-lg px-1 -mx-1 transition">
                     <div className={`w-2 h-2 rounded-full ${DOT_COLORS[i % DOT_COLORS.length]} shrink-0`} />
                     <span className="text-xs font-semibold text-navy flex-1 truncate">{ev.title}</span>
-                    <span className="text-[10px] font-bold text-success bg-green-50 px-2 py-0.5 rounded-md shrink-0">Live →</span>
+                    <span className="text-[10px] font-bold text-success bg-green-50 px-2 py-0.5 rounded-md shrink-0">{t('home.live')}</span>
                   </Link>
                 )) : (
-                  <p className="text-xs text-muted text-center py-2">No events yet</p>
+                  <p className="text-xs text-muted text-center py-2">{t('home.noEventsYet')}</p>
                 )}
                 <Link
-                  to={user ? '/dashboard' : '/login'}
+                  to={user ? lp('/dashboard') : lp('/login')}
                   className="mt-3 bg-surface hover:bg-[#E3E8EE] rounded-xl p-3 flex items-center gap-3 transition"
                 >
                   <div className="w-8 h-8 bg-navy rounded-lg flex items-center justify-center shrink-0">
                     <QrCode size={14} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-navy">QR Check-In Active</p>
-                    <p className="text-[10px] text-muted">{user ? 'Go to dashboard →' : 'Sign in to start scanning →'}</p>
+                    <p className="text-xs font-bold text-navy">{t('home.qrCheckInTitle')}</p>
+                    <p className="text-[10px] text-muted">{user ? t('home.qrDashboard') : t('home.qrSignIn')}</p>
                   </div>
                 </Link>
               </div>
@@ -256,15 +250,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── PRICING CALLOUT ── */}
+      {/* PRICING CALLOUT */}
       <div className="bg-primary/[0.06] border-b border-primary/10 py-3 px-4 text-center">
         <p className="text-sm text-navy font-medium">
-          🎉 Only pay when you sell tickets —{' '}
-          <span className="text-primary font-bold">no monthly subscription</span>
+          🎉 {t('home.pricingCallout')}{' '}
+          <span className="text-primary font-bold">{t('home.noSubscription')}</span>
         </p>
       </div>
 
-      {/* ── SEARCH + FILTERS ── */}
+      {/* SEARCH + FILTERS */}
       <section id="search-section" className="scroll-mt-20 bg-white border-b border-[#E3E8EE] px-4 py-6">
         <div className="max-w-6xl mx-auto space-y-4">
           <div className="flex max-w-2xl mx-auto rounded-xl overflow-hidden border border-[#E3E8EE] shadow-sm bg-white">
@@ -272,7 +266,7 @@ export default function Home() {
               <Search size={15} className="text-muted shrink-0" />
               <input
                 type="text" value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search events, artists, bands..."
+                placeholder={t('home.searchPlaceholder')}
                 className="flex-1 py-3.5 text-sm text-navy placeholder-muted bg-transparent outline-none"
               />
             </div>
@@ -282,13 +276,13 @@ export default function Home() {
             </select>
             <button className="bg-primary hover:bg-[#574BFF] text-white font-semibold text-sm px-4 sm:px-6 transition shrink-0 flex items-center gap-1.5">
               <Search size={15} className="shrink-0" />
-              <span className="hidden sm:inline">Search</span>
+              <span className="hidden sm:inline">{t('home.search')}</span>
             </button>
           </div>
 
           {communityChips.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2">
-              {[...communityChips, 'Free events', 'This weekend'].map(chip => (
+              {[...communityChips, t('home.freeEvents'), t('home.thisWeekend')].map(chip => (
                 <button key={chip} onClick={() => handleChip(chip)}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${activeChip === chip ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-[#E3E8EE] text-muted hover:border-navy/30 hover:text-navy'}`}>
                   {chip}
@@ -308,14 +302,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── HOT RIGHT NOW ── */}
+      {/* HOT RIGHT NOW */}
       {!isFiltered && hotEvents.length > 0 && (
         <div className="max-w-6xl mx-auto px-4 pt-10 mb-10">
           <div className="flex items-baseline justify-between mb-5">
             <h2 className="font-heading font-bold text-navy text-2xl flex items-center gap-2">
-              <Flame size={20} className="text-orange-500" /> Hot right now
+              <Flame size={20} className="text-orange-500" /> {t('home.hotRightNow')}
             </h2>
-            <span className="text-sm text-muted">Selling fast</span>
+            <span className="text-sm text-muted">{t('home.sellingFast')}</span>
           </div>
           <EventCarousel events={hotEvents} />
         </div>
@@ -324,12 +318,12 @@ export default function Home() {
       {isFiltered && (
         <div className="max-w-6xl mx-auto px-4 pt-4">
           <button onClick={clearFilters} className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline">
-            <ChevronLeft size={15} /> Back to all events
+            <ChevronLeft size={15} /> {t('home.backToAll')}
           </button>
         </div>
       )}
 
-      {/* ── EVENT SECTIONS ── */}
+      {/* EVENT SECTIONS */}
       <div id="events" className="max-w-6xl mx-auto px-4 pb-16 space-y-12 mt-2">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-6">
@@ -339,36 +333,32 @@ export default function Home() {
           isFiltered ? (
             <div className="text-center py-24">
               <p className="text-4xl mb-4">🎟</p>
-              <p className="text-muted text-lg">No events found.</p>
-              <p className="text-muted/60 text-sm mt-1">Try a different search or filter.</p>
+              <p className="text-muted text-lg">{t('home.noEventsFound')}</p>
+              <p className="text-muted/60 text-sm mt-1">{t('home.tryFilter')}</p>
             </div>
           ) : profile?.role === 'organizer' ? (
             <div className="text-center py-24 max-w-md mx-auto">
               <p className="text-5xl mb-5">🎉</p>
-              <h2 className="font-heading text-2xl font-bold text-navy mb-3">Be the first to host an event</h2>
-              <p className="text-muted text-sm mb-8 leading-relaxed">
-                No events yet on Tiklo. Create yours in minutes — set your ticket types, pricing, and start selling.
-              </p>
+              <h2 className="font-heading text-2xl font-bold text-navy mb-3">{t('home.firstToHost')}</h2>
+              <p className="text-muted text-sm mb-8 leading-relaxed">{t('home.firstToHostDesc')}</p>
               <Link
-                to="/dashboard/events/new"
+                to={lp('/dashboard/events/new')}
                 className="inline-flex items-center gap-2 bg-primary hover:bg-[#574BFF] text-white font-semibold px-6 py-3 rounded-xl transition shadow-sm shadow-primary/20 text-sm"
               >
-                Create your first event →
+                {t('home.createFirstEvent')}
               </Link>
-              <p className="text-muted/60 text-xs mt-4">Free to create · No monthly fee</p>
+              <p className="text-muted/60 text-xs mt-4">{t('home.freeToCreate')}</p>
             </div>
           ) : (
             <div className="text-center py-24 max-w-md mx-auto">
               <p className="text-5xl mb-5">🍁</p>
-              <h2 className="font-heading text-2xl font-bold text-navy mb-3">Events coming soon</h2>
-              <p className="text-muted text-sm mb-8 leading-relaxed">
-                We're just getting started. Check back soon for events near you across Canada.
-              </p>
+              <h2 className="font-heading text-2xl font-bold text-navy mb-3">{t('home.comingSoon')}</h2>
+              <p className="text-muted text-sm mb-8 leading-relaxed">{t('home.comingSoonDesc')}</p>
               <Link
-                to="/how-it-works"
+                to={lp('/how-it-works')}
                 className="inline-flex items-center gap-2 border border-gray-200 text-navy hover:border-primary hover:text-primary font-medium px-5 py-2.5 rounded-xl transition text-sm"
               >
-                Learn how Tiklo works
+                {t('home.learnHow')}
               </Link>
             </div>
           )
@@ -383,9 +373,9 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4 px-1">
                   <div className="min-w-0">
                     <h2 className="font-heading font-bold text-navy text-xl sm:text-2xl truncate">{type}s</h2>
-                    <p className="text-sm text-muted">{evts.length} event{evts.length !== 1 ? 's' : ''}</p>
+                    <p className="text-sm text-muted">{t('home.events_one', { count: evts.length })}</p>
                   </div>
-                  <button onClick={() => handleTypeChip(type)} className="text-sm text-primary font-medium hover:underline shrink-0 ml-4">See all</button>
+                  <button onClick={() => handleTypeChip(type)} className="text-sm text-primary font-medium hover:underline shrink-0 ml-4">{t('home.seeAll')}</button>
                 </div>
                 <EventCarousel events={evts} />
               </section>
@@ -393,7 +383,7 @@ export default function Home() {
             {uncategorised.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <h2 className="font-heading font-bold text-navy text-xl sm:text-2xl">More events</h2>
+                  <h2 className="font-heading font-bold text-navy text-xl sm:text-2xl">{t('home.moreEvents')}</h2>
                 </div>
                 <EventCarousel events={uncategorised} />
               </section>
@@ -404,19 +394,17 @@ export default function Home() {
 
       <WhyTiklo />
 
-      {/* ── CTA BAND ── */}
+      {/* CTA BAND */}
       <section className="bg-navy px-4 py-20 text-center">
         <h2 className="font-heading text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">
-          Ready to sell tickets?
+          {t('home.ctaBandTitle')}
         </h2>
-        <p className="text-white/50 text-sm mb-8 max-w-sm mx-auto leading-relaxed">
-          Join Canadian event organisers already using Tiklo. It's free to start — no credit card required.
-        </p>
+        <p className="text-white/50 text-sm mb-8 max-w-sm mx-auto leading-relaxed">{t('home.ctaBandDesc')}</p>
         <Link
           to={ctaTarget}
           className="inline-block bg-primary hover:bg-[#574BFF] text-white font-bold px-8 py-3.5 rounded-xl text-sm transition shadow-sm shadow-primary/30"
         >
-          {user ? 'Go to your dashboard →' : 'Create your event — it\'s free'}
+          {user ? t('home.ctaBandCtaDash') : t('home.ctaBandCta')}
         </Link>
       </section>
 
