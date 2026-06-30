@@ -357,7 +357,7 @@ export default function EventDetail() {
             <p className="text-muted text-sm mt-1">{event?.event_date && format(new Date(event.event_date), 'EEE, MMM d, yyyy · h:mm a')} · {event?.city}</p>
           </div>
           <div className="flex items-center gap-1.5">
-            <Link to={`/events/${id}`} target="_blank" rel="noopener noreferrer" title="View public event page" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
+            <Link to={lp(`/events/${id}`)} target="_blank" rel="noopener noreferrer" title="View public event page" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
               <ExternalLink size={16} />
             </Link>
             <Link to={lp(`/dashboard/events/${id}/edit`)} title="Edit event" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:border-primary hover:text-primary transition font-medium">

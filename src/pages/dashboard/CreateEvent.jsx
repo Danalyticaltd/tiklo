@@ -276,14 +276,14 @@ export default function CreateEvent() {
                 <div className="relative rounded-xl overflow-hidden h-48">
                   <img src={bannerPreview} alt="Banner preview" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-                    <span className="text-white text-sm font-medium">Change image</span>
+                    <span className="text-white text-sm font-medium">{t('eventForm.changeImage')}</span>
                   </div>
                 </div>
               ) : (
                 <div className="h-48 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary transition text-muted">
                   <Upload size={24} />
-                  <span className="text-sm">Click to upload your event flyer</span>
-                  <span className="text-xs text-gray-400">PNG, JPG up to 5 MB · Portrait poster works great</span>
+                  <span className="text-sm">{t('eventForm.uploadFlyer')}</span>
+                  <span className="text-xs text-gray-400">{t('eventForm.uploadHint')}</span>
                 </div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={handleBannerChange} />
@@ -303,7 +303,7 @@ export default function CreateEvent() {
             </div>
 
             <div className="text-xs text-muted grid grid-cols-[1fr_7rem_6rem_2rem] gap-3 px-4">
-              <span>Name</span><span>Price</span><span>Quantity</span><span />
+              <span>{t('eventForm.name')}</span><span>{t('eventForm.price')}</span><span>{t('eventForm.quantity')}</span><span />
             </div>
 
             <div className="space-y-3">
@@ -322,7 +322,7 @@ export default function CreateEvent() {
 
           {Object.keys(errors).length > 0 && (
             <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
-              Please fix the errors above before continuing.
+              {t('eventForm.fixErrors')}
             </div>
           )}
           <div className="flex gap-3 justify-end">

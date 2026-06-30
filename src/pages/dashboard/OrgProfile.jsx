@@ -292,18 +292,18 @@ export default function OrgProfile() {
             return (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-muted mb-1">Bank name</label>
+                <label className="block text-sm text-muted mb-1">{t('orgProfile.bankName')}</label>
                 <input type="text" value={bd.bank}
                   onChange={e => setField('bank', e.target.value)}
-                  placeholder="e.g. TD Bank, RBC, Scotiabank"
+                  placeholder={t('orgProfile.bankNamePlaceholder')}
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Institution', hint: '3 digits', key: 'institution', max: 3, ph: '000' },
-                  { label: 'Transit', hint: '5 digits', key: 'transit', max: 5, ph: '00000' },
-                  { label: 'Account number', hint: '', key: 'account', max: 12, ph: '0000000' },
+                  { label: t('orgProfile.institution'), hint: '3 digits', key: 'institution', max: 3, ph: '000' },
+                  { label: t('orgProfile.transit'), hint: '5 digits', key: 'transit', max: 5, ph: '00000' },
+                  { label: t('orgProfile.accountNumber'), hint: '', key: 'account', max: 12, ph: '0000000' },
                 ].map(({ label, hint, key, max, ph }) => (
                   <div key={key}>
                     <label className="block text-sm text-muted mb-1">{label} {hint && <span className="text-gray-400 text-xs">({hint})</span>}</label>

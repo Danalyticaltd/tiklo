@@ -100,7 +100,7 @@ export default function Footer() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="text-xs text-white/25">{t('footer.allRights', { year: new Date().getFullYear() })}</span>
           <div className="flex items-center gap-4">
-            <a href={lp('/my-tickets')} className="text-xs text-white/30 hover:text-white/60 transition">{t('footer.findTickets')}</a>
+            <FooterNavLink to={lp('/my-tickets')} className="text-xs text-white/30 hover:text-white/60 transition">{t('footer.findTickets')}</FooterNavLink>
             <span className="text-xs text-white/25">{t('footer.madeWith')} <a href="https://www.danalytica.ca" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition underline underline-offset-2">Danalytica Ltd</a></span>
           </div>
         </div>

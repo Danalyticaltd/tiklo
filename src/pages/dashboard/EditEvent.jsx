@@ -332,14 +332,14 @@ export default function EditEvent() {
                 <div className="relative rounded-xl overflow-hidden h-48">
                   <img src={bannerPreview ?? existingBanner} alt="Banner" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-                    <span className="text-white text-sm font-medium">Change image</span>
+                    <span className="text-white text-sm font-medium">{t('eventForm.changeImage')}</span>
                   </div>
                 </div>
               ) : (
                 <div className="h-48 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary transition text-muted">
                   <Upload size={24} />
-                  <span className="text-sm">Click to upload banner</span>
-                  <span className="text-xs text-gray-400">PNG, JPG up to 5 MB · 16:9 recommended</span>
+                  <span className="text-sm">{t('eventForm.uploadBanner')}</span>
+                  <span className="text-xs text-gray-400">{t('eventForm.uploadHintEdit')}</span>
                 </div>
               )}
               <input type="file" accept="image/*" className="hidden" onChange={handleBannerChange} />
@@ -357,7 +357,7 @@ export default function EditEvent() {
             </div>
 
             <div className="hidden sm:grid text-xs text-muted grid-cols-[1fr_7rem_6rem_2rem] gap-3 px-4">
-              <span>Name</span><span>Price</span><span>Capacity</span><span />
+              <span>{t('eventForm.name')}</span><span>{t('eventForm.price')}</span><span>{t('eventForm.capacity')}</span><span />
             </div>
 
             <div className="space-y-3">
@@ -368,10 +368,10 @@ export default function EditEvent() {
                   <div key={field.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-3">
                     <div className="flex items-start gap-2">
                       <div className="flex-1 min-w-0">
-                        <label className="text-xs text-muted mb-1 block">Name</label>
+                        <label className="text-xs text-muted mb-1 block">{t('eventForm.name')}</label>
                         <input
-                          placeholder="e.g. General, VIP"
-                          {...register(`ticket_types.${index}.name`, { required: 'Name required' })}
+                          placeholder={t('eventForm.namePlaceholder')}
+                          {...register(`ticket_types.${index}.name`, { required: t('eventForm.nameRequired') })}
                           className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition"
                         />
                         {errors?.ticket_types?.[index]?.name && (
@@ -387,7 +387,7 @@ export default function EditEvent() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-muted mb-1 block">Price</label>
+                        <label className="text-xs text-muted mb-1 block">{t('eventForm.price')}</label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">$</span>
                           <input type="number" min="0" step="0.01" placeholder="0.00"
@@ -397,7 +397,7 @@ export default function EditEvent() {
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-muted mb-1 block">Capacity</label>
+                        <label className="text-xs text-muted mb-1 block">{t('eventForm.capacity')}</label>
                         <input type="number" min={sold || 1} placeholder="Qty"
                           {...register(`ticket_types.${index}.quantity`, { required: 'Required', min: { value: sold || 1, message: `≥ ${sold || 1}` }, valueAsNumber: true })}
                           className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary text-sm transition"
@@ -412,7 +412,7 @@ export default function EditEvent() {
 
           {Object.keys(errors).length > 0 && (
             <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
-              Please fix the errors above before saving.
+              {t('eventForm.fixErrorsSave')}
             </div>
           )}
 

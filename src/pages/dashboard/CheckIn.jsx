@@ -69,7 +69,7 @@ export default function CheckIn() {
       .single()
 
     if (!ticket) {
-      setResult({ ok: false, message: 'Ticket not found or wrong event.' })
+      setResult({ ok: false, message: t('checkIn.notFound') })
       return
     }
 
