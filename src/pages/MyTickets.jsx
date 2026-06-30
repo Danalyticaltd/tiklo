@@ -119,7 +119,7 @@ export default function MyTickets() {
                     </p>
                   </div>
                   <a
-                    href={`/api/download-ticket?order_id=${ord.id}`}
+                    href={`/api/download-ticket?order_id=${order.id}`}
                     target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#574BFF] font-medium mb-4 transition"
                   >
