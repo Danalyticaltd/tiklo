@@ -19,12 +19,11 @@ function FooterNavLink({ to, children, className }) {
   )
 }
 
-const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver']
-
 export default function Footer() {
   const { t } = useTranslation()
   const lp = useLangPath()
   const [categories, setCategories] = useState([])
+  const [cities, setCities] = useState([])
 
   useEffect(() => {
     supabase
@@ -37,6 +36,17 @@ export default function Footer() {
         const counts = {}
         data.forEach(e => { if (e.event_type) counts[e.event_type] = (counts[e.event_type] || 0) + 1 })
         setCategories(Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([t]) => t).slice(0, 6))
+      })
+
+    supabase
+      .from('events')
+      .select('city')
+      .eq('status', 'published')
+      .not('city', 'is', null)
+      .then(({ data }) => {
+        if (!data) return
+        const unique = [...new Set(data.map(e => e.city).filter(Boolean))].sort()
+        setCities(unique)
       })
   }, [])
 
@@ -52,11 +62,13 @@ export default function Footer() {
         <div>
           <p className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">{t('footer.eventsByCity')}</p>
           <ul className="space-y-2.5">
-            {CITIES.map(c => (
+            {cities.length > 0 ? cities.map(c => (
               <li key={c}>
                 <FooterNavLink to={lp(`/?city=${encodeURIComponent(c)}`)}>{t('footer.eventsIn', { city: c })}</FooterNavLink>
               </li>
-            ))}
+            )) : (
+              <li className="text-sm text-white/25">{t('footer.comingSoon')}</li>
+            )}
           </ul>
         </div>
 
