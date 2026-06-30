@@ -9,11 +9,9 @@ import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
-import Select from '../../components/ui/Select'
 import TicketTypeRow from '../../components/TicketTypeRow'
 import CommunityInput from '../../components/CommunityInput'
 
-const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver', 'Edmonton', 'Winnipeg', 'Halifax']
 const TAGS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const EVENT_TYPES = ['Cultural show', 'Community event', 'Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sport Event', 'Networking', 'Other']
 
@@ -31,20 +29,22 @@ export default function CreateEvent() {
 
   const locationInputRef = useRef(null)
 
-  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm({
     mode: 'onChange',
     shouldFocusError: true,
     defaultValues: {
       title: '',
       description: '',
+      is_online: false,
       location: '',
-      city: 'Ottawa',
+      city: '',
       community_tag: '',
       event_type: 'Cultural show',
       event_date: '',
       ticket_types: [{ name: 'General Admission', price: 0, quantity: 100, max_per_order: 10 }],
     },
   })
+  const isOnline = watch('is_online')
 
   const { fields, append, remove } = useFieldArray({ control, name: 'ticket_types' })
 
@@ -58,6 +58,10 @@ export default function CreateEvent() {
       const place = ac.getPlace()
       const addr = place.formatted_address || place.name || ''
       if (addr) setValue('location', addr, { shouldValidate: true })
+      const cityComp = place.address_components?.find(c =>
+        c.types.includes('locality') || c.types.includes('administrative_area_level_3')
+      )
+      if (cityComp) setValue('city', cityComp.long_name, { shouldValidate: true })
     })
   }, [setValue])
 
@@ -119,8 +123,9 @@ export default function CreateEvent() {
         organizer_id: user.id,
         title: data.title,
         description: data.description,
-        location: data.location,
-        city: data.city,
+        is_online: data.is_online ?? false,
+        location: data.is_online ? null : data.location,
+        city: data.is_online ? null : data.city,
         community_tag: data.community_tag,
         event_type: data.event_type,
         event_date: data.event_date,
@@ -186,6 +191,22 @@ export default function CreateEvent() {
               />
             </div>
 
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                {...register('is_online', {
+                  onChange: e => {
+                    if (e.target.checked) {
+                      setValue('location', '', { shouldValidate: true })
+                      setValue('city', '', { shouldValidate: true })
+                    }
+                  }
+                })}
+                className="w-4 h-4 rounded border-gray-300 accent-primary"
+              />
+              <span className="text-sm text-gray-700">{t('eventForm.onlineEvent')}</span>
+            </label>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-muted">{t('eventForm.dateTime')}</label>
@@ -200,9 +221,16 @@ export default function CreateEvent() {
                 {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
               </div>
 
-              <Select label={t('eventForm.city')} {...register('city', { required: true })}>
-                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </Select>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-muted">{t('eventForm.city')}</label>
+                <input
+                  type="text"
+                  {...register('city')}
+                  placeholder="e.g. Ottawa"
+                  disabled={isOnline}
+                  className={`bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition ${isOnline ? 'opacity-40 cursor-not-allowed' : ''}`}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -216,7 +244,8 @@ export default function CreateEvent() {
                   }}
                   placeholder="e.g. Shaw Centre, 55 Colonel By"
                   autoComplete="off"
-                  className={`bg-white border ${errors.location ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition`}
+                  disabled={isOnline}
+                  className={`bg-white border ${errors.location ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition ${isOnline ? 'opacity-40 cursor-not-allowed' : ''}`}
                 />
                 {errors.location && <p className="text-red-500 text-xs">{errors.location.message}</p>}
               </div>

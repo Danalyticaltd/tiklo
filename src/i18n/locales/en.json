@@ -333,6 +333,7 @@
     "goDashboard": "Go to dashboard"
   },
   "eventForm": {
+    "onlineEvent": "Online event",
     "createTitle": "Create event",
     "editTitle": "Edit event",
     "back": "Back to dashboard",

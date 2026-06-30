@@ -333,6 +333,7 @@
     "goDashboard": "Aller au tableau de bord"
   },
   "eventForm": {
+    "onlineEvent": "Événement en ligne",
     "createTitle": "Créer un événement",
     "editTitle": "Modifier l'événement",
     "back": "Retour au tableau de bord",

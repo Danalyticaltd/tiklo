@@ -64,7 +64,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <LangSwitcher />
+          {profile?.role !== 'admin' && <LangSwitcher />}
 
           {user ? (
             <>

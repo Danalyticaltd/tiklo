@@ -8,11 +8,9 @@ import { useAuth } from '../../context/AuthContext'
 import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
-import Select from '../../components/ui/Select'
 import Input from '../../components/ui/Input'
 import CommunityInput from '../../components/CommunityInput'
 
-const CITIES = ['Ottawa', 'Toronto', 'Montreal', 'Calgary', 'Vancouver', 'Edmonton', 'Winnipeg', 'Halifax']
 const TAGS = ['African', 'Caribbean', 'South Asian', 'Latin', 'Other']
 const EVENT_TYPES = ['Cultural show', 'Community event', 'Concert', 'Meetup', 'Workshop', 'Conference', 'Festival', 'Fundraiser', 'Seminar', 'Sport Event', 'Networking', 'Other']
 const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -34,12 +32,13 @@ export default function EditEvent() {
 
   const locationInputRef = useRef(null)
 
-  const { register, handleSubmit, control, setValue, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, setValue, watch, reset, formState: { errors } } = useForm({
     mode: 'onChange',
     shouldFocusError: true,
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'ticket_types' })
+  const isOnline = watch('is_online')
 
   // Load existing event + ticket types
   useEffect(() => {
@@ -55,8 +54,9 @@ export default function EditEvent() {
       reset({
         title: ev.title,
         description: ev.description ?? '',
+        is_online: ev.is_online ?? false,
         location: ev.location ?? '',
-        city: ev.city,
+        city: ev.city ?? '',
         community_tag: ev.community_tag,
         event_type: ev.event_type ?? 'Cultural show',
         event_date: ev.event_date ? ev.event_date.slice(0, 16) : '',
@@ -85,6 +85,10 @@ export default function EditEvent() {
       const place = ac.getPlace()
       const addr = place.formatted_address || place.name || ''
       if (addr) setValue('location', addr, { shouldValidate: true })
+      const cityComp = place.address_components?.find(c =>
+        c.types.includes('locality') || c.types.includes('administrative_area_level_3')
+      )
+      if (cityComp) setValue('city', cityComp.long_name, { shouldValidate: true })
     })
   }, [setValue])
 
@@ -129,8 +133,9 @@ export default function EditEvent() {
       const { error: evErr } = await supabase.from('events').update({
         title: data.title,
         description: data.description,
-        location: data.location,
-        city: data.city,
+        is_online: data.is_online ?? false,
+        location: data.is_online ? null : data.location,
+        city: data.is_online ? null : data.city,
         community_tag: data.community_tag,
         event_type: data.event_type,
         event_date: data.event_date,
@@ -245,6 +250,22 @@ export default function EditEvent() {
               />
             </div>
 
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                {...register('is_online', {
+                  onChange: e => {
+                    if (e.target.checked) {
+                      setValue('location', '', { shouldValidate: true })
+                      setValue('city', '', { shouldValidate: true })
+                    }
+                  }
+                })}
+                className="w-4 h-4 rounded border-gray-300 accent-primary"
+              />
+              <span className="text-sm text-gray-700">{t('eventForm.onlineEvent')}</span>
+            </label>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-muted">{t('eventForm.dateTime')}</label>
@@ -258,9 +279,17 @@ export default function EditEvent() {
                 />
                 {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
               </div>
-              <Select label={t('eventForm.city')} {...register('city', { required: true })}>
-                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </Select>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-muted">{t('eventForm.city')}</label>
+                <input
+                  type="text"
+                  {...register('city')}
+                  placeholder="e.g. Ottawa"
+                  disabled={isOnline}
+                  className={`bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition ${isOnline ? 'opacity-40 cursor-not-allowed' : ''}`}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -271,7 +300,8 @@ export default function EditEvent() {
                   ref={(el) => { rhfLocationRef(el); locationInputRef.current = el }}
                   placeholder="e.g. Shaw Centre, 55 Colonel By"
                   autoComplete="off"
-                  className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
+                  disabled={isOnline}
+                  className={`bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition ${isOnline ? 'opacity-40 cursor-not-allowed' : ''}`}
                 />
               </div>
               <Controller
