@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Upload, User, CheckCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 
@@ -22,6 +24,8 @@ function Section({ title, subtitle, children }) {
 
 export default function OrgProfile() {
   const { user, profile, fetchProfile } = useAuth()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const fileRef = useRef(null)
   const [payouts, setPayouts] = useState([])
 
@@ -122,7 +126,7 @@ export default function OrgProfile() {
       const { error } = await supabase.from('profiles').update({ full_name: displayName, bio, avatar_url }).eq('id', user.id)
       if (error) throw error
       if (typeof fetchProfile === 'function') await fetchProfile(user.id)
-      setProfileMsg({ ok: true, text: 'Profile saved!' })
+      setProfileMsg({ ok: true, text: t('orgProfile.profileSaved') })
     } catch (err) {
       setProfileMsg({ ok: false, text: err.message })
     } finally {
@@ -137,7 +141,7 @@ export default function OrgProfile() {
       const { error } = await supabase.from('profiles').update({ payment_method: method, payment_details: details }).eq('id', user.id)
       if (error) throw error
       if (typeof fetchProfile === 'function') await fetchProfile(user.id)
-      setPayoutMsg({ ok: true, text: 'Payout info saved!' })
+      setPayoutMsg({ ok: true, text: t('orgProfile.payoutSaved') })
     } catch (err) {
       setPayoutMsg({ ok: false, text: err.message })
     } finally {
@@ -154,7 +158,7 @@ export default function OrgProfile() {
         .eq('id', user.id)
       if (error) throw error
       if (typeof fetchProfile === 'function') await fetchProfile(user.id)
-      setNotifMsg({ ok: true, text: 'Preferences saved!' })
+      setNotifMsg({ ok: true, text: t('orgProfile.prefsSaved') })
     } catch (err) {
       setNotifMsg({ ok: false, text: err.message })
     } finally {
@@ -200,14 +204,14 @@ export default function OrgProfile() {
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
         <div>
-          <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-4 transition">
-            <ArrowLeft size={14} /> Back to dashboard
+          <Link to={lp('/dashboard')} className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-4 transition">
+            <ArrowLeft size={14} /> {t('orgProfile.back')}
           </Link>
-          <h1 className="font-heading text-3xl font-bold text-navy">Profile &amp; settings</h1>
+          <h1 className="font-heading text-3xl font-bold text-navy">{t('orgProfile.title')}</h1>
         </div>
 
         {/* ── 1. Organiser profile ── */}
-        <Section title="Organiser profile" subtitle="Shown to attendees on your event pages.">
+        <Section title={t('orgProfile.orgProfileTitle')} subtitle={t('orgProfile.orgProfileSub')}>
           <Msg msg={profileMsg} />
           <div className="flex flex-col items-center gap-2">
             <button
@@ -223,39 +227,39 @@ export default function OrgProfile() {
                 <Upload size={16} className="text-white" />
               </div>
             </button>
-            <p className="text-xs text-muted">Click to upload logo · JPG, PNG, WebP · max 2 MB</p>
+            <p className="text-xs text-muted">{t('orgProfile.uploadHint')}</p>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-muted">Display name</label>
+            <label className="text-sm text-muted">{t('orgProfile.displayName')}</label>
             <input
               type="text" value={displayName} onChange={e => setDisplayName(e.target.value)}
-              placeholder="Your name or organisation name"
+              placeholder={t('orgProfile.displayNamePlaceholder')}
               className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-muted">Short description</label>
+            <label className="text-sm text-muted">{t('orgProfile.shortDesc')}</label>
             <textarea
               rows={3} value={bio} onChange={e => setBio(e.target.value)}
-              placeholder="Tell attendees who you are and what kind of events you organise..."
+              placeholder={t('orgProfile.shortDescPlaceholder')}
               className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition resize-none"
             />
           </div>
           <div className="flex justify-end">
-            <Button onClick={saveProfile} disabled={profileSaving}>{profileSaving ? 'Saving...' : 'Save profile'}</Button>
+            <Button onClick={saveProfile} disabled={profileSaving}>{profileSaving ? t('orgProfile.saving') : t('orgProfile.saveProfile')}</Button>
           </div>
         </Section>
 
         {/* ── 2. Payout info ── */}
-        <Section title="Payout info" subtitle="How you'd like to receive earnings after each event.">
+        <Section title={t('orgProfile.payoutTitle')} subtitle={t('orgProfile.payoutSub')}>
           <Msg msg={payoutMsg} />
           <div>
-            <label className="block text-sm text-muted mb-3">Preferred payout method</label>
+            <label className="block text-sm text-muted mb-3">{t('orgProfile.preferredMethod')}</label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { value: 'interac', label: 'Interac e-Transfer', emoji: '⚡' },
-                { value: 'bank_transfer', label: 'Bank transfer', emoji: '🏦' },
+                { value: 'interac', label: t('orgProfile.interac'), emoji: '⚡' },
+                { value: 'bank_transfer', label: t('orgProfile.bankTransfer'), emoji: '🏦' },
               ].map(opt => (
                 <button
                   key={opt.value} type="button"
@@ -271,13 +275,13 @@ export default function OrgProfile() {
 
           {method === 'interac' && (
             <div>
-              <label className="block text-sm text-muted mb-1">Interac e-Transfer email</label>
+              <label className="block text-sm text-muted mb-1">{t('orgProfile.interacEmail')}</label>
               <input
                 type="email" value={details} onChange={e => setDetails(e.target.value)}
                 placeholder="email@example.com"
                 className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition"
               />
-              <p className="text-xs text-muted mt-1.5">We'll send your payout to this email via Interac e-Transfer.</p>
+              <p className="text-xs text-muted mt-1.5">{t('orgProfile.interacHint')}</p>
             </div>
           )}
 
@@ -311,55 +315,55 @@ export default function OrgProfile() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-muted">Your banking details are stored securely and only used for payout processing.</p>
+              <p className="text-xs text-muted">{t('orgProfile.bankingSecure')}</p>
             </div>
             )
           })()}
 
           <div className="bg-surface rounded-xl p-4 text-xs text-muted leading-relaxed">
-            💡 Tiklo sends payouts within <span className="font-medium text-gray-700">5 business days</span> after your event ends. A platform fee of <span className="font-medium text-gray-700">2.5% + $0.99 per ticket</span> is deducted before payout. Free events have no fee.
+            {t('orgProfile.payoutNote')}
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={savePayout} disabled={payoutSaving || !details.trim()}>{payoutSaving ? 'Saving...' : 'Save payout info'}</Button>
+            <Button onClick={savePayout} disabled={payoutSaving || !details.trim()}>{payoutSaving ? t('orgProfile.saving') : t('orgProfile.savePayout')}</Button>
           </div>
         </Section>
 
         {/* ── 3. Notification preferences ── */}
-        <Section title="Email notifications" subtitle="Choose which emails you receive from Tiklo.">
+        <Section title={t('orgProfile.notifTitle')} subtitle={t('orgProfile.notifSub')}>
           <Msg msg={notifMsg} />
           <Toggle
-            label="New ticket sales"
-            description="Get an email each time someone buys a ticket to your event."
+            label={t('orgProfile.salesLabel')}
+            description={t('orgProfile.salesDesc')}
             checked={notifSales}
             onChange={setNotifSales}
           />
           <Toggle
-            label="Event reminders"
-            description="Receive reminders before your events so you're prepared."
+            label={t('orgProfile.remindersLabel')}
+            description={t('orgProfile.remindersDesc')}
             checked={notifReminders}
             onChange={setNotifReminders}
           />
           <div className="flex justify-end">
-            <Button onClick={saveNotifs} disabled={notifSaving}>{notifSaving ? 'Saving...' : 'Save preferences'}</Button>
+            <Button onClick={saveNotifs} disabled={notifSaving}>{notifSaving ? t('orgProfile.saving') : t('orgProfile.savePrefs')}</Button>
           </div>
         </Section>
 
         {/* ── 4. Payout history ── */}
-        <Section title="Payout history" subtitle="Earnings per event after platform fees.">
+        <Section title={t('orgProfile.payoutHistTitle')} subtitle={t('orgProfile.payoutHistSub')}>
           {payouts.length === 0 ? (
-            <p className="text-sm text-muted text-center py-4">No sales yet — earnings will appear here after your first ticket sale.</p>
+            <p className="text-sm text-muted text-center py-4">{t('orgProfile.noSales')}</p>
           ) : (
             <div className="divide-y divide-[#E3E8EE]">
               {payouts.map((p) => (
                 <div key={p.title + p.date} className="py-3 flex items-center justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-navy truncate">{p.title}</p>
-                    <p className="text-xs text-muted">{new Date(p.date).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })} · {p.tickets} ticket{p.tickets !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-muted">{new Date(p.date).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })} · {t('orgProfile.ticket', { count: p.tickets })}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-primary">${(p.revenue - p.fee).toFixed(2)}</p>
-                    <p className="text-[10px] text-muted">after ${p.fee.toFixed(2)} fee</p>
+                    <p className="text-[10px] text-muted">{t('orgProfile.afterFee', { fee: p.fee.toFixed(2) })}</p>
                   </div>
                 </div>
               ))}
@@ -368,16 +372,16 @@ export default function OrgProfile() {
         </Section>
 
         {/* ── 5. Security ── */}
-        <Section title="Account &amp; security">
+        <Section title={t('orgProfile.securityTitle')}>
           <div>
-            <label className="block text-sm text-muted mb-1">Email address</label>
+            <label className="block text-sm text-muted mb-1">{t('orgProfile.emailLabel')}</label>
             <p className="text-sm font-medium text-navy bg-surface rounded-lg px-4 py-2.5 border border-gray-200">{user?.email}</p>
           </div>
           <div>
-            <label className="block text-sm text-muted mb-1">Password</label>
+            <label className="block text-sm text-muted mb-1">{t('orgProfile.passwordLabel')}</label>
             {resetSent ? (
               <div className="flex items-center gap-2 text-green-700 text-sm bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-                <CheckCircle size={14} /> Password reset email sent — check your inbox.
+                <CheckCircle size={14} /> {t('orgProfile.resetSent')}
               </div>
             ) : (
               <button
@@ -385,7 +389,7 @@ export default function OrgProfile() {
                 disabled={resetLoading}
                 className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
               >
-                {resetLoading ? 'Sending...' : 'Send password reset email →'}
+                {resetLoading ? t('orgProfile.sending') : t('orgProfile.sendReset')}
               </button>
             )}
           </div>

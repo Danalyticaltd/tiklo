@@ -1,15 +1,19 @@
 import Footer from '../components/Footer'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { stripePromise } from '../lib/stripe'
 import { supabase } from '../lib/supabase'
+import { useLangPath } from '../hooks/useLangPath'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
 
 function CheckoutForm({ orderId, buyerEmail, onSuccess }) {
   const stripe = useStripe()
   const elements = useElements()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const [error, setError] = useState(null)
   const [processing, setProcessing] = useState(false)
 
@@ -22,9 +26,8 @@ function CheckoutForm({ orderId, buyerEmail, onSuccess }) {
     const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/ticket/confirmed?order=${orderId}&email=${encodeURIComponent(buyerEmail)}`,
+        return_url: `${window.location.origin}${lp('/ticket/confirmed')}?order=${orderId}&email=${encodeURIComponent(buyerEmail)}`,
       },
-      // Cards that don't require 3DS complete inline — no redirect needed
       redirect: 'if_required',
     })
 
@@ -34,7 +37,6 @@ function CheckoutForm({ orderId, buyerEmail, onSuccess }) {
       return
     }
 
-    // Inline completion (no redirect): navigate to confirmation ourselves
     if (paymentIntent?.status === 'succeeded') {
       onSuccess()
     }
@@ -45,7 +47,7 @@ function CheckoutForm({ orderId, buyerEmail, onSuccess }) {
       <PaymentElement />
       {error && <p className="text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>}
       <Button type="submit" disabled={!stripe || processing} size="lg" className="w-full">
-        {processing ? 'Processing…' : 'Pay now'}
+        {processing ? t('checkout.processing') : t('checkout.payNow')}
       </Button>
     </form>
   )
@@ -55,6 +57,8 @@ export default function Checkout() {
   const { orderId: eventId } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const lp = useLangPath()
 
   const ticketTypeId = searchParams.get('tt')
   const qty = parseInt(searchParams.get('qty') ?? '1', 10)
@@ -65,7 +69,7 @@ export default function Checkout() {
   const [ticketType, setTicketType] = useState(null)
   const [buyerName, setBuyerName] = useState('')
   const [buyerEmail, setBuyerEmail] = useState('')
-  const [step, setStep] = useState('info') // 'info' | 'payment'
+  const [step, setStep] = useState('info')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -101,7 +105,7 @@ export default function Checkout() {
       setOrderId(data.order_id)
 
       if (data.free) {
-        navigate(`/ticket/confirmed?order=${data.order_id}&email=${encodeURIComponent(buyerEmail)}`)
+        navigate(`${lp('/ticket/confirmed')}?order=${data.order_id}&email=${encodeURIComponent(buyerEmail)}`)
         return
       }
 
@@ -125,7 +129,6 @@ export default function Checkout() {
   )
 
   const total = ticketType.price * qty
-  // Service fee: 4.4% + $1.09/ticket (combined Tiklo + Stripe coverage — matches DB settings)
   const serviceFee = total > 0 ? Math.round((total * 0.044 + 1.09 * qty) * 100) / 100 : 0
   const grandTotal = total + serviceFee
 
@@ -133,22 +136,21 @@ export default function Checkout() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-8">
-        {/* Order summary */}
         <div className="bg-white rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm">
-          <p className="text-muted text-xs uppercase tracking-wider mb-1">Order summary</p>
+          <p className="text-muted text-xs uppercase tracking-wider mb-1">{t('checkout.orderSummary')}</p>
           <h2 className="font-heading font-bold text-gray-900 text-lg">{event.title}</h2>
           <div className="flex justify-between items-center mt-3 text-sm">
             <span className="text-muted">{ticketType.name} × {qty}</span>
-            <span className="text-gray-900">{total === 0 ? 'Free' : `$${total.toFixed(2)}`}</span>
+            <span className="text-gray-900">{total === 0 ? t('checkout.free') : `$${total.toFixed(2)}`}</span>
           </div>
           {total > 0 && (
             <>
               <div className="flex justify-between items-center mt-1 text-xs text-muted">
-                <span>Service fee</span>
+                <span>{t('checkout.serviceFee')}</span>
                 <span>${serviceFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 text-sm font-semibold text-gray-900">
-                <span>Total</span>
+                <span>{t('checkout.total')}</span>
                 <span>${grandTotal.toFixed(2)} CAD</span>
               </div>
             </>
@@ -157,34 +159,34 @@ export default function Checkout() {
 
         {step === 'info' ? (
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900 mb-4">Your details</h2>
+            <h2 className="font-heading font-bold text-gray-900 mb-4">{t('checkout.yourDetails')}</h2>
             {error && <p className="text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
             <form onSubmit={handleInfoSubmit} className="space-y-4">
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted">Full name</label>
+                <label className="text-sm text-muted">{t('checkout.fullName')}</label>
                 <input
                   required value={buyerName} onChange={e => setBuyerName(e.target.value)}
                   className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted">Email — tickets will be sent here</label>
+                <label className="text-sm text-muted">{t('checkout.email')}</label>
                 <input
                   type="email" required value={buyerEmail} onChange={e => setBuyerEmail(e.target.value)}
                   className="bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition"
                 />
               </div>
               <Button type="submit" disabled={loading} size="lg" className="w-full">
-                {loading ? 'Please wait…' : total === 0 ? 'Get free tickets' : 'Continue to payment'}
+                {loading ? t('checkout.pleaseWait') : total === 0 ? t('checkout.getFreeTickets') : t('checkout.continueToPay')}
               </Button>
             </form>
           </div>
         ) : clientSecret ? (
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-gray-900">Payment</h2>
+              <h2 className="font-heading font-bold text-gray-900">{t('checkout.payment')}</h2>
               <button onClick={() => setStep('info')} className="text-sm text-muted hover:text-gray-900 transition">
-                ← Change details
+                {t('checkout.changeDetails')}
               </button>
             </div>
             <Elements
@@ -194,7 +196,7 @@ export default function Checkout() {
               <CheckoutForm
                 orderId={orderId}
                 buyerEmail={buyerEmail}
-                onSuccess={() => navigate(`/ticket/confirmed?order=${orderId}&email=${encodeURIComponent(buyerEmail)}`)}
+                onSuccess={() => navigate(`${lp('/ticket/confirmed')}?order=${orderId}&email=${encodeURIComponent(buyerEmail)}`)}
               />
             </Elements>
           </div>

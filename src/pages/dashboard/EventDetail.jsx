@@ -3,14 +3,18 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { ArrowLeft, Download, FileSpreadsheet, Pencil, Trash2, ExternalLink, QrCode } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 
 export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const { user } = useAuth()
   const [event, setEvent] = useState(null)
   const [ticketTypes, setTicketTypes] = useState([])
@@ -264,7 +268,7 @@ export default function EventDetail() {
       ])
       const err = r1.error || r2.error || r3.error || r4.error
       if (err) throw new Error(err.message)
-      navigate('/dashboard')
+      navigate(lp('/dashboard'))
     } catch (err) {
       alert('Delete failed: ' + err.message)
       setDeleting(false)
@@ -300,15 +304,15 @@ export default function EventDetail() {
       {confirmRefundId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Request refund?</h3>
-            <p className="text-muted text-sm mb-4">This will flag the order for refund and notify Tiklo admin to process it. The buyer will be contacted by the support team.</p>
+            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">{t('eventDetail.refundTitle')}</h3>
+            <p className="text-muted text-sm mb-4">{t('eventDetail.refundDesc')}</p>
             <div className="flex gap-3 justify-end">
-              <Button variant="secondary" onClick={() => setConfirmRefundId(null)}>Cancel</Button>
+              <Button variant="secondary" onClick={() => setConfirmRefundId(null)}>{t('eventDetail.cancel')}</Button>
               <button
                 onClick={() => handleRefund(confirmRefundId)}
                 className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition"
               >
-                Yes, request refund
+                {t('eventDetail.yesRefund')}
               </button>
             </div>
           </div>
@@ -319,23 +323,23 @@ export default function EventDetail() {
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Delete event?</h3>
+            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">{t('eventDetail.deleteTitle')}</h3>
             <p className="text-muted text-sm mb-2">
-              <span className="font-semibold text-gray-800">{event?.title}</span> will be permanently deleted.
+              <span className="font-semibold text-gray-800">{event?.title}</span> {t('eventDetail.willDelete')}
             </p>
             {totalSoldCount > 0 && (
               <p className="text-amber-700 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
-                Warning: {totalSoldCount} ticket{totalSoldCount !== 1 ? 's' : ''} have already been sold. Deleting will not automatically refund buyers.
+                {t('eventDetail.deleteWarning', { count: totalSoldCount })}
               </p>
             )}
             <div className="flex gap-3 justify-end mt-4">
-              <Button variant="secondary" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+              <Button variant="secondary" onClick={() => setConfirmDelete(false)}>{t('eventDetail.cancel')}</Button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition disabled:opacity-60"
               >
-                {deleting ? 'Deleting…' : 'Delete'}
+                {deleting ? t('eventDetail.deleting') : t('eventDetail.delete')}
               </button>
             </div>
           </div>
@@ -343,8 +347,8 @@ export default function EventDetail() {
       )}
 
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <Link to="/dashboard" className="flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 mb-6">
-          <ArrowLeft size={14} /> Back to dashboard
+        <Link to={lp('/dashboard')} className="flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 mb-6">
+          <ArrowLeft size={14} /> {t('eventDetail.back')}
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-8 gap-3">
@@ -356,8 +360,8 @@ export default function EventDetail() {
             <Link to={`/events/${id}`} target="_blank" rel="noopener noreferrer" title="View public event page" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition">
               <ExternalLink size={16} />
             </Link>
-            <Link to={`/dashboard/events/${id}/edit`} title="Edit event" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:border-primary hover:text-primary transition font-medium">
-              <Pencil size={14} />Edit
+            <Link to={lp(`/dashboard/events/${id}/edit`)} title="Edit event" className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:border-primary hover:text-primary transition font-medium">
+              <Pencil size={14} />{t('eventDetail.edit')}
             </Link>
             <button onClick={downloadQrPoster} disabled={qrGenerating} title="Download door QR poster" className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition disabled:opacity-50">
               <QrCode size={16} />
@@ -377,20 +381,20 @@ export default function EventDetail() {
         {/* Stats cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <p className="text-muted text-xs uppercase tracking-wider mb-1">Tickets sold</p>
+            <p className="text-muted text-xs uppercase tracking-wider mb-1">{t('eventDetail.ticketsSold')}</p>
             <p className="text-3xl font-bold text-gray-900">{totalSold}</p>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <p className="text-muted text-xs uppercase tracking-wider mb-1">Gross revenue</p>
+            <p className="text-muted text-xs uppercase tracking-wider mb-1">{t('eventDetail.grossRevenue')}</p>
             <p className="text-3xl font-bold text-primary">${totalRevenue.toFixed(2)}</p>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <p className="text-muted text-xs uppercase tracking-wider mb-1">Your payout</p>
+            <p className="text-muted text-xs uppercase tracking-wider mb-1">{t('eventDetail.yourPayout')}</p>
             <p className="text-3xl font-bold text-emerald-600">${orgPayout.toFixed(2)}</p>
-            <p className="text-muted text-xs mt-1">Full face value</p>
+            <p className="text-muted text-xs mt-1">{t('eventDetail.fullFaceValue')}</p>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <p className="text-muted text-xs uppercase tracking-wider mb-1">Orders</p>
+            <p className="text-muted text-xs uppercase tracking-wider mb-1">{t('eventDetail.orders')}</p>
             <p className="text-3xl font-bold text-gray-900">{orders.length}</p>
           </div>
         </div>
@@ -398,14 +402,14 @@ export default function EventDetail() {
         {/* Sales chart */}
         {chartData.length > 0 && (
           <div className="bg-white rounded-2xl p-5 mb-8 border border-gray-100 shadow-sm">
-            <h2 className="font-semibold text-gray-900 mb-4">Tickets by type</h2>
+            <h2 className="font-semibold text-gray-900 mb-4">{t('eventDetail.ticketsByType')}</h2>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={chartData} barGap={4}>
                 <XAxis dataKey="name" tick={{ fill: '#6B6355', fontSize: 12 }} />
                 <YAxis tick={{ fill: '#6B6355', fontSize: 12 }} allowDecimals={false} />
                 <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111827' }} />
-                <Bar dataKey="sold" name="Sold" fill="#635BFF" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="remaining" name="Remaining" fill="#e5e7eb" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="sold" name={t('eventDetail.sold')} fill="#635BFF" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="remaining" name={t('eventDetail.remaining')} fill="#e5e7eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -414,11 +418,11 @@ export default function EventDetail() {
         {/* Attendee list */}
         <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">Attendees</h2>
-            <span className="text-muted text-sm">{orders.length} order{orders.length !== 1 ? 's' : ''}</span>
+            <h2 className="font-semibold text-gray-900">{t('eventDetail.attendees')}</h2>
+            <span className="text-muted text-sm">{t('eventDetail.orders', { count: orders.length })}</span>
           </div>
           {orders.length === 0 ? (
-            <p className="text-center text-muted py-12">No orders yet.</p>
+            <p className="text-center text-muted py-12">{t('eventDetail.noOrders')}</p>
           ) : (
             <div className="divide-y divide-gray-100">
               {orders.map(o => (
@@ -433,16 +437,16 @@ export default function EventDetail() {
                       <p className="text-xs text-muted">{format(new Date(o.created_at), 'MMM d, h:mm a')}</p>
                     </div>
                     {o.status === 'refunded' ? (
-                      <span className="text-xs font-medium text-muted bg-gray-100 px-2 py-0.5 rounded-full">Refunded</span>
+                      <span className="text-xs font-medium text-muted bg-gray-100 px-2 py-0.5 rounded-full">{t('eventDetail.refunded')}</span>
                     ) : o.status === 'refund_requested' ? (
-                      <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Refund pending</span>
+                      <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">{t('eventDetail.refundPending')}</span>
                     ) : (
                       <button
                         onClick={() => setConfirmRefundId(o.id)}
                         disabled={refundingId === o.id}
                         className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-2 py-0.5 rounded-full transition disabled:opacity-40"
                       >
-                        {refundingId === o.id ? '…' : 'Refund'}
+                        {refundingId === o.id ? '…' : t('eventDetail.refund')}
                       </button>
                     )}
                   </div>
@@ -453,7 +457,7 @@ export default function EventDetail() {
           {hasMore && (
             <div className="px-5 py-4 border-t border-gray-100 text-center">
               <button onClick={loadMoreOrders} disabled={loadingMore} className="text-sm text-primary font-medium hover:underline disabled:opacity-50">
-                {loadingMore ? 'Loading…' : 'Load more orders'}
+                {loadingMore ? '…' : t('eventDetail.loadMore')}
               </button>
             </div>
           )}

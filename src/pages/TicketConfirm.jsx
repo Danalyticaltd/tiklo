@@ -1,17 +1,21 @@
 import Footer from '../components/Footer'
 import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle } from 'lucide-react'
 import QRCode from 'qrcode'
 import { format } from 'date-fns'
 import { motion } from 'framer-motion'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { supabase } from '../lib/supabase'
+import { useLangPath } from '../hooks/useLangPath'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
 
 export default function TicketConfirm() {
   const [searchParams] = useSearchParams()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const orderId = searchParams.get('order')
   const emailFromUrl = searchParams.get('email')
   const [tickets, setTickets] = useState([])
@@ -34,15 +38,11 @@ export default function TicketConfirm() {
       if (!ord) { setInvalid(true); setLoading(false); return }
       setOrder(ord)
 
-      const { data: tix } = await supabase
-        .from('tickets')
-        .select('*')
-        .eq('order_id', orderId)
+      const { data: tix } = await supabase.from('tickets').select('*').eq('order_id', orderId)
 
       const list = tix ?? []
       setTickets(list)
 
-      // Generate all QR codes in parallel
       const entries = await Promise.all(
         list.map(async t => [t.id, await QRCode.toDataURL(t.qr_code, { width: 220, margin: 1, color: { dark: '#000', light: '#fff' } })])
       )
@@ -67,10 +67,10 @@ export default function TicketConfirm() {
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
         <p className="text-5xl mb-4">🎟</p>
-        <h1 className="text-xl font-bold text-navy mb-2">Ticket link not found</h1>
-        <p className="text-muted text-sm mb-6">This link may be expired or invalid. Look up your tickets by email below.</p>
-        <Link to="/my-tickets" className="bg-primary hover:bg-[#574BFF] text-white font-semibold px-6 py-2.5 rounded-xl transition">
-          Find my tickets
+        <h1 className="text-xl font-bold text-navy mb-2">{t('ticketConfirm.notFound')}</h1>
+        <p className="text-muted text-sm mb-6">{t('ticketConfirm.notFoundDesc')}</p>
+        <Link to={lp('/my-tickets')} className="bg-primary hover:bg-[#574BFF] text-white font-semibold px-6 py-2.5 rounded-xl transition">
+          {t('ticketConfirm.findMyTickets')}
         </Link>
       </div>
       <Footer />
@@ -122,7 +122,6 @@ export default function TicketConfirm() {
         page.drawText('Ticket ID', { x: 24, y: height - 281, size: 10, font: fontReg, color: rgb(0.5, 0.5, 0.5) })
         page.drawText(ticket.id.slice(0, 8).toUpperCase(), { x: 24, y: height - 299, size: 13, font, color: rgb(0.388, 0.357, 1.0) })
 
-        // Embed QR from the data URL already loaded in state
         const dataUrl = qrCodes[ticket.id]
         if (dataUrl) {
           const base64 = dataUrl.split(',')[1]
@@ -157,7 +156,6 @@ export default function TicketConfirm() {
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-8">
 
-        {/* Success banner */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -167,17 +165,16 @@ export default function TicketConfirm() {
           <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-200">
             <CheckCircle size={40} className="text-white" strokeWidth={2.5} />
           </div>
-          <h1 className="font-heading text-3xl font-bold text-gray-900">You're officially in!</h1>
-          <p className="text-muted mt-1">Your booking is confirmed — see you there.</p>
+          <h1 className="font-heading text-3xl font-bold text-gray-900">{t('ticketConfirm.youreIn')}</h1>
+          <p className="text-muted mt-1">{t('ticketConfirm.confirmed')}</p>
           <p className="text-sm text-gray-500 mt-2">
-            {qty} ticket{qty !== 1 ? 's' : ''} sent to{' '}
+            {t('ticketConfirm.ticketsSent', { count: qty })}{' '}
             <span className="font-semibold text-gray-900">
               {emailFromUrl || order?.buyer_email || '—'}
             </span>
           </p>
         </motion.div>
 
-        {/* Event info */}
         {event && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -196,7 +193,6 @@ export default function TicketConfirm() {
           </motion.div>
         )}
 
-        {/* QR tickets */}
         <div className="space-y-4">
           {tickets.map((ticket, i) => (
             <motion.div
@@ -207,7 +203,7 @@ export default function TicketConfirm() {
               className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm"
             >
               <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                {ticketTypeName}{tickets.length > 1 ? ` — Ticket ${i + 1} of ${tickets.length}` : ''}
+                {ticketTypeName}{tickets.length > 1 ? ` — ${t('ticketConfirm.ticketOf', { i: i + 1, total: tickets.length })}` : ''}
               </p>
               <p className="font-semibold text-gray-900 mb-4">{order?.buyer_name}</p>
               {qrCodes[ticket.id] && (
@@ -217,7 +213,7 @@ export default function TicketConfirm() {
               )}
               <p className="text-muted text-xs font-mono">{ticket.id.slice(0, 8).toUpperCase()}</p>
               {ticket.checked_in && (
-                <p className="text-green-600 text-xs mt-2 font-medium">✓ Checked in</p>
+                <p className="text-green-600 text-xs mt-2 font-medium">{t('ticketConfirm.checkedIn')}</p>
               )}
             </motion.div>
           ))}
@@ -229,21 +225,21 @@ export default function TicketConfirm() {
           transition={{ delay: 0.5 }}
           className="mt-8 text-center space-y-3"
         >
-          <p className="text-gray-400 text-xs">PDF ticket attached to your confirmation email — show QR at the door.</p>
+          <p className="text-gray-400 text-xs">{t('ticketConfirm.pdfNote')}</p>
           <button
             onClick={downloadPdf}
             disabled={pdfLoading}
             className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary hover:text-primary transition disabled:opacity-50"
           >
-            {pdfLoading ? 'Generating PDF…' : '🖨 Download / Print PDF'}
+            {pdfLoading ? t('ticketConfirm.generatingPdf') : t('ticketConfirm.downloadPdf')}
           </button>
           <div>
-            <Link to="/my-tickets" className="text-xs text-muted hover:text-primary transition">
-              Can't find your ticket later? → Find my tickets
+            <Link to={lp('/my-tickets')} className="text-xs text-muted hover:text-primary transition">
+              {t('ticketConfirm.findLater')}
             </Link>
           </div>
-          <Link to="/">
-            <Button variant="secondary">Browse more events</Button>
+          <Link to={lp('/')}>
+            <Button variant="secondary">{t('ticketConfirm.browseMore')}</Button>
           </Link>
         </motion.div>
       </div>

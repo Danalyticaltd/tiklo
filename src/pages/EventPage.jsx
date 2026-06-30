@@ -1,10 +1,12 @@
 import Footer from '../components/Footer'
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { format } from 'date-fns'
 import { MapPin, Calendar, Tag, ChevronLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useLangPath } from '../hooks/useLangPath'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
@@ -12,6 +14,8 @@ import Badge from '../components/ui/Badge'
 export default function EventPage() {
   const { slug: eventId } = useParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const { user } = useAuth()
   const [event, setEvent] = useState(null)
   const [organiser, setOrganiser] = useState(null)
@@ -24,10 +28,9 @@ export default function EventPage() {
   useEffect(() => {
     async function load() {
       const { data: ev } = await supabase.from('events').select('*').eq('id', eventId).single()
-      if (!ev) { navigate('/'); return }
+      if (!ev) { navigate(lp('/')); return }
       setEvent(ev)
 
-      // Dynamic SEO meta tags
       document.title = `${ev.title} | Tiklo`
       setMeta('description', ev.description ?? `${ev.title} - Buy tickets on Tiklo`)
       setMeta('og:title', ev.title)
@@ -48,7 +51,6 @@ export default function EventPage() {
       setOrganiser(org ?? null)
       if (tt?.length) setSelected(tt[0].id)
 
-      // Schema.org JSON-LD for Google rich results
       const minPrice = tt?.length ? Math.min(...tt.map(t => Number(t.price))) : 0
       const jsonLd = {
         '@context': 'https://schema.org',
@@ -114,14 +116,12 @@ export default function EventPage() {
     <div className="min-h-screen bg-bg">
       <Navbar />
 
-      {/* Back link */}
       <div className="max-w-3xl mx-auto px-4 pt-5">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 transition">
-          <ChevronLeft size={14} /> Back to events
+        <Link to={lp('/')} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-gray-900 transition">
+          <ChevronLeft size={14} /> {t('eventPage.back')}
         </Link>
       </div>
 
-      {/* Flyer / banner */}
       {event.banner_url && (
         <div className="max-w-3xl mx-auto px-4 pt-6 flex flex-col sm:flex-row gap-6 items-start">
           <div className="shrink-0 w-full sm:w-52">
@@ -131,7 +131,6 @@ export default function EventPage() {
       )}
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-        {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             {user && <Badge status={event.status} />}
@@ -139,14 +138,13 @@ export default function EventPage() {
           </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900">{event.title}</h1>
 
-          {/* Share buttons */}
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            <span className="text-xs text-muted font-medium">Share:</span>
+            <span className="text-xs text-muted font-medium">{t('eventPage.share')}</span>
             <button
               onClick={() => { navigator.clipboard.writeText(`https://tiklo.ca/events/${eventId}`); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
               className="px-3 py-1 rounded-lg bg-surface text-navy text-xs font-medium hover:bg-gray-200 transition border border-[#E3E8EE]"
             >
-              {copied ? '✓ Copied!' : '🔗 Copy link'}
+              {copied ? t('eventPage.copied') : t('eventPage.copyLink')}
             </button>
             <a href={`https://wa.me/?text=${encodeURIComponent(`${event.title} — Get tickets: https://tiklo.ca/events/${eventId}`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 rounded-lg bg-[#25D366] text-white text-xs font-medium hover:opacity-90 transition">WhatsApp</a>
             <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(event.title)}&url=${encodeURIComponent(`https://tiklo.ca/events/${eventId}`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 rounded-lg bg-black text-white text-xs font-medium hover:opacity-90 transition">𝕏 Twitter</a>
@@ -173,15 +171,13 @@ export default function EventPage() {
           </div>
         </div>
 
-        {/* Description */}
         {event.description && (
           <div>
-            <h2 className="font-heading font-bold text-gray-900 mb-2">About</h2>
+            <h2 className="font-heading font-bold text-gray-900 mb-2">{t('eventPage.about')}</h2>
             <p className="text-muted leading-relaxed whitespace-pre-line">{event.description}</p>
           </div>
         )}
 
-        {/* Organiser */}
         {organiser && (
           <div className="flex items-center gap-3 py-4 border-t border-gray-100">
             {organiser.avatar_url
@@ -191,22 +187,21 @@ export default function EventPage() {
                 </div>
             }
             <div>
-              <p className="text-xs text-muted">Organised by</p>
-              <p className="text-sm font-semibold text-gray-900">{organiser.full_name ?? 'Organiser'}</p>
+              <p className="text-xs text-muted">{t('eventPage.organisedBy')}</p>
+              <p className="text-sm font-semibold text-gray-900">{organiser.full_name ?? t('eventPage.organisedBy')}</p>
               {organiser.bio && <p className="text-xs text-muted mt-0.5 line-clamp-2">{organiser.bio}</p>}
             </div>
           </div>
         )}
 
-        {/* Ticket selector */}
         {ticketTypes.length > 0 && (() => {
           const allSoldOut = ticketTypes.every(tt => (tt.quantity - tt.quantity_sold) <= 0)
           return (
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900">{allSoldOut ? 'Sold out' : 'Get tickets'}</h2>
+            <h2 className="font-heading font-bold text-gray-900">{allSoldOut ? t('eventPage.soldOut') : t('eventPage.getTickets')}</h2>
             {allSoldOut && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 font-medium">
-                All tickets for this event are sold out.
+                {t('eventPage.allSoldOut')}
               </p>
             )}
             <div className="space-y-2">
@@ -215,9 +210,9 @@ export default function EventPage() {
                 const soldOut = avail <= 0
                 function availLabel() {
                   if (soldOut) return null
-                  if (avail <= tt.quantity / 4) return { text: 'Almost sold out!', color: '#ef4444' }
-                  if (avail <= tt.quantity / 2) return { text: 'Selling fast - grab yours', color: '#d97706' }
-                  return { text: 'Tickets available', color: '#6B6355' }
+                  if (avail <= tt.quantity / 4) return { text: t('eventPage.almostSoldOut'), color: '#ef4444' }
+                  if (avail <= tt.quantity / 2) return { text: t('eventPage.sellingFast'), color: '#d97706' }
+                  return { text: t('eventPage.available'), color: '#6B6355' }
                 }
                 const label = availLabel()
                 return (
@@ -231,19 +226,18 @@ export default function EventPage() {
                     <div>
                       <p className="text-gray-900 font-medium text-sm">{tt.name}</p>
                       {soldOut
-                        ? <p className="text-red-500 text-xs font-medium">Sold out</p>
+                        ? <p className="text-red-500 text-xs font-medium">{t('eventPage.soldOut')}</p>
                         : <p className="text-xs font-medium" style={{ color: label.color }}>{label.text}</p>
                       }
                     </div>
                     <p className="font-heading font-bold text-gray-900">
-                      {tt.price === 0 ? 'Free' : `$${Number(tt.price).toFixed(2)}`}
+                      {tt.price === 0 ? t('eventPage.free') : `$${Number(tt.price).toFixed(2)}`}
                     </p>
                   </button>
                 )
               })}
             </div>
 
-            {/* Quantity + CTA */}
             {selectedType && available > 0 && (
               <div className="flex items-center gap-4 pt-2">
                 <div className="flex items-center gap-2">
@@ -254,12 +248,12 @@ export default function EventPage() {
                 <div className="flex-1 flex flex-col gap-1">
                   <button
                     className="w-full bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-primary/20 text-sm"
-                    onClick={() => navigate(`/checkout/${eventId}?tt=${selected}&qty=${qty}`)}
+                    onClick={() => navigate(`${lp('/checkout')}/${eventId}?tt=${selected}&qty=${qty}`)}
                   >
-                    {selectedType.price === 0 ? 'Register free' : `Buy - $${(selectedType.price * qty).toFixed(2)}`}
+                    {selectedType.price === 0 ? t('eventPage.registerFree') : t('eventPage.buy', { total: (selectedType.price * qty).toFixed(2) })}
                   </button>
                   {(selectedType.max_per_order ?? 10) < available && (
-                    <p className="text-xs text-muted text-center">Max {selectedType.max_per_order ?? 10} tickets per order</p>
+                    <p className="text-xs text-muted text-center">{t('eventPage.maxPerOrder', { count: selectedType.max_per_order ?? 10 })}</p>
                   )}
                 </div>
               </div>
@@ -272,4 +266,3 @@ export default function EventPage() {
     </div>
   )
 }
-

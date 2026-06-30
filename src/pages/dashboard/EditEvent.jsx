@@ -2,8 +2,10 @@
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useForm, useFieldArray, Controller } from 'react-hook-form'
 import { Plus, ArrowLeft, Upload, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
@@ -19,6 +21,8 @@ export default function EditEvent() {
   const { id } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [bannerFile, setBannerFile] = useState(null)
@@ -44,7 +48,7 @@ export default function EditEvent() {
         supabase.from('events').select('*').eq('id', id).single(),
         supabase.from('ticket_types').select('*').eq('event_id', id).order('created_at'),
       ])
-      if (!ev || ev.organizer_id !== user.id) { navigate('/dashboard'); return }
+      if (!ev || ev.organizer_id !== user.id) { navigate(lp('/dashboard')); return }
       setExistingBanner(ev.banner_url ?? null)
       setEventStatus(ev.status)
       setSavedTTs(tts ?? [])
@@ -191,7 +195,7 @@ export default function EditEvent() {
 
       if (publish) await notifyAdmin()
 
-      navigate('/dashboard')
+      navigate(lp('/dashboard'))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -212,27 +216,27 @@ export default function EditEvent() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-6 transition">
-          <ArrowLeft size={14} /> Back to dashboard
+        <Link to={lp('/dashboard')} className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-6 transition">
+          <ArrowLeft size={14} /> {t('eventForm.back')}
         </Link>
 
-        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-8">Edit event</h1>
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-8">{t('eventForm.editTitle')}</h1>
 
         {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-6">{error}</div>}
 
         <form className="space-y-6">
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900">Event details</h2>
+            <h2 className="font-heading font-bold text-gray-900">{t('eventForm.eventDetails')}</h2>
 
             <Input
-              label="Event title *"
+              label={t('eventForm.eventTitle')}
               placeholder="e.g. Ottawa African Night"
               error={errors.title?.message}
-              {...register('title', { required: 'Title is required' })}
+              {...register('title', { required: t('eventForm.titleRequired') })}
             />
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm text-muted">Description</label>
+              <label className="text-sm text-muted">{t('eventForm.description')}</label>
               <textarea
                 rows={4}
                 placeholder="Tell people what to expect..."
@@ -243,25 +247,25 @@ export default function EditEvent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted">Date & time *</label>
+                <label className="text-sm text-muted">{t('eventForm.dateTime')}</label>
                 <input
                   type="datetime-local"
                   {...register('event_date', {
-                    required: 'Date is required',
-                    validate: v => !v || new Date(v) > new Date(Date.now() - 86400000) || 'Event date cannot be more than 1 day in the past',
+                    required: t('eventForm.dateRequired'),
+                    validate: v => !v || new Date(v) > new Date(Date.now() - 86400000) || t('eventForm.datePast'),
                   })}
                   className={`bg-white border ${errors.event_date ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]`}
                 />
                 {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
               </div>
-              <Select label="City *" {...register('city', { required: true })}>
+              <Select label={t('eventForm.city')} {...register('city', { required: true })}>
                 {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
               </Select>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted">Venue / location</label>
+                <label className="text-sm text-muted">{t('eventForm.venue')}</label>
                 <input
                   {...locationRest}
                   ref={(el) => { rhfLocationRef(el); locationInputRef.current = el }}
@@ -274,7 +278,7 @@ export default function EditEvent() {
                 name="community_tag"
                 control={control}
                 render={({ field }) => (
-                  <CommunityInput label="Community" value={field.value} onChange={field.onChange} />
+                  <CommunityInput label={t('eventForm.community')} value={field.value} onChange={field.onChange} />
                 )}
               />
             </div>
@@ -284,8 +288,8 @@ export default function EditEvent() {
               control={control}
               defaultValue="Cultural show"
               render={({ field }) => (
-                <Select label="Event type *" {...field}>
-                  {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                <Select label={t('eventForm.eventType')} {...field}>
+                  {EVENT_TYPES.map(et => <option key={et} value={et}>{et}</option>)}
                 </Select>
               )}
             />
@@ -293,7 +297,7 @@ export default function EditEvent() {
 
           {/* Banner */}
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900">Banner image</h2>
+            <h2 className="font-heading font-bold text-gray-900">{t('eventForm.banner')}</h2>
             <label className="block cursor-pointer">
               {(bannerPreview || existingBanner) ? (
                 <div className="relative rounded-xl overflow-hidden h-48">
@@ -316,10 +320,10 @@ export default function EditEvent() {
           {/* Ticket types */}
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading font-bold text-gray-900">Ticket types</h2>
+              <h2 className="font-heading font-bold text-gray-900">{t('eventForm.ticketTypes')}</h2>
               <button type="button" onClick={() => append({ name: '', price: 0, quantity: 100 })}
                 className="text-primary text-sm font-medium hover:underline flex items-center gap-1">
-                <Plus size={14} /> Add type
+                <Plus size={14} /> {t('eventForm.addType')}
               </button>
             </div>
 
@@ -344,11 +348,11 @@ export default function EditEvent() {
                         {errors?.ticket_types?.[index]?.name && (
                           <p className="text-red-500 text-xs mt-1">{errors.ticket_types[index].name.message}</p>
                         )}
-                        {hasSales && <p className="text-xs text-amber-600 mt-1">{sold} sold — capacity cannot go below {sold}</p>}
+                        {hasSales && <p className="text-xs text-amber-600 mt-1">{t('eventForm.soldWarning', { count: sold })}</p>}
                       </div>
                       <button type="button" onClick={() => remove(index)}
                         disabled={fields.length === 1 || hasSales}
-                        title={hasSales ? 'Cannot remove — tickets already sold' : 'Remove'}
+                        title={hasSales ? t('eventForm.cannotRemove') : 'Remove'}
                         className="mt-6 p-1.5 text-gray-400 hover:text-red-400 disabled:opacity-20 transition shrink-0"
                       ><Trash2 size={15} /></button>
                     </div>
@@ -384,18 +388,18 @@ export default function EditEvent() {
           )}
 
           <div className="flex gap-3 justify-end flex-wrap">
-            <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')}>Cancel</Button>
+            <Button type="button" variant="secondary" onClick={() => navigate(lp('/dashboard'))}>{t('eventForm.cancel')}</Button>
             <Button type="button" variant="secondary" disabled={saving} onClick={handleSubmit(data => onSubmit(data, false))}>
-              {saving ? 'Saving…' : 'Save as draft'}
+              {saving ? t('eventForm.saving') : t('eventForm.saveDraft')}
             </Button>
             {(eventStatus === 'draft' || eventStatus === 'pending') && (
               <Button type="button" disabled={saving} onClick={handleSubmit(data => onSubmit(data, true))}>
-                {saving ? 'Submitting…' : 'Submit for approval'}
+                {saving ? t('eventForm.submitting') : t('eventForm.submitApproval')}
               </Button>
             )}
             {eventStatus === 'published' && (
               <Button type="button" disabled={saving} onClick={handleSubmit(data => onSubmit(data, false))}>
-                {saving ? 'Saving…' : 'Save changes'}
+                {saving ? t('eventForm.saving') : t('eventForm.saveChanges')}
               </Button>
             )}
           </div>

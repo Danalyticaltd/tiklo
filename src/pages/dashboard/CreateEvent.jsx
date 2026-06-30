@@ -2,8 +2,10 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm, useFieldArray, Controller } from 'react-hook-form'
 import { Plus, ArrowLeft, Upload } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLangPath } from '../../hooks/useLangPath'
 import Navbar from '../../components/Navbar'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
@@ -20,6 +22,8 @@ const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 export default function CreateEvent() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const [saving, setSaving] = useState(false)
   const [bannerFile, setBannerFile] = useState(null)
   const [bannerPreview, setBannerPreview] = useState(null)
@@ -141,7 +145,7 @@ export default function CreateEvent() {
 
       if (publish) notifyAdmin(event.id)
 
-      navigate('/dashboard')
+      navigate(lp('/dashboard'))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -153,27 +157,27 @@ export default function CreateEvent() {
     <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-6 transition">
-          <ArrowLeft size={14} /> Back to dashboard
+        <Link to={lp('/dashboard')} className="inline-flex items-center gap-1.5 text-muted hover:text-gray-900 text-sm mb-6 transition">
+          <ArrowLeft size={14} /> {t('eventForm.back')}
         </Link>
 
-        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-8">Create event</h1>
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-8">{t('eventForm.createTitle')}</h1>
 
         {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-6">{error}</div>}
 
         <form className="space-y-6">
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900">Event details</h2>
+            <h2 className="font-heading font-bold text-gray-900">{t('eventForm.eventDetails')}</h2>
 
             <Input
-              label="Event title *"
+              label={t('eventForm.eventTitle')}
               placeholder="e.g. Ottawa African Night"
               error={errors.title?.message}
-              {...register('title', { required: 'Title is required' })}
+              {...register('title', { required: t('eventForm.titleRequired') })}
             />
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm text-muted">Description</label>
+              <label className="text-sm text-muted">{t('eventForm.description')}</label>
               <textarea
                 rows={4}
                 placeholder="Tell people what to expect..."
@@ -184,26 +188,26 @@ export default function CreateEvent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted">Date & time *</label>
+                <label className="text-sm text-muted">{t('eventForm.dateTime')}</label>
                 <input
                   type="datetime-local"
                   {...register('event_date', {
-                    required: 'Date is required',
-                    validate: v => new Date(v) > new Date() || 'Event date must be in the future',
+                    required: t('eventForm.dateRequired'),
+                    validate: v => new Date(v) > new Date() || t('eventForm.dateFuture'),
                   })}
                   className={`bg-white border ${errors.event_date ? 'border-red-400' : 'border-gray-300'} rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary transition [color-scheme:light]`}
                 />
                 {errors.event_date && <p className="text-red-500 text-xs">{errors.event_date.message}</p>}
               </div>
 
-              <Select label="City *" {...register('city', { required: true })}>
+              <Select label={t('eventForm.city')} {...register('city', { required: true })}>
                 {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
               </Select>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-muted">Venue / location</label>
+                <label className="text-sm text-muted">{t('eventForm.venue')}</label>
                 <input
                   {...locationRest}
                   ref={(el) => {
@@ -220,7 +224,7 @@ export default function CreateEvent() {
                 name="community_tag"
                 control={control}
                 render={({ field }) => (
-                  <CommunityInput label="Community" value={field.value} onChange={field.onChange} />
+                  <CommunityInput label={t('eventForm.community')} value={field.value} onChange={field.onChange} />
                 )}
               />
             </div>
@@ -230,15 +234,15 @@ export default function CreateEvent() {
               control={control}
               defaultValue="Cultural show"
               render={({ field }) => (
-                <Select label="Event type *" {...field}>
-                  {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                <Select label={t('eventForm.eventType')} {...field}>
+                  {EVENT_TYPES.map(et => <option key={et} value={et}>{et}</option>)}
                 </Select>
               )}
             />
           </div>
 
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
-            <h2 className="font-heading font-bold text-gray-900">Event flyer / poster</h2>
+            <h2 className="font-heading font-bold text-gray-900">{t('eventForm.flyer')}</h2>
             <label className="block cursor-pointer">
               {bannerPreview ? (
                 <div className="relative rounded-xl overflow-hidden h-48">
@@ -260,13 +264,13 @@ export default function CreateEvent() {
 
           <div className="bg-white rounded-2xl p-6 space-y-4 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading font-bold text-gray-900">Ticket types</h2>
+              <h2 className="font-heading font-bold text-gray-900">{t('eventForm.ticketTypes')}</h2>
               <button
                 type="button"
                 onClick={() => append({ name: '', price: 0, quantity: 100 })}
                 className="text-primary text-sm font-medium hover:underline flex items-center gap-1"
               >
-                <Plus size={14} /> Add type
+                <Plus size={14} /> {t('eventForm.addType')}
               </button>
             </div>
 
@@ -299,14 +303,14 @@ export default function CreateEvent() {
               disabled={saving}
               onClick={handleSubmit(data => onSubmit(data, false), () => window.scrollTo({ top: 0, behavior: 'smooth' }))}
             >
-              Save as draft
+              {t('eventForm.saveDraft')}
             </Button>
             <Button
               type="button"
               disabled={saving}
               onClick={handleSubmit(data => onSubmit(data, true), () => window.scrollTo({ top: 0, behavior: 'smooth' }))}
             >
-              {saving ? 'Submitting…' : 'Submit for approval'}
+              {saving ? t('eventForm.submitting') : t('eventForm.submitApproval')}
             </Button>
           </div>
         </form>

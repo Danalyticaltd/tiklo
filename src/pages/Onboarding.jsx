@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload, User, CheckCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLangPath } from '../hooks/useLangPath'
 import TikloLogo from '../components/TikloLogo'
-
-const STEPS = ['Your profile', 'How it works', "You're ready"]
 
 export default function Onboarding() {
   const { user, profile, fetchProfile } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const lp = useLangPath()
   const [step, setStep] = useState(0)
 
-  // Step 1 state
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
   const [avatarFile, setAvatarFile] = useState(null)
@@ -68,18 +69,25 @@ export default function Onboarding() {
     }
   }
 
+  const STEPS = [t('onboarding.step0'), t('onboarding.step1'), t('onboarding.step2')]
+
+  const HOW_IT_WORKS = [
+    { icon: '📝', title: t('onboarding.h1Title'), desc: t('onboarding.h1Desc') },
+    { icon: '✅', title: t('onboarding.h2Title'), desc: t('onboarding.h2Desc') },
+    { icon: '🎟️', title: t('onboarding.h3Title'), desc: t('onboarding.h3Desc') },
+    { icon: '💰', title: t('onboarding.h4Title'), desc: t('onboarding.h4Desc') },
+  ]
+
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="flex justify-center mb-8"><TikloLogo size={28} /></div>
 
-        {/* Step indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {STEPS.map((label, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all
-                ${i < step ? 'bg-primary text-white' : i === step ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'}`}>
+                ${i <= step ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'}`}>
                 {i < step ? <CheckCircle size={14} /> : i + 1}
               </div>
               <span className={`text-xs hidden sm:inline ${i === step ? 'text-gray-900 font-medium' : 'text-muted'}`}>{label}</span>
@@ -90,15 +98,13 @@ export default function Onboarding() {
 
         <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
 
-          {/* ── Step 0: Profile ── */}
           {step === 0 && (
             <>
-              <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">Set up your profile</h1>
-              <p className="text-muted text-sm mb-6">This is what attendees will see on your events.</p>
+              <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">{t('onboarding.profileTitle')}</h1>
+              <p className="text-muted text-sm mb-6">{t('onboarding.profileSubtitle')}</p>
 
               {error && <p className="text-red-500 text-sm mb-4 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
-              {/* Avatar */}
               <div className="flex flex-col items-center gap-2 mb-6">
                 <button
                   type="button"
@@ -113,13 +119,13 @@ export default function Onboarding() {
                     <Upload size={14} className="text-white" />
                   </div>
                 </button>
-                <p className="text-xs text-muted">Upload logo (optional)</p>
+                <p className="text-xs text-muted">{t('onboarding.uploadLogo')}</p>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-muted mb-1">Display name <span className="text-red-400">*</span></label>
+                  <label className="block text-sm text-muted mb-1">{t('onboarding.displayName')} <span className="text-red-400">*</span></label>
                   <input
                     type="text"
                     value={displayName}
@@ -129,12 +135,12 @@ export default function Onboarding() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-muted mb-1">Short description <span className="text-gray-400 text-xs">(optional)</span></label>
+                  <label className="block text-sm text-muted mb-1">{t('onboarding.descLabel')} <span className="text-gray-400 text-xs">{t('onboarding.descOptional')}</span></label>
                   <textarea
                     rows={3}
                     value={bio}
                     onChange={e => setBio(e.target.value)}
-                    placeholder="Tell attendees who you are and what kind of events you organise..."
+                    placeholder={t('onboarding.bioPlaceholder')}
                     className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary transition resize-none"
                   />
                 </div>
@@ -145,24 +151,18 @@ export default function Onboarding() {
                 disabled={saving || !displayName.trim()}
                 className="w-full mt-6 bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Continue'}
+                {saving ? t('onboarding.saving') : t('onboarding.continue')}
               </button>
             </>
           )}
 
-          {/* ── Step 1: How it works ── */}
           {step === 1 && (
             <>
-              <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">How Tiklo works</h1>
-              <p className="text-muted text-sm mb-6">Here's what happens next.</p>
+              <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">{t('onboarding.howTitle')}</h1>
+              <p className="text-muted text-sm mb-6">{t('onboarding.howSubtitle')}</p>
 
               <div className="space-y-4 mb-8">
-                {[
-                  { icon: '📝', title: 'Create your event', desc: 'Add your event details, upload a flyer, and set ticket types and prices.' },
-                  { icon: '✅', title: 'Submit for approval', desc: 'Our team reviews your event to ensure quality. Usually within 24 hours.' },
-                  { icon: '🎟️', title: 'Start selling', desc: 'Once approved, your event goes live and attendees can buy tickets instantly.' },
-                  { icon: '💰', title: 'Get paid', desc: 'After your event, Tiklo sends your payout via Interac or bank transfer. No setup needed.' },
-                ].map(({ icon, title, desc }) => (
+                {HOW_IT_WORKS.map(({ icon, title, desc }) => (
                   <div key={title} className="flex gap-3">
                     <span className="text-xl shrink-0 mt-0.5">{icon}</span>
                     <div>
@@ -177,30 +177,27 @@ export default function Onboarding() {
                 onClick={() => setStep(2)}
                 className="w-full bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition"
               >
-                Got it
+                {t('onboarding.gotIt')}
               </button>
             </>
           )}
 
-          {/* ── Step 2: Ready ── */}
           {step === 2 && (
             <div className="text-center">
               <div className="text-5xl mb-4">🎉</div>
-              <h1 className="font-heading text-2xl font-bold text-gray-900 mb-2">You're all set!</h1>
-              <p className="text-muted text-sm mb-8 leading-relaxed">
-                Your account is ready. Create your first event and start selling tickets.
-              </p>
+              <h1 className="font-heading text-2xl font-bold text-gray-900 mb-2">{t('onboarding.readyTitle')}</h1>
+              <p className="text-muted text-sm mb-8 leading-relaxed">{t('onboarding.readyDesc')}</p>
               <button
-                onClick={() => navigate('/dashboard/events/new')}
+                onClick={() => navigate(lp('/dashboard/events/new'))}
                 className="w-full bg-gradient-to-r from-primary to-orange-400 hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition mb-3"
               >
-                Create my first event
+                {t('onboarding.createFirst')}
               </button>
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate(lp('/dashboard'))}
                 className="w-full text-sm text-muted hover:text-gray-900 transition"
               >
-                Go to dashboard
+                {t('onboarding.goDashboard')}
               </button>
             </div>
           )}
